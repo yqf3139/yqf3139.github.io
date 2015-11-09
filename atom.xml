@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Day day up.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yqf3139.github.io/"/>
-  <updated>2015-11-05T15:54:52.691Z</updated>
+  <updated>2015-11-09T15:17:23.659Z</updated>
   <id>http://yqf3139.github.io/</id>
   
   <author>
@@ -15,11 +15,76 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[Hack Shanghai 体验 2015]]></title>
+    <link href="http://yqf3139.github.io/2015/11/09/hackshanghai-2015/"/>
+    <id>http://yqf3139.github.io/2015/11/09/hackshanghai-2015/</id>
+    <published>2015-11-09T11:18:56.000Z</published>
+    <updated>2015-11-09T15:17:23.659Z</updated>
+    <content type="html"><![CDATA[<p><img src="/images/hackshanghai-2015/logo_purple.png" alt="hackshanghai"></p>
+<h2 id="什么是Hackathon？">什么是Hackathon？</h2><p>产品/服务开发需要耗费大量的人力，但经常一个很好的商业模式或是产品，都萌发自一两个人的小小想法，短时间内拿出一个Prof of Concept的原型，去证明你的想法，发现问题非常重要。</p>
+<p>Hackathon就是程序员集中在一起，快速进行ideas 2 reality的活动，并且相互交流的过程。它通常由一个主办者发起，有大量的赞助商支持，通过严格的条件，比如限定24小时完成，限定方向和开发平台，来筛选出优秀的想法和开发者。当然，作为回报，Hackathon通常有优厚的奖品或是实习机会来吸引活跃的程序员。</p>
+<p>应该来说每人都会经历自己的Hackathon，这个并不仅仅是软件行业。当你产生一个想法，并且你特别希望bring it to reality的时候，一次Hackathon就开始了。时间有长有短，可以是任何事情。</p>
+<p>这一过程中的各个阶段：初期想法的产生，具体化细节，寻找合作伙伴，交流，推广，获取到别人的支持，反思评价都很有意思。其中还夹杂着很多情绪，兴奋，喜悦，妥协，各种压力，都会在短短的限定时间内爆发。走下去不放弃是必须的，当然这并不包括发现自己的想法不能实现，如果是这样，那你至少证明了它没有意义，或是有几个世界级的瓶颈。</p>
+<p>所以大家都应该抓住机会参加一次Hackathon，能从这一过程和各种人身上学到很多，也能接触到很多新的平台和技术。</p>
+<h2 id="Hack_Shanghai_2014">Hack Shanghai 2014</h2><p>2014年的11月初，我和颢神、苗姐、冰神等在参加完软创大赛后，直接飞来上海，和姚神碰面参加Hack Shanghai 2014。想法在去之前有所讨论，但仍然不够清晰，是从我一个小小的技术尝试萌发的。</p>
+<p>我们希望提升现有的网页视频播放的体验。通过定制化的界面，用户看到的是一个聚合好的视频库，资源来自各大视频网站。再通过智能手机充当遥控器，你便可以舒服得靠在沙发上，通过滑动屏幕、挥动手机进行视频的，进度拖动等操作。</p>
+<p>经历了24小时的鏖战（睡了不到三小时），我们达到预期的效果了。姚神交互界面非常酷炫，颢神将各大视频站的资源破解使用，苗姐制作了美工并且准备了制胜法宝——PPT，我则开发Android上的遥控器，将触屏和加速度的数据处理后发到浏览器中控制视频。</p>
+<p>第一次通宵熬夜，早上六七点时异常的难受。不过姚神一夜没睡，仍在战斗。随着代码合并，产品成型，效果超出了我们的预期。<br>产品展示环节我们站在自己的Booth旁边，不断向旁人展示我们的应用，其他组的产品创意也很好，有利用pebble手表进行阅读的应用，通过不断改变显示的文字，人眼可以在一个小屏幕上面舒适地阅读文章。<br>还有利用Leap Motion做厨房教学应用的点子，在hackathon上，很多硬件产品可以租借，利用一个全新的平台做出应用，这是开发商非常希望看到的。</p>
+<p>被选入前九后，也就意味着我们要在评委和所有的250个Hacker面前再展示一次。姚哥进行了产品的阐述，我在一旁demo，效果很赞，评委们也很有兴趣地问了我们一些技术实现细节。</p>
+<p><img src="/images/hackshanghai-2015/1.png" alt="hackshanghai"></p>
+<p><img src="/images/hackshanghai-2015/2.png" alt="hackshanghai"></p>
+<p>打开youku就能看到一个更好的视频界面。视频浏览页面，可以左右滑动。</p>
+<p>上海纽约大学的确让第一届Hackathon Shanghai成为了现实，中国和外国志愿者们都非常热心，<br>最后我们拿到了很不错的奖品，一行五人，去人民广场开心地吃了顿日料，返程回校。</p>
+<h2 id="Hack_Shanghai_2015">Hack Shanghai 2015</h2><p>由于正好在上海实习，我便和冰神、火只和苗姐组队，再一次踏上hackathon之旅。</p>
+<p>这次前期我们设想了很多Leap Motion的应用。</p>
+<ul>
+<li>进行数据可视化的互动，将一份金融或是教育领域的数据进行可视化，通过Leap Motion，利用手来与数据进行三维的互动，并且多人协同，可以共同编辑一份数据。</li>
+<li>或是用两根手指进行足球对抗赛，两只手指可以控制前进、后退或是射门，另外一只手可以控制奔跑的方向，也是可以在网页上进行多人的对抗。</li>
+<li>或是两根手指滑雪，进行神庙逃亡等等。</li>
+</ul>
+<p>还有一些稀奇古怪的想法，</p>
+<ul>
+<li>利用Leap Motion教会你正确的刷牙姿势。不过一个Leap Motion似乎难以进行脸和手的相对位置的定位，由于手头没有Leap Motion，以后可以试试是否可行。我脑洞一开，觉得可以弄棍子穿着Leap Motion进行模拟刷牙，这样它捕捉的人脸的一部分应该足以计算出他们的相对位置。不过也难以进行尝试和实现。</li>
+<li>多人工作时候的协作，需求还不太明确。</li>
+<li>用头部姿态玩一些汽车的姿态控制游戏（画面太美）。</li>
+<li>任意网页弹幕。通过架设一个私人服务器，让在多地的相互认识的人能愉快的在同一个网页上弹幕，可以是小说，视频等等，还可以同步播放进度，发射弹幕聊天，自动进行鼠标位置的告知，对某些网页内容进行涂鸦，一个很好的应用便是异地的情侣，他们可以共同观看一个电影等，当然还可以加上实时的语音功能，不过得过滤掉网页上的媒体声音。</li>
+</ul>
+<p>开幕式后，我们便继续讨论比较中意的Leap Motion应用，可是后来并没有借到Leap Motion。后来发现图灵机器人提供的Api还比较有趣的，它号称人工智能，能够进行情感的理解和表达。</p>
+<p>我们最终做了Robot T，想做一个Web浏览器上的Google Now on Tap，<br>大致想法是让图灵机器人阅读你正在阅读的内容，像是一个你信任的好朋友站在身边，和你一起浏览。</p>
+<p><img src="/images/hackshanghai-2015/3.png" alt="hackshanghai"><br><img src="/images/hackshanghai-2015/4.png" alt="hackshanghai"><br><img src="/images/hackshanghai-2015/5.png" alt="hackshanghai"><br><img src="/images/hackshanghai-2015/9.png" alt="hackshanghai"><br>比如知乎闲逛的时候，它会对你关注的问题主动地提出自己的看法，也许能惊艳到你。</p>
+<p><img src="/images/hackshanghai-2015/8.png" alt="hackshanghai"><br>或者你滑词提示它阅读一些内容。</p>
+<p><img src="/images/hackshanghai-2015/6.png" alt="hackshanghai"><br>他会在你午餐时间，基于你浏览的餐馆信息，向你推荐菜谱和餐馆。</p>
+<p><img src="/images/hackshanghai-2015/7.png" alt="hackshanghai"><br>告示天气变化。</p>
+<p>还有比如在你进行理财的时候，主动告诉你一些你可能会感兴趣的经济信息。</p>
+<p>不过图灵机器人很多方面做得还是不如百度小度机器人，希望他们继续努力吧。</p>
+<p>实现过程同样艰苦，我们奋斗到三点，终于熬不住去三楼找了个沙发躺了四个小时。早上起来的时候各种不好，不过还好没喝红牛，苗姐提示它含有激素。</p>
+<p>本次的演示只有三分钟，三个外国教授进行评价。应该来说评委对我们的产品思想比较感兴趣，不过由于图灵机器人只能理解中文，我们只做了中文知乎和工商银行的网页的自动阅读和提示。</p>
+<p>实现过程中我也有所失误，好长时间没写UI，抓耳挠腮写不出好看的，还好火只后期帮忙。<br>还有就是过于重视实现了，展现效果却比较差。使用者无法瞬间get这个应用的point。<br>和外国教授交流的时候也深深感受到了自己口语的拙技。</p>
+<p>本次还看到了几个不错的项目。</p>
+<ul>
+<li>两人协同的平衡球游戏。看了知乎回答，的确24小时实现不简单。两个人协作让一个小球滚入洞中。你可以把一个小球从一个手机倒入另一个。由于手机的相对位置还可以移动，他们需要解决利用两个手机的传感器进行相对位置的计算。Web实现，微信分享链接就能一起玩，关卡设置花样很多，如果推广一下能火。</li>
+<li>一个利用Leap Motion让很多传感器上方的区域变成可点击的区域。比如上面摆着几本书，便可以选中其中一本。不过其实有点杀鸡用牛刀了。他们对使用场景还进了商业化的设想。团队四人来自清华，队长非常积极和健谈。和上海纽约大学的一位多媒体实验室的老师谈一些人机交互的技术。老师拿出了一个Project Tango设备进行展示。队长口语非常不错。</li>
+<li>还有一个是一个Chrome扩展，能在你百度搜索一些电影的时候，将背景变为trailer进行展示，效果很震撼，估计百度前段要哭了。不过视频的加载需要时间，内容需要提前分发到浏览器本地缓存。他们还做了很多的商业设想，我很佩服，虽然短时间内没办法全部实现展示，但这个意识非常好。</li>
+</ul>
+<p>今天看了相关的知乎问题，共同经历了过hackathon，通过其他Hacker的心路历程，我们也能学到很多。<br><a href="http://www.zhihu.com/question/37271008" target="_blank" rel="external">http://www.zhihu.com/question/37271008</a></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p><img src="/images/hackshanghai-2015/logo_purple.png" alt="hackshanghai"></p>
+<h2 id="什么是Hackathon？">什么是Hackathon？</h2><p>产品/服务开发需要耗费大量的人力]]>
+    </summary>
+    
+      <category term="hackathon" scheme="http://yqf3139.github.io/tags/hackathon/"/>
+    
+      <category term="flood" scheme="http://yqf3139.github.io/categories/flood/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[美味小笼包]]></title>
     <link href="http://yqf3139.github.io/2015/11/04/yummy-xiaolongbao/"/>
     <id>http://yqf3139.github.io/2015/11/04/yummy-xiaolongbao/</id>
     <published>2015-11-04T13:30:05.000Z</published>
-    <updated>2015-11-05T15:54:52.691Z</updated>
+    <updated>2015-11-05T15:54:58.947Z</updated>
     <content type="html"><![CDATA[<p><img src="/images/yummy-xiaolongbao.jpg" alt="小笼包"></p>
 <p>我作为一个在南京长大的人，小笼包是没少吃的。我妈单位离刘长兴店近，经常会下班的时候给我带上一笼解馋。<br>我会立即冲去倒醋，立即吃掉其中的两个，剩下的留到第二天作为早餐。一直算不上好好品味过小笼包的滋味，<br>并且近年经常惊讶地发现小笼包在变小，真的是越来越小了，也许是我长大了吧。</p>
 <p>所以当Yongnian邀请我们几个实习生吃个午饭，并且是去吃号称上海最好吃的蟹黄小笼包时，我还是小小激动了一把。<br>Yongnian是我们的Manager，他微微发福，能说会道，对待工作拥有极大的热情，这次的借口是为Jie回南京考试践行，并且请我们几个一次。</p>
@@ -272,7 +337,7 @@
     <link href="http://yqf3139.github.io/2010/07/29/expo-people/"/>
     <id>http://yqf3139.github.io/2010/07/29/expo-people/</id>
     <published>2010-07-29T02:17:00.000Z</published>
-    <updated>2015-11-04T14:35:10.396Z</updated>
+    <updated>2015-11-05T14:51:14.503Z</updated>
     <content type="html"><![CDATA[<p>下面是有趣的人：</p>
 <p><img src="/images/expo-people/1.jpg" alt="Expo"><br>我随手丢包里的小螺丝刀，就这样被和谐了，意外之喜是裸眼拍到了这么好的图<br><img src="/images/expo-people/2.jpg" alt="Expo"><br>买的是集邮册<br><img src="/images/expo-people/3.jpg" alt="Expo"><br>看表演的人真多<br><img src="/images/expo-people/4.jpg" alt="Expo"><br>新西兰馆外的玉石<br><img src="/images/expo-people/5.jpg" alt="Expo"><br>没有护照，没关系，直接敲手臂上<br><img src="/images/expo-people/6.jpg" alt="Expo"><br>黑人小伙<br><img src="/images/expo-people/7.jpg" alt="Expo"><br>意大利馆内现场制鞋的师傅<br><img src="/images/expo-people/8.jpg" alt="Expo"><br>脸上笑容流光<br><img src="/images/expo-people/9.jpg" alt="Expo"><br>看看老外吃什么<br><img src="/images/expo-people/10.jpg" alt="Expo"><br>午休的小男孩<br><img src="/images/expo-people/11.jpg" alt="Expo"><br>意大利的巨大穹顶<br><img src="/images/expo-people/12.jpg" alt="Expo"><br>德国馆排队期间，多亏有这个德国帅哥<br><img src="/images/expo-people/13.jpg" alt="Expo"><br>还有一个<br><img src="/images/expo-people/14.jpg" alt="Expo"><br>法国帅哥记者不忘发型<br><img src="/images/expo-people/15.jpg" alt="Expo"></p>
 <p><img src="/images/expo-people/16.jpg" alt="Expo"></p>
@@ -723,22 +788,6 @@
     </summary>
     
       <category term="make" scheme="http://yqf3139.github.io/categories/make/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[杂说]]></title>
-    <link href="http://yqf3139.github.io/2009/12/04/no-actions/"/>
-    <id>http://yqf3139.github.io/2009/12/04/no-actions/</id>
-    <published>2009-12-04T10:42:00.000Z</published>
-    <updated>2015-11-02T14:52:27.745Z</updated>
-    <content type="html"><![CDATA[<p>听教主说了对战争的五种态度分析，我想最令人尊敬的还是站在全人类的角度上，又为正义不懈奋斗的人。当然全然不顾暗藏角落的人可能却是战争的后来改变者。<br>年级大会，我没带书与作业。陈老师讲了以后可在下安静做事后，我说早知道就带作业了。<br>换校服时，人多速度慢。换的老师就一个，我想解决措施，可明年一定还这么乱。就不想了。<br>没改的还是只说不做的我。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>听教主说了对战争的五种态度分析，我想最令人尊敬的还是站在全人类的角度上，又为正义不懈奋斗的人。当然全然不顾暗藏角落的人可能却是战争的后来改变者。<br>年级大会，我没带书与作业。陈老师讲了以后可在下安静做事后，我说早知道就带作业了。<br>换校服时，人多速度慢。换的老师就一]]>
-    </summary>
-    
-      <category term="flood" scheme="http://yqf3139.github.io/categories/flood/"/>
     
   </entry>
   
