@@ -223,6 +223,131 @@
             
             
               
+                <a class="post-title-link" href="/2015/11/21/use-web-page-replay/" itemprop="url">
+                  使用 Web Page Replay
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-11-21T22:24:47+08:00" content="2015-11-21">
+              2015-11-21
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/tech/" itemprop="url" rel="index">
+                    <span itemprop="name">tech</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/11/21/use-web-page-replay/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/11/21/use-web-page-replay/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="为什么需要使用_Web_Page_Replay？">为什么需要使用 Web Page Replay？</h1><h2 id="需求的产生">需求的产生</h2><p>实习期间，我们经常用各种Workload对浏览器进行测试，初期大量的Workload都是手工收集或是开源的，再整理到小组内的服务器上。<br>后期产生了抓取浏览器中Javascript Trace并实时送至后端分析的需求，例如我们希望将某些网页的Webgl调用全部记录下来，或者是将用户的各种互动事件记录下来，又不用手工地修改Workload，便有了我目前写的代理服务器，它能对我们关注的Workload注入Javascript脚本，比和后端代理服务器建立通信，高效地把Trace发送到后端，并易于扩展各种功能的后端。</p>
+<p>一个更加常见的需求便是Localize Real life Workload，我们需要自动化地测试很多网上不开源的Workload，虽然通过我的代理服务器，注入分析不需要人工干预了，不过在公司内连接外网Workload是痛苦的。尤其是某些Workload每次需要加载50M的资源文件，一旦浏览器cache失效便要登上很长时间。而且网上的Workload在不断变动，无法直接进行组内Workload的统一化，针对浏览器测试时很难做到组内环境一致。</p>
+<p>所以一个最基本的需求就是我们访问该Workload一次，就将所有经过代理服务器的request和response本地存档，称为record；等到下次重复测试时，匹配所有的request，直接发回对应的response，这样便能做到本地replay该workload了。</p>
+<p>最近进哥说想加入这个功能在我们的代理服务器上，但由于当初没有考虑到这个功能，并且组内提出可以复用Telemetry中的Webpage Replay功能，可以将其加在我代理服务器的外层，便可以像是管道一样进行功能的扩展。正好我最近在看的Webgl Workload需要加载的资源很多，进行Replay极大加快了我自测的速度。</p>
+<h2 id="HTTP/HTTPS代理服务器的妙用">HTTP/HTTPS代理服务器的妙用</h2><p>刚才说的两个需求只是代理服务器的一个很小的用处，还有大量的妙用如下：</p>
+<ul>
+<li>科学上网，不过HTTP代理一般只能作为国内跳板。</li>
+<li>反向代理，做网站的入口，自动后端负载均衡、流量审查、压缩、简单的逻辑直接部署等等功能。</li>
+<li>测试平台，之前看到阿里的Anyproxy便是这个作用，可以记录下所有接入终端（手机、平板）的HTTP网路请求，方便修改Header，Cookie，进行颠簸的网路环境的模拟等等，也提供Replay。</li>
+<li>内网上网，公司内部方便屏蔽外界的攻击，并限制员工上网，审查上网记录，当然有福利便是可以直接提供梯子。</li>
+</ul>
+<h1 id="Web_Page_Replay_实现原理的简单理解">Web Page Replay 实现原理的简单理解</h1><p>Replay工具可以运行在DNS劫持和HTTP代理两种模式下，实质上DNS劫持简化了设置浏览器代理的过程。</p>
+<p><img src="/images/WebPageReplayDiagram.png" alt="replay"></p>
+<p>盗图一张，可以看出Replay劫持模式便是在本机启动一个DNS服务器和Web服务器，分别占用53和80端口。<br>一般情况下，浏览器访问一个页面先进行域名的DNS解析，然后先目标服务器发送request。Record时，DNS全部返回127.0.0.1，浏览器便将请求发送给本机的服务器，服务器随后便代理请求后返回，并记录下本次request和response。Replay时本机服务器直接匹配存档文件。<br>DNS劫持的好处便是不用设置浏览器代理了，缺点也很明显：</p>
+<ul>
+<li>如果request写明ip时，便绕过了本地的DNS请求（类似Host梯子），便无法实现replay。</li>
+<li>访问端口不是标准的80和443也会直接在record环节出错。</li>
+<li>需要占用本机的53,80,443端口，影响本机的原有的服务。</li>
+</ul>
+<p>所以这个工具也支持直接设置代理的模式，如果只是浏览器的话使用比较简单。想将多个代理服务器管道化，设置每一层的代理为上一层代理就可以了。</p>
+<p>接下来粗略了解一下代理服务器的工作方式。</p>
+<p>对于HTTP:</p>
+<p>代理服务器通过TCP Socket接收到来自客户端的请求。它从HTTP的Header中解析出host和port，如果是域名的话先DNS解析，然后就是Roundtrip最终返回真实的response，这里所有的内容都是代理服务器可见的，可以随意修改。</p>
+<p>如果我们这里使用nc，可以首先不通过代理访问百度：<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ nc baidu.<span class="keyword">com</span> <span class="number">80</span></span><br><span class="line">  GET / HTTP/<span class="number">1.1</span></span><br><span class="line">  Hos<span class="variable">t:</span> baidu.<span class="keyword">com</span></span><br></pre></td></tr></table></figure></p>
+<p>可以看见返回的response：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HTTP/<span class="number">1.1</span> <span class="number">200</span> OK</span><br><span class="line">Date: Fri, <span class="number">14</span> Aug <span class="number">2015</span> <span class="number">07</span>:<span class="number">55</span>:<span class="number">26</span> GMT</span><br><span class="line">......</span><br></pre></td></tr></table></figure></p>
+<p>如果通过本机8080代理服务器：<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ nc localhost <span class="number">8080</span></span><br><span class="line">  <span class="preprocessor">GET</span> http://<span class="keyword">baidu.com </span>HTTP/<span class="number">1</span>.<span class="number">1</span></span><br><span class="line"><span class="label">  Host:</span> <span class="keyword">baidu.com</span></span><br></pre></td></tr></table></figure></p>
+<p>代理服务器可能会输出如下日志：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">INFO:</span> Got request  baidu.com GET <span class="string">http:</span><span class="comment">//baidu.com</span></span><br><span class="line"><span class="string">INFO:</span> Sending request GET <span class="string">http:</span><span class="comment">//baidu.com</span></span><br><span class="line"><span class="string">INFO:</span> Received response <span class="number">200</span> OK</span><br></pre></td></tr></table></figure></p>
+<p>对于HTTPS:<br>代理服务收到客户端的CONNECT请求，但只可见host和port，代理服务器只能在客户端和服务器中建立起socket连接并相互双工传递，如果需要修改内容的话，需要进行中间人攻击。</p>
+<h1 id="Web_Page_Replay_使用实战">Web Page Replay 使用实战</h1><h2 id="使用DNS劫持模式">使用DNS劫持模式</h2><h2 id="使用直接代理模式">使用直接代理模式</h2><h1 id="源码分析">源码分析</h1>
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
                 <a class="post-title-link" href="/2015/11/15/new-in-cpp11/" itemprop="url">
                   初尝 C++ 11
                 </a>
@@ -321,7 +446,18 @@
 <p>上面例子中，最终调用到了B的f，不过如果A的f参数改为<code>double</code>，会由<code>override</code>产生编译错误。<br>如果不加的话，就会绕过B::f。</p>
 <h2 id="委托构造函数">委托构造函数</h2><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Student(<span class="keyword">int</span> i, string n): id(i), name(n)&#123;&#125;</span><br><span class="line">    Student(): Student(0, <span class="string">"none"</span>)&#123;&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    string name;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>之前一直需要抽出公共的构造部分，有了委托后可以更加高效，因为在初始化列表中便初始化成员了。</p>
-<h1 id="新特性">新特性</h1><h2 id="函数表达式">函数表达式</h2><h2 id="右值引用">右值引用</h2><h2 id="元组">元组</h2><h1 id="增强的标准库">增强的标准库</h1>
+<h1 id="新特性">新特性</h1><h2 id="Lambda表达式">Lambda表达式</h2><p>其实在上文中已经使用过了一些，形如：<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="link_label">闭包捕捉</span>](<span class="link_url">参数列表</span>) -&gt; 返回值类型 &#123;函数体&#125;</span><br><span class="line">[](int a, double b) -&gt; double &#123;return a+b;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>闭包是指在表达式中可以直接访问到表达式创建时的上下文中的变量，这样可以将特定的参数封在表达式内，调用时更加简洁。<br>在Javascript中，我们可以直接闭包。C++中区分了传值和传引用，所以我们必须通过[]来显式地捕捉外界的变量。<br>规则比较简单，<code>[=]</code>便是传值所有使用的外界变量；<code>[&amp;]</code>传引用；<code>[&amp;,x]</code>表示x传值，其他传引用；<code>[=,&amp;y]</code>表示y传递，其他传值。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100</span>, b = <span class="number">10</span>;</span><br><span class="line"><span class="comment">// auto 在这里很方便，-&gt;double也可以省去，可以被编译器自动推导</span></span><br><span class="line"><span class="keyword">auto</span> ff = [=](<span class="keyword">int</span> x, <span class="keyword">double</span> y) -&gt;<span class="keyword">double</span> &#123;<span class="keyword">return</span> a+b+x + y;&#125;;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%f\n"</span>, ff(<span class="number">1</span>, <span class="number">2.2</span>));</span><br></pre></td></tr></table></figure>
+<p>在使用标准库的高阶函数时，便可以使用函数表达式，省去了函数的申明和需要闭包的变量之前不方便传递的问题。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; nums&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line">for_each(nums.begin(), nums.end(), [&amp;sum](<span class="keyword">int</span> a)&#123;sum+=a;&#125;);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%d\n"</span>, sum);</span><br></pre></td></tr></table></figure></p>
+<p>Javascript中非常常见的立即调用表达式。<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="collection">[]</span> <span class="collection">&#123; printf<span class="list">(<span class="string">"Hi\n"</span>)</span><span class="comment">; &#125; ();</span></span><br><span class="line"><span class="collection">[]</span><span class="list">(<span class="keyword"><span class="built_in">int</span></span> i)</span> <span class="collection">&#123; printf<span class="list">(<span class="string">"Hi%d\n"</span>, i)</span><span class="comment">; &#125; (100);</span></span></span></span><br></pre></td></tr></table></figure></p>
+<h2 id="右值引用">右值引用</h2><p><a href="http://harttle.com/2015/10/11/cpp11-rvalue.html" target="_blank" rel="external">详细的介绍可参考这里</a>，写得很详细。 </p>
+<p>这个右值引用应该还是很好的特性。不过需要使用者明白自己究竟在做什么，主要是减少了同类中的一些冗余的拷贝过程。<br>不过我们当时的争论在于如果只是使用指针，也可以达到同样的效果，不过这里便没有类的封装性了，标准库也没办法通过<code>move</code>告知进行内部成员的移动。不过使用智能指针应该是可以达到同样的效果。<br>当时还认为如果内部变量是new获得的，应该自行管理不能传递，不过我认为这里的管理都是在同类型中间进行，传递也只是同类的实例传递给另外一个同类，所以管理是封闭在类的内部的，是符合自行管理new创造的对象的。</p>
+<h2 id="元组">元组</h2><p>可以用来返回多个返回值。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::tuple&lt; <span class="keyword">int</span> , <span class="keyword">double</span>, <span class="built_in">string</span>       &gt; tuple_1;</span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::tuple&lt; <span class="keyword">char</span>, <span class="keyword">short</span> , <span class="keyword">const</span> <span class="keyword">char</span> * &gt; tuple_2;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> <span class="keyword">const</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    tuple_1 t1;</span><br><span class="line">    tuple_2 t2 &#123;<span class="string">'X'</span>, <span class="number">2</span>, <span class="string">"Hola!"</span>&#125;; <span class="comment">// ()或是&#123;&#125;初始化都可以，不过建议使用新的&#123;&#125;统一初始化</span></span><br><span class="line">    t1 = t2 ; <span class="comment">// 第三个字串元素可由'const char *'隐式转换</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>摘自Wikipedia。</p>
+<h1 id="增强的标准库">增强的标准库</h1><h2 id="并发库（线程、锁、原子操作）">并发库（线程、锁、原子操作）</h2><h2 id="正则表达式库">正则表达式库</h2><h2 id="通用智能指针">通用智能指针</h2><h2 id="散列表">散列表</h2><h2 id="随机数生成">随机数生成</h2><h2 id="变长参数模板">变长参数模板</h2><h2 id="多态函数对象包装器">多态函数对象包装器</h2><h1 id="其他">其他</h1><p>最近希望做到动态的、有不同函数签名的函数的动态调用，后来只能使用switch case实现。<br>看到C++17标准中有一个<code>invoke</code>，似乎是动态地通过参数列表调用一个<code>callable</code>对象，也许以后还会加入GC和reflect。</p>
+<p><a href="https://zh.wikipedia.org/wiki/C%2B%2B11" target="_blank" rel="external">更多改动可参考Wikipedia</a><br><a href="http://coolshell.cn/articles/5265.html" target="_blank" rel="external">Coolshell</a></p>
+
             
           </span>
         
@@ -706,128 +842,6 @@
 
 
     
-      
-
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                <a class="post-title-link" href="/2012/06/28/delusion-of-clone/" itemprop="url">
-                  妄想整理  克隆
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2012-06-28T13:07:40+08:00" content="2012-06-28">
-              2012-06-28
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/delusion/" itemprop="url" rel="index">
-                    <span itemprop="name">delusion</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2012/06/28/delusion-of-clone/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2012/06/28/delusion-of-clone/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <p>开始由一些奇怪的话题写一下自己的妄想。</p>
-<p>【克隆】<br>报纸上的姐妹花考到相同的分，人们习惯以双胞胎的心灵感应来解释。不过似乎没有一种可靠的解释来说明或应用，不过如果能有那是很好。</p>
-<p>以前讲到克隆技术，我一般都很兴奋。克隆是一个旧的概念，原意是复制。</p>
-<p>的确，世界有很多克隆的现象。它维护了一定时空下的稳定，和变异一起和谐地推动发展。</p>
-<p>为了让这个话题有意思一点，我们来说克隆人。</p>
-<p>克隆的实物物体很常见，一般人都希望你买的电子产品最好和广告上说的一样好，产品品质要保证同样高就需要做完美的拷贝。所以流水线作业生产的产品品质相近，表现能力也一样，对外界的反映也几乎相同。</p>
-<p>当然每个人的手机又不同，因为你对它倾注了时间与精力，它就是你的手机。当然在数字化的时代，电子产品的不同是可以很好的量化的，所以备份和云存储可以让你瞬间把其他的同型号手机变成你自己的。不过一般的产品不那么容易同步，所以人们很留念以前自己使用过的东西。</p>
-<p>不过我们也追求个性化与小众，产品的特殊也很受关注，比如各种限量的什么什么。而这些，显然显然也是我们熵增的一种渠道。很必须，因为我们人是唯一的。我们不想也不能被同质化，不过现实条件也总是矛盾的。</p>
-<p>所以人的克隆很复杂，其他的生物与非生物也不简单，稍微容易一点。</p>
-<p>人是什么？是一堆物质的集合吗，肯定不是。人不是一堆物质的混合，而是有特定结构顺序的。比如我们的基因基本决定了我们长什么样，可能还有很多很多。</p>
-<p>人还具有碎片性，你并不完全在“你”里面，你还在其他人心中有碎片化的镜像。相同地，你也包含了很多很多人的碎片，宽泛地说，要想有一个你，这世界所有的都不可缺少，当然这一般没有实用意义。</p>
-<p>有了基因你就能完全克隆出一个人吗？可能，不过那是生物学意义上的，而社会学上这又要麻烦很多。</p>
-<p>所以其实克隆技术还只是浅层次的拷贝，不过由于一般很难处理伦理关系，也有很多人权的问题，我们并不支持。</p>
-<p>有些纳粹分子想复活希特勒，但那是不可能的。他们选取希特勒的基因培育儿童，进行教导，还原希特勒的生活背景，但社会大背景变了。并且从蝴蝶效应我们知道，一点点初始变量的改变，在复杂的系统中长时间会造成很大的差异。何况是人这么复杂的生物，怎么能做到完全的相似。</p>
-<p>所以小说中社会背景很重要。背景影响人，人反映背景。</p>
-<p>好吧，我现在想要克隆一个人，那怎么办。那就在某一个时刻，对某一个人全部地进行分子量级的扫描，而后就在那个时刻，进行分子化的重建，并且和那个本体同时被唤醒，并且没有人知道谁是谁，那才是接近完美的，也是不可做到的。不过其他的小非生物东西应该还有可能。数据量，科技什么的都是限制。</p>
-<p>但让我们来看看这个大自然给我们的礼物–同卵双生的双胞胎。</p>
-<p>太不可思议了，一枚受精卵受了刺激一分为二并且独立生长。就像双星一样。除了先后关系，他们几乎接受了同样的基因，同样的背景，教育，各种外界的反映。</p>
-<p>于是我们得到了世界上已经很完美的复制人。不过随着年龄增大与蝴蝶效应，相似程度会降低，不过人做不到大自然如此的完美，而又合乎伦理。至少是现在的伦理。</p>
-<p>所以他们对同一件事情作出相同的反应并不足为奇。跟电子产品有点类似。</p>
-<p>不过人们觉得很美好，虽然是同质化，但很不常见。</p>
-<p>小猫小狗的克隆也是如此，世界上你是我的唯一。除非分子克隆，不然它不是它。</p>
-<p>就算分子克隆出了一个一个原子都不多不少的你的宠物，它也不是它。</p>
-<p>因为你是唯一的，心中在激动后不能接受。</p>
-<p>很多东西不唯一也就失去意义了。</p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -873,7 +887,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">27</span>
+              <span class="site-state-item-count">28</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -887,7 +901,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-count">13</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>

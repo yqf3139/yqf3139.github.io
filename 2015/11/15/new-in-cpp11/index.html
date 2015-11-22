@@ -37,7 +37,7 @@
 <link href="/css/main.css?v=0.4.5.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="c++," />
+  <meta name="keywords" content="cpp," />
 
 
 
@@ -64,7 +64,7 @@
 <meta property="og:description" content="我学的第一门语言便是C++，不过由于后期一直没有使用C++写过较大的项目，一直处于入门阶段。最近实习，第一个小项目便是搭建一个代理服务器，Manager处于对性能的要求，希望我用C++实现。当时比较懒，觉得用C++重写代理服务器进展会比较慢，便说服Manager让我使用Golang，配合一些现有的框架实现。现在看起来达到了预期效果，但也缺少了锻炼C++能力的机会。
 现有的项目中，Android A">
 <meta property="og:image" content="http://yqf3139.github.io/images/cpp-timeline.png">
-<meta property="og:updated_time" content="2015-11-15T09:44:32.013Z">
+<meta property="og:updated_time" content="2015-11-22T02:22:44.364Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="初尝 C++ 11">
 <meta name="twitter:description" content="我学的第一门语言便是C++，不过由于后期一直没有使用C++写过较大的项目，一直处于入门阶段。最近实习，第一个小项目便是搭建一个代理服务器，Manager处于对性能的要求，希望我用C++实现。当时比较懒，觉得用C++重写代理服务器进展会比较慢，便说服Manager让我使用Golang，配合一些现有的框架实现。现在看起来达到了预期效果，但也缺少了锻炼C++能力的机会。
@@ -319,7 +319,18 @@
 <p>上面例子中，最终调用到了B的f，不过如果A的f参数改为<code>double</code>，会由<code>override</code>产生编译错误。<br>如果不加的话，就会绕过B::f。</p>
 <h2 id="委托构造函数">委托构造函数</h2><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Student(<span class="keyword">int</span> i, string n): id(i), name(n)&#123;&#125;</span><br><span class="line">    Student(): Student(0, <span class="string">"none"</span>)&#123;&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    string name;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>之前一直需要抽出公共的构造部分，有了委托后可以更加高效，因为在初始化列表中便初始化成员了。</p>
-<h1 id="新特性">新特性</h1><h2 id="函数表达式">函数表达式</h2><h2 id="右值引用">右值引用</h2><h2 id="元组">元组</h2><h1 id="增强的标准库">增强的标准库</h1></span>
+<h1 id="新特性">新特性</h1><h2 id="Lambda表达式">Lambda表达式</h2><p>其实在上文中已经使用过了一些，形如：<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="link_label">闭包捕捉</span>](<span class="link_url">参数列表</span>) -&gt; 返回值类型 &#123;函数体&#125;</span><br><span class="line">[](int a, double b) -&gt; double &#123;return a+b;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>闭包是指在表达式中可以直接访问到表达式创建时的上下文中的变量，这样可以将特定的参数封在表达式内，调用时更加简洁。<br>在Javascript中，我们可以直接闭包。C++中区分了传值和传引用，所以我们必须通过[]来显式地捕捉外界的变量。<br>规则比较简单，<code>[=]</code>便是传值所有使用的外界变量；<code>[&amp;]</code>传引用；<code>[&amp;,x]</code>表示x传值，其他传引用；<code>[=,&amp;y]</code>表示y传递，其他传值。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100</span>, b = <span class="number">10</span>;</span><br><span class="line"><span class="comment">// auto 在这里很方便，-&gt;double也可以省去，可以被编译器自动推导</span></span><br><span class="line"><span class="keyword">auto</span> ff = [=](<span class="keyword">int</span> x, <span class="keyword">double</span> y) -&gt;<span class="keyword">double</span> &#123;<span class="keyword">return</span> a+b+x + y;&#125;;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%f\n"</span>, ff(<span class="number">1</span>, <span class="number">2.2</span>));</span><br></pre></td></tr></table></figure>
+<p>在使用标准库的高阶函数时，便可以使用函数表达式，省去了函数的申明和需要闭包的变量之前不方便传递的问题。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; nums&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line">for_each(nums.begin(), nums.end(), [&amp;sum](<span class="keyword">int</span> a)&#123;sum+=a;&#125;);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%d\n"</span>, sum);</span><br></pre></td></tr></table></figure></p>
+<p>Javascript中非常常见的立即调用表达式。<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="collection">[]</span> <span class="collection">&#123; printf<span class="list">(<span class="string">"Hi\n"</span>)</span><span class="comment">; &#125; ();</span></span><br><span class="line"><span class="collection">[]</span><span class="list">(<span class="keyword"><span class="built_in">int</span></span> i)</span> <span class="collection">&#123; printf<span class="list">(<span class="string">"Hi%d\n"</span>, i)</span><span class="comment">; &#125; (100);</span></span></span></span><br></pre></td></tr></table></figure></p>
+<h2 id="右值引用">右值引用</h2><p><a href="http://harttle.com/2015/10/11/cpp11-rvalue.html" target="_blank" rel="external">详细的介绍可参考这里</a>，写得很详细。 </p>
+<p>这个右值引用应该还是很好的特性。不过需要使用者明白自己究竟在做什么，主要是减少了同类中的一些冗余的拷贝过程。<br>不过我们当时的争论在于如果只是使用指针，也可以达到同样的效果，不过这里便没有类的封装性了，标准库也没办法通过<code>move</code>告知进行内部成员的移动。不过使用智能指针应该是可以达到同样的效果。<br>当时还认为如果内部变量是new获得的，应该自行管理不能传递，不过我认为这里的管理都是在同类型中间进行，传递也只是同类的实例传递给另外一个同类，所以管理是封闭在类的内部的，是符合自行管理new创造的对象的。</p>
+<h2 id="元组">元组</h2><p>可以用来返回多个返回值。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::tuple&lt; <span class="keyword">int</span> , <span class="keyword">double</span>, <span class="built_in">string</span>       &gt; tuple_1;</span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::tuple&lt; <span class="keyword">char</span>, <span class="keyword">short</span> , <span class="keyword">const</span> <span class="keyword">char</span> * &gt; tuple_2;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> <span class="keyword">const</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    tuple_1 t1;</span><br><span class="line">    tuple_2 t2 &#123;<span class="string">'X'</span>, <span class="number">2</span>, <span class="string">"Hola!"</span>&#125;; <span class="comment">// ()或是&#123;&#125;初始化都可以，不过建议使用新的&#123;&#125;统一初始化</span></span><br><span class="line">    t1 = t2 ; <span class="comment">// 第三个字串元素可由'const char *'隐式转换</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>摘自Wikipedia。</p>
+<h1 id="增强的标准库">增强的标准库</h1><h2 id="并发库（线程、锁、原子操作）">并发库（线程、锁、原子操作）</h2><h2 id="正则表达式库">正则表达式库</h2><h2 id="通用智能指针">通用智能指针</h2><h2 id="散列表">散列表</h2><h2 id="随机数生成">随机数生成</h2><h2 id="变长参数模板">变长参数模板</h2><h2 id="多态函数对象包装器">多态函数对象包装器</h2><h1 id="其他">其他</h1><p>最近希望做到动态的、有不同函数签名的函数的动态调用，后来只能使用switch case实现。<br>看到C++17标准中有一个<code>invoke</code>，似乎是动态地通过参数列表调用一个<code>callable</code>对象，也许以后还会加入GC和reflect。</p>
+<p><a href="https://zh.wikipedia.org/wiki/C%2B%2B11" target="_blank" rel="external">更多改动可参考Wikipedia</a><br><a href="http://coolshell.cn/articles/5265.html" target="_blank" rel="external">Coolshell</a></p>
+</span>
       
     </div>
 
@@ -327,7 +338,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/c/" rel="tag">#c++</a>
+            <a href="/tags/cpp/" rel="tag">#cpp</a>
           
         </div>
       
@@ -343,6 +354,10 @@
           </div>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/21/use-web-page-replay/" rel="prev" title="使用 Web Page Replay">
+                使用 Web Page Replay <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -414,7 +429,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">27</span>
+              <span class="site-state-item-count">28</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -428,7 +443,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-count">13</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>
@@ -497,7 +512,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概览"><span class="nav-number">1.</span> <span class="nav-text">概览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#语法糖"><span class="nav-number">2.</span> <span class="nav-text">语法糖</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Auto关键字"><span class="nav-number">2.1.</span> <span class="nav-text">Auto关键字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#decltype自动化推导"><span class="nav-number">2.2.</span> <span class="nav-text">decltype自动化推导</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化语法"><span class="nav-number">2.3.</span> <span class="nav-text">初始化语法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#明晰语义的改动"><span class="nav-number">3.</span> <span class="nav-text">明晰语义的改动</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#delete/default修饰"><span class="nav-number">3.1.</span> <span class="nav-text">delete/default修饰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nullptr,有类型的NULL"><span class="nav-number">3.2.</span> <span class="nav-text">nullptr,有类型的NULL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#final/override修饰"><span class="nav-number">3.3.</span> <span class="nav-text">final/override修饰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#委托构造函数"><span class="nav-number">3.4.</span> <span class="nav-text">委托构造函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#新特性"><span class="nav-number">4.</span> <span class="nav-text">新特性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#函数表达式"><span class="nav-number">4.1.</span> <span class="nav-text">函数表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#右值引用"><span class="nav-number">4.2.</span> <span class="nav-text">右值引用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#元组"><span class="nav-number">4.3.</span> <span class="nav-text">元组</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#增强的标准库"><span class="nav-number">5.</span> <span class="nav-text">增强的标准库</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概览"><span class="nav-number">1.</span> <span class="nav-text">概览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#语法糖"><span class="nav-number">2.</span> <span class="nav-text">语法糖</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Auto关键字"><span class="nav-number">2.1.</span> <span class="nav-text">Auto关键字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#decltype自动化推导"><span class="nav-number">2.2.</span> <span class="nav-text">decltype自动化推导</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化语法"><span class="nav-number">2.3.</span> <span class="nav-text">初始化语法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#明晰语义的改动"><span class="nav-number">3.</span> <span class="nav-text">明晰语义的改动</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#delete/default修饰"><span class="nav-number">3.1.</span> <span class="nav-text">delete/default修饰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nullptr,有类型的NULL"><span class="nav-number">3.2.</span> <span class="nav-text">nullptr,有类型的NULL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#final/override修饰"><span class="nav-number">3.3.</span> <span class="nav-text">final/override修饰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#委托构造函数"><span class="nav-number">3.4.</span> <span class="nav-text">委托构造函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#新特性"><span class="nav-number">4.</span> <span class="nav-text">新特性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lambda表达式"><span class="nav-number">4.1.</span> <span class="nav-text">Lambda表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#右值引用"><span class="nav-number">4.2.</span> <span class="nav-text">右值引用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#元组"><span class="nav-number">4.3.</span> <span class="nav-text">元组</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#增强的标准库"><span class="nav-number">5.</span> <span class="nav-text">增强的标准库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#并发库（线程、锁、原子操作）"><span class="nav-number">5.1.</span> <span class="nav-text">并发库（线程、锁、原子操作）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正则表达式库"><span class="nav-number">5.2.</span> <span class="nav-text">正则表达式库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通用智能指针"><span class="nav-number">5.3.</span> <span class="nav-text">通用智能指针</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#散列表"><span class="nav-number">5.4.</span> <span class="nav-text">散列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#随机数生成"><span class="nav-number">5.5.</span> <span class="nav-text">随机数生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#变长参数模板"><span class="nav-number">5.6.</span> <span class="nav-text">变长参数模板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多态函数对象包装器"><span class="nav-number">5.7.</span> <span class="nav-text">多态函数对象包装器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#其他"><span class="nav-number">6.</span> <span class="nav-text">其他</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
