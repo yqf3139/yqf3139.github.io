@@ -26,9 +26,7 @@
 
 
 
-  
-    <link href='//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-  
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
 
 
 
@@ -74,7 +72,7 @@
 
 <script type="text/javascript" id="hexo.configuration">
   var CONFIG = {
-    scheme: 'Mist',
+    scheme: '',
     sidebar: 'post',
     motion: true
   };
@@ -143,26 +141,6 @@
         </li>
       
         
-        <li class="menu-item menu-item-categories">
-          <a href="/categories" rel="section">
-            
-              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
-            
-            Categories
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-about">
-          <a href="/about" rel="section">
-            
-              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
-            
-            About
-          </a>
-        </li>
-      
-        
         <li class="menu-item menu-item-archives">
           <a href="/archives" rel="section">
             
@@ -179,16 +157,6 @@
               <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
             
             Tags
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-commonweal">
-          <a href="/404.html" rel="section">
-            
-              <i class="menu-item-icon fa fa-heartbeat fa-fw"></i> <br />
-            
-            公益404
           </a>
         </li>
       
@@ -212,6 +180,10 @@
   <div id="posts" class="posts-expand">
     
 
+  
+  
+
+  
   
   
 
@@ -258,13 +230,6 @@
           
 
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2015/11/15/new-in-cpp11/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/11/15/new-in-cpp11/" itemprop="commentsCount"></span>
-                </a>
-              </span>
             
           
 
@@ -384,10 +349,6 @@
         
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2015/11/15/new-in-cpp11/"
-           data-title="初尝 C++ 11" data-url="http://yqf3139.github.io/2015/11/15/new-in-cpp11/">
-      </div>
-    
   </div>
 
 
@@ -429,21 +390,21 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">29</span>
+              <span class="site-state-item-count">30</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
-            <a href="/categories">
+            
               <span class="site-state-item-count">9</span>
               <span class="site-state-item-name">categories</span>
-              </a>
+              
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">14</span>
+              <span class="site-state-item-count">17</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>
@@ -461,41 +422,9 @@
 
         <div class="links-of-author motion-element">
           
-            
-              <span class="links-of-author-item">
-                <a href="https://github.com/yqf3139" target="_blank">
-                  
-                    <i class="fa fa-github"></i> GitHub
-                  
-                </a>
-              </span>
-            
-              <span class="links-of-author-item">
-                <a href="https://twitter.com/yqf3139" target="_blank">
-                  
-                    <i class="fa fa-twitter"></i> Twitter
-                  
-                </a>
-              </span>
-            
-              <span class="links-of-author-item">
-                <a href="http://www.zhihu.com/people/ke-yu-beta" target="_blank">
-                  
-                    <i class="fa fa-globe"></i> Zhihu
-                  
-                </a>
-              </span>
-            
-          
         </div>
 
         
-        
-          <div class="cc-license motion-element" itemprop="license">
-            <a href="http://creativecommons.org/licenses/by-nc-sa/4.0" class="cc-opacity" target="_blank">
-              <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
-            </a>
-          </div>
         
 
         <div class="links-of-author motion-element">
@@ -506,7 +435,9 @@
 
       
         <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
           <div class="post-toc">
             
               
@@ -515,7 +446,9 @@
               <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概览"><span class="nav-number">1.</span> <span class="nav-text">概览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#语法糖"><span class="nav-number">2.</span> <span class="nav-text">语法糖</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Auto关键字"><span class="nav-number">2.1.</span> <span class="nav-text">Auto关键字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#decltype自动化推导"><span class="nav-number">2.2.</span> <span class="nav-text">decltype自动化推导</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化语法"><span class="nav-number">2.3.</span> <span class="nav-text">初始化语法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#明晰语义的改动"><span class="nav-number">3.</span> <span class="nav-text">明晰语义的改动</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#delete/default修饰"><span class="nav-number">3.1.</span> <span class="nav-text">delete/default修饰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nullptr,有类型的NULL"><span class="nav-number">3.2.</span> <span class="nav-text">nullptr,有类型的NULL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#final/override修饰"><span class="nav-number">3.3.</span> <span class="nav-text">final/override修饰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#委托构造函数"><span class="nav-number">3.4.</span> <span class="nav-text">委托构造函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#新特性"><span class="nav-number">4.</span> <span class="nav-text">新特性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lambda表达式"><span class="nav-number">4.1.</span> <span class="nav-text">Lambda表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#右值引用"><span class="nav-number">4.2.</span> <span class="nav-text">右值引用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#元组"><span class="nav-number">4.3.</span> <span class="nav-text">元组</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#增强的标准库"><span class="nav-number">5.</span> <span class="nav-text">增强的标准库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#并发库（线程、锁、原子操作）"><span class="nav-number">5.1.</span> <span class="nav-text">并发库（线程、锁、原子操作）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正则表达式库"><span class="nav-number">5.2.</span> <span class="nav-text">正则表达式库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通用智能指针"><span class="nav-number">5.3.</span> <span class="nav-text">通用智能指针</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#散列表"><span class="nav-number">5.4.</span> <span class="nav-text">散列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#随机数生成"><span class="nav-number">5.5.</span> <span class="nav-text">随机数生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#变长参数模板"><span class="nav-number">5.6.</span> <span class="nav-text">变长参数模板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多态函数对象包装器"><span class="nav-number">5.7.</span> <span class="nav-text">多态函数对象包装器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#其他"><span class="nav-number">6.</span> <span class="nav-text">其他</span></a></li></ol></div>
             
           </div>
-          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
         </section>
       
 
@@ -545,7 +478,7 @@
 <div class="theme-info">
   Theme -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT
   </a>
 </div>
 
@@ -564,28 +497,11 @@
 
   
     
+    
 
   
-    
-  
-
-  <script type="text/javascript">
-    var duoshuoQuery = {short_name:"yqf3139"};
-    (function() {
-      var ds = document.createElement('script');
-      ds.type = 'text/javascript';ds.async = true;
-      ds.id = 'duoshuo-script';
-      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-      ds.charset = 'UTF-8';
-      (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
-    })();
-  </script>
-    
-     
 
 
-    
   
 
   
@@ -686,7 +602,7 @@
 
     function tocOverflowIndicator (indicator, action) {
       var $indicator = $(indicator);
-      var opacity = action === 'show' ? 0.4 : 0;
+      var opacity = action === 'show' ? 1 : 0;
       $indicator.velocity ?
         $indicator.velocity('stop').velocity({
           opacity: opacity
