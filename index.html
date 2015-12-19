@@ -211,6 +211,197 @@
             
               
                 
+                <a class="post-title-link" href="/2015/12/16/high-perf-network-in-chrome-trans-2/" itemprop="url">
+                  Google Chrome 中的高性能网络技术实践（翻译）下
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-12-16T10:54:59+08:00" content="2015-12-16">
+              2015-12-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/trans/" itemprop="url" rel="index">
+                    <span itemprop="name">trans</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B"><a href="#u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B" class="headerlink" title="你使用浏览器进行会话的全过程"></a>你使用浏览器进行会话的全过程</h1><p>通过前文我们已经能在心中绘制出Chrome网络栈的大致图样，现在让我们来详细了解一下浏览器中一系列面向用户的优化。现在，让我们想想我们刚刚创建了一个Chrome的用户档案，并准备开始上网冲浪了。</p>
+<h2 id="u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C"><a href="#u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C" class="headerlink" title="优化游览器的冷启动体验"></a>优化游览器的冷启动体验</h2><p><img src="/images/high-perf-network-in-chrome-trans/pagespeed.png" alt="pagespeed"></p>
+<p>第一次启动Chrome的时候，它对你喜爱的网站、浏览习惯还了解甚少。但是，<strong>大多数人在浏览器冷启动后还是遵循着一个特定的使用习惯</strong>，比如打开电邮、新闻头条、社交网络和门户网站等等。具体的网站可能不同，但是它们其中的相似性可以帮助预测器来加速你每天一开始打开浏览器的体验！</p>
+<p><strong>Chrome总是记着用户打开浏览器后最爱去的十大网站</strong>，不过需要注意的是这并不是全局浏览的前十，而仅仅是启动后的。浏览器加载的时候，Chrome就可以为这些站点发起DNS的预加载。好奇的你可以通过<code>chrome://dns</code>来查看你自己的启动域名列表。在这个网页的最上方，你会找到你账号的十大启动候选网站。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/startup-dns.png" alt="startup-dns"></p>
+<p>以我账号举个栗子吧，我一般如何上网的呢？如果我是在写一篇文章的时候，我会直接导航去Google Docs。如你所料，我常去一些Google站点。</p>
+<h2 id="u4F18_u5316_u4E0EOmnibox_u7684_u4E92_u52A8"><a href="#u4F18_u5316_u4E0EOmnibox_u7684_u4E92_u52A8" class="headerlink" title="优化与Omnibox的互动"></a>优化与Omnibox的互动</h2><p><img src="/images/high-perf-network-in-chrome-trans/chrome-omnibox.png" alt="chrome-omnibox"></p>
+<p>推出Omnibox是Chrome的一大创举，和先前的其他浏览器相比，Chrome的Omnibox可不仅仅只能输入目标URL。除了记住用户之前浏览过的URL以外，它也支持历史浏览记录的全文搜索，<em>(小技巧：输入网站的名称而不是URL)</em>，更可与你选择搜索引擎进行深度整合。</p>
+<p>Omnibox会自动相应用户的输入，这可以是根据你历史的一个URL，或者是一个搜索查询。底层实现中，每个提示的动作都是按照和输入的相关程度进行排序，并参考之前的记录。事实上，你可以在<code>chrome://predictors</code>中查询到这些数据。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xomnibox.png" alt="xomnibox"></p>
+<p><strong>Chrome记忆着用户输入前缀词的一份历史记录，其提示的动作和成功执行的比例</strong>。对于我的历史来说，可以发现我每次敲入g后，我有76%的机率是向打开Gmail。而当我再输入”m”后(“gm”的缩写)，这一动作的可信率升到了99.8%。事实上，在412次我输入”gm”后，我只有一次并不是想打开Gmail。</p>
+<p>但是，你可能会想，这一切关网络栈什么事情？这些黄黄绿绿的候选数据其实都是<code>ResourceDispatcher</code>的重要参考信号！如果我们产生了一个黄色信号，Chrome可能会发出一个DNS预查询。如果是一个绿色的更高可信度的信号，Chrome可能在DNS解析后发出一个TCP预连接。如果这些都做好了，但用户还没有做出决定，Chrome甚至会默默在后台页面渲染好这个网页。</p>
+<p>还有一种可能是，如果就历史数据来看，当前输入的查询词没有很好的匹配，那么Chrome会对你搜索引擎进行DNS/TCP预加载，这是预测你很有可能发出一个搜索请求。</p>
+<p><strong>对于一般用户来说，他们需要数百毫秒的时间来输入查询，并评估自动弹出的提示</strong>。在后台的Chrome便能从容地预加载、预连接甚至于在某些情况下预渲染这个网页，这样等用户敲击下”enter”键的时候，网络带来的延时影响已经没有了。</p>
+<h2 id="u4F18_u5316_u7F13_u5B58_u7684_u6027_u80FD"><a href="#u4F18_u5316_u7F13_u5B58_u7684_u6027_u80FD" class="headerlink" title="优化缓存的性能"></a>优化缓存的性能</h2><p>最快的Request，是这个请求根本没有发生。当我们谈及性能的时候，怎能不谈及缓存呢。作为网站开发人员，你得通过Expires,ETag,Last-Modified和Cache-Control这些<a href="https://developers.google.com/speed/docs/best-practices/caching" target="_blank" rel="external">response headers</a>来表明你服务器上资源文件的缓存状态，对吧？如果没有的话，快行动起来，我们等等没关系。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/chrome-incognito.webp" alt="chrome-incognito"></p>
+<p>Chrome对于内部缓存有两种不同的实现：一种是本地磁盘缓存，一种使用内存。<strong>内存缓存是为<a href="http://support.google.com/chrome/bin/answer.py?hl=en&amp;answer=95464" target="_blank" rel="external">incognito浏览模式</a>准备的，当你关闭窗口后，一切干干净净</strong>。两种模式都实现了相同的接口(<code>disk_cache::Backend</code>和<code>disk_cache::Entry</code>)，这极大简化了架构设计。如果你对此有想法，可以很轻易地实验你的缓存实现。</p>
+<p>从内部来说，磁盘缓存实现了自有的一套数据结构，它们都存放在你Profile目录下的文件夹中。其中，索引文件在浏览器启动时被直接映射入内存，而数据文件存放真实的数据，比如说HTTP头和其他统计信息。这里值得一提的是，最大不超过16KB的文件都存放在共享的数据块文件中，大文件直接存放在专有文件中。磁盘缓存需要实验LRU测量进行清扫，LRU的通常参考使用频率和资源的年龄。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/internals-cache.png" alt="internals-cache"></p>
+<p>如果你对Chrome缓存感兴趣的话，不妨看看<code>chrome://net-internals/#httoCache</code>。如果你想查看实际的HTTP元数据和缓存的Response，你可以访问<code>chrome://cache</code>，它们会列出缓存中所有的资源详情。你可以搜索，并点击URl查看。</p>
+<h2 id="u4F7F_u7528_u9884_u52A0_u8F7D_u4F18_u5316DNS"><a href="#u4F7F_u7528_u9884_u52A0_u8F7D_u4F18_u5316DNS" class="headerlink" title="使用预加载优化DNS"></a>使用预加载优化DNS</h2><p>之前我们已经几次提到了DNS预解析，那在我们展开实现细节前，我们看看哪些情况下会触发DNS解析，和触发理由：</p>
+<ul>
+<li>在Render进程中运行的Blink文档解析器，可以提供其页面的所有URL中的域名，Chrome可以选择预先解析与否。</li>
+<li>在用户发出请求之前，Render进程便可能触发一个鼠标悬浮事件，或是一个按钮点击事件。</li>
+<li>在高匹配的情况下，Omnibox可能触发一个查询请求。</li>
+<li>Chrome预测器在综合历史浏览记录和资源请求数据后，发出域名解析请求。</li>
+<li>页面的开发者可以显式告诉Chrome，哪些域名可以预先解析。</li>
+</ul>
+<p>在所有以上的情况下，DNS预解析都只是被当做暗示来处理。Chrome不保证预解析一定会执行，而是通过综合判断所有的信号，使用预测器来判断是否执行。最“糟糕”的情况下，如果我们不能提前解析DNS，用户就必须要等待一个DNS解析时间，然后才是TCP连接和资源加载。不过，如果这一切发生的话，预测器会进行记录并以此优化未来的决策。这就是你越用，Chrome越快越聪明。</p>
+<p>之前我们没有提到的一个优化是，<code>Chrome会发现每个网站的拓扑结构，并用这一信息为未来的浏览加速</code>。让我们回忆一下每个网页平均由88个资源的事实，其中资源从30+个独立的域名加载而来。这说明你每次进行网页浏览的时候，Chrome可以记录下网页上流行的资源文件。在以后它便可选择为一些、或者是全部发出一个DNS预加载和TCP预连接。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xsubresource-stats.png" alt="xsubresource-stats"></p>
+<p>你可访问<code>chrome://dns</code>来查看Chrome缓存的子站点的域名，并可以查询一下你关心的域名。上例可看出，对于Google+来说，Chrome记得六个子站点和DNS预解析/TCP预连接的统计数据，其中还有请求的期望值。这一内部的统计数据让Chrome预测器可以进行预测优化。</p>
+<p>除了上述的所有内部信号，站点开发者还可以通过以下方式，即嵌入附加的预解析信息来暗示Chrome：</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"dns-prefetch"</span> href=<span class="string">"//host_name_to_prefetch.com"</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>那让浏览器自动来做不就好了吗？<strong>在某些情况下，可能有预解析一个文章中完全没有提及的域名</strong>。最经典的栗子当然就是跳转了：一个指向域名的链接，就比如一个追踪分析的服务，它功能就是将用户跳转到真实的地址下。Chrome仅仅依靠自己是没有办法做到的，而可以通过人工提供更好。</p>
+<p>那么底层实现又是怎样的呢？不过这一答案恐怕和Chrome的版本有关，由于团队<em>总是</em>在实验更新更好的方法。不过整体上来看，Chrome的DNS组织结构有两大实现：之前Chrome使用平台无关的<code>getaddrinfo</code>系统调用，将这个查询全权交由系统进行，而现在逐步替换为<strong>Chrome自实现的异步DNS解析器</strong>。</p>
+<p>原本的实现的优点是，由于依赖操作系统，代码可以更简洁，并且还能利用上操作系统的DNS缓存。不过，<code>getaddrinfo()</code>是一个阻塞式的系统调用，这就意味着Chrome得创建并维护一个专有的线程池来进行并行的解析。<strong>这个线程池最大不超过6个worker线程</strong>，这是基于硬件最小公共分母的一个经验值，因为我们发现太高的并行请求会让一些用户的路由器过载！</p>
+<p>对于使用worker池的预解析方案，Chrome就简单地调用<code>getaddrinfo()</code>，这会阻塞到response返回，在此之后他就丢弃了返回的结果并转而处理下一个请求。<em>丢弃它？</em>由于结果已经由系统DNS守护进程缓存了，这以后就能立即返回了。这足够简单和有效。</p>
+<p><strong>嗯，很有效，但这还远远不够！</strong><code>getaddrinfo()</code>调用并不会告诉Chrome很多有用的信息，比如说每个记录的TTL，和DNS缓存自身的状态。为了提升性能，Chrome团队决定实现一个跨平台、异步的DNS解析器。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xasync-dns.png" alt="xasync-dns"></p>
+<p>Chrome自己进行DNS解析带来了以下的新优化：</p>
+<ul>
+<li>对于重传输计时器更好的控制，并且能并行多个查询</li>
+<li>TTL信息可见，这让Chrome可以在失效之前就更新热门的记录</li>
+<li>对于IPv4和IPv6更好的支持</li>
+<li>基于RTT和其他信号转换去其他的服务器（DNS服务器）</li>
+</ul>
+<p>以上，乃至还有更多，都是来源于Chrome持续不断的实验和优化。一个更加明显的问题是：<em>我们是如何验证这些想法的效果的呢？</em>，这很简单，Chrome对于每个用户，都对网络性能进行了细致的追踪和记录。你可以打开<code>chrome://histograms/DNS</code>来查看这些信息。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xdns-prefetch.png" alt="xdns-prefetch"></p>
+<p>上图显示了DNS预请求的时间延时分布情况：差不多半成的（右栏）都是在20毫秒内完成的（左栏）。这是基于最近的一次浏览回话（9869条记录）并为用户私有。如果用户选择向Chrome提交他们的使用情况数据的话，这些数据才会被匿名化后，周期性地提交到开发团队，这样我们就能看到试验成功并不断做出调整了。就这样反复迭代更新。</p>
+<h2 id="u4F7F_u7528_u9884_u8FDE_u63A5_u6765_u4F18_u5316_u7BA1_u7406TCP_u8FDE_u63A5"><a href="#u4F7F_u7528_u9884_u8FDE_u63A5_u6765_u4F18_u5316_u7BA1_u7406TCP_u8FDE_u63A5" class="headerlink" title="使用预连接来优化管理TCP连接"></a>使用预连接来优化管理TCP连接</h2><p>既然我们通过Omnibox和Chrome预测器猜测出了接下来用户的导航方向，并预先解析出了域名，<strong>那为什么不再提前一步，预先与目标域名建立TCP连接，在用户发出真实的请求前就完成TCP握手呢？</strong>这样的话，我们便又节省了一个完整的Roundtrip时延，为用户节省了数百毫秒的延时。这便是TCP预连接和它的工作原理了。</p>
+<p>首先，Chrome会先检查其socket池，找找有没有此域名的可用的socket。重用已经保持一段时间的keep-alive的sockets可以防止TCP握手和慢启动惩罚。如果没有可用的socket，那再启动TCP握手，并将它放到池中。这样的话，当用户启动导航的时候，真实的HTTP请求就能立即发送出去了。</p>
+<p>打开<code>chrome://net-internals#sockets</code>来查看Chrome中打开的socket详情统计。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xnetinternals-sockets.png" alt="xnetinternals-sockets"></p>
+<p>你还可以深入每个socket的详情并审查时间线：连接和代理时间，每个包的到达时间等等。你还可以将数据导出，用于离线分析和bug报告。<strong>一个好审视(instrumentation)系统的是性能优化的关键，而<code>chrome://net-internals</code>是Chrome网络的汇总点</strong>，如果你还没尝试它的话快去试试吧。</p>
+<h2 id="u4F7F_u7528_u9884_u52A0_u8F7D_u63D0_u5347_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D"><a href="#u4F7F_u7528_u9884_u52A0_u8F7D_u63D0_u5347_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D" class="headerlink" title="使用预加载提升来优化资源加载"></a>使用预加载提升来优化资源加载</h2><p>有时，网页开发者基于站点的布局信息，可以提供附加的导航信息，或是page context(不知原文所指)。这能帮助浏览器优化用户体验。Chrome支持以下两种提示，内嵌在网页中即可：</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"subresource"</span> href=<span class="string">"/javascript/myapp.js"</span>&gt;</span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"prefetch"</span>    href=<span class="string">"/images/big.jpeg"</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>子资源和预加载看起来没有什么不同，但却有着非常不同的语义。当一个链接声明自己与当前网页的关系是”prefetch”的时候，这只是暗示浏览器它是一个可能在未来需要打开的页面。换句话说，它只是一个跨页面提示。对比来看，”subresource”提示浏览器本资源是可能会被用于当前页面的，这需要在遇到这个资源之前发出request。</p>
+<p>如你所料，不同的语义也带来了资源加载器非常不同的行为。标注为prefetch的资源只是被赋予低优先级，只有在本页面结束加载后才会考虑。而subresource资源则一遇到就加载，优先级很高。</p>
+<p>这两个提示，如果在合适的环境下正确使用，可以显著地优化你站点的用户体验。最后，要提示大家prefetch是<a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#link-type-prefetch" target="_blank" rel="external">HTML5标准的一部分</a>，现已经获得了Firefox和Chrome的支持，而subresource只是在Chrome中支持。（此信息可能已经过期）</p>
+<h2 id="u4F7F_u7528_u6D4F_u89C8_u5668_u9884_u5237_u65B0_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D"><a href="#u4F7F_u7528_u6D4F_u89C8_u5668_u9884_u5237_u65B0_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D" class="headerlink" title="使用浏览器预刷新来优化资源加载"></a>使用浏览器预刷新来优化资源加载</h2><p>不幸的是，不是所有的站点开发人员都可以或是愿意在网页标注出subresource。就算他们这么做了，我们必须等待HTML文档返回，才能解析到这些提示，并开始获取必要的subresource。这就要看服务器的响应时间，和延时了。通常数百甚至上千的延时都有可能出现。</p>
+<p>但是，让我们眼光再放得长远一些，Chrome已经知道了热门资源的域名，并以此进行DNS的预解析。为什么我们不再向前推进一步，进行DNS查询，使用TCP预连接，并推测性地预先加载资源呢？这便是”预刷新”想做的。</p>
+<ul>
+<li>用户打开目标URL</li>
+<li>Chrome查询预测器，得到和目标URL相关的子资源，并也开始DNS预解析-TCP预连接-资源预刷新</li>
+<li>如果子资源已经缓存，那么只要从磁盘或是内存中加载就好</li>
+<li>如果资源缺失，或是缓存到期，那么才发出网络请求</li>
+</ul>
+<p><img src="/images/high-perf-network-in-chrome-trans/xchrome-experiment.png" alt="xchrome-experiment"></p>
+<p>资源预刷新是Chrome中性能优化的一个典型范例，理论上来说，它应该能带来更好的性能，不过这其中还是有很多折衷。只要一种方式来选择是否需要将这个功能融合入Chrome，就是实现它并在pre-release的Chrome中给实际用户、实际的网络和实际的浏览中进行A/B测试。</p>
+<p>在2013年早期，Chrome团队就已经在讨论这一实现。如果收集的反馈好，我们就可以在2013年后期看到这一功能。<strong>提升Chrome网络性能的脚步从未停止，团队一直在尝试新的方法、想法和技术</strong>。</p>
+<h2 id="u4F7F_u7528_u9884_u6E32_u67D3_u4F18_u5316_u6D4F_u89C8_u4F53_u9A8C"><a href="#u4F7F_u7528_u9884_u6E32_u67D3_u4F18_u5316_u6D4F_u89C8_u4F53_u9A8C" class="headerlink" title="使用预渲染优化浏览体验"></a>使用预渲染优化浏览体验</h2><p>我们以上提及的每一个优化都减少了用户真实请求发出的时间，最终让页面得以渲染。但是，<strong>一个真实的秒开的体验还需要什么呢？</strong>基于我们之前预先看到的UX数据，互动必须在100ms中结束，这便不给网络延时留多少空余时间了，我们要怎样才能在100ms中渲染好一个页面呢？</p>
+<p>当然，你应该已经猜到了答案。这通常是大多数人的习惯：如果你打开了很多网页，并在其中切换，这就是秒开的体验，可比等待加载快多了。如果浏览器已经为你提供了API来这么做呢？</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"prerender"</span> href=<span class="string">"http://example.org/index.html"</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>你猜对了，这边是<a href="https://developers.google.com/chrome/whitepapers/prerender" target="_blank" rel="external">Chrome中的预渲染</a>。不像”prefetch”只是下载一个资源，”prerender”提示Chrome在加载其所有subresource后，在一个隐藏的标签页中渲染这个页面。<strong>隐藏的tab是不为用户所见的，但当用户触发导航的时候，此tab就被从后台交换出来，形成所谓的”秒开”</strong>。</p>
+<p>你可以访问<a href="http://prerender-test.appspot.com/" target="_blank" rel="external">prerender-test.appspot.com</a>来体验一下，打开<code>chrome://net-internals/#prerender</code>来查看预渲染的历史和当前状态。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xnetinternals-prerender.png" alt="xnetinternals-prerender.png"></p>
+<p>如你所料，在后台tab中完整地渲染一个页面需要消耗大量的CPU和网络资源，因此我们只会在此页面非常可能用到的时候才会进行预渲染！比如之前提到的Omnibox的高可能性提示。相似的是，Google搜索有时也会为第一结果加入预渲染的提示（也称谓Google Instant Pages）。</p>
+<p><a href="https://www.youtube.com/watch?v=_Jn93FDx9oI" target="_blank" rel="external">视频地址</a></p>
+<p><strong>你也可以为你的网站添加预渲染的提示</strong>。不过，在你这么做之前，你需要知道预渲染由一些限制：</p>
+<ul>
+<li>在所有进程中，只允许一个预渲染的tab</li>
+<li>不支持HTTPS和需要认证的HTTP页面</li>
+<li>如果请求的资源，或其任何subresource需要进行一个非幂等(原文：nonidempotent)请求，（只允许GET）</li>
+<li>所有的资源都是以最低网络优先级发出的</li>
+<li>所有的页面都是以最低CPU优先级渲染的</li>
+<li>如果页面使用超出100MB的内存，就会终止</li>
+<li>推迟插件的初始化，如果存在HTML 5 媒体元素的话，也会终止</li>
+</ul>
+<p>换句话说，不能保证预渲染一定进行，并只在安全的情况下进行。还需提到的是，隐藏的页面也会执行Javascript和其他逻辑，最佳实践是利用<a href="https://developers.google.com/chrome/whitepapers/pagevisibility" target="_blank" rel="external">Page Visibility API</a>来检查页面是否可见，这也是你一定<a href="http://www.html5rocks.com/en/tutorials/pagevisibility/intro/" target="_blank" rel="external">会学的</a>。</p>
+<h1 id="Chrome_u8D8A_u7528_u8D8A_u5FEB"><a href="#Chrome_u8D8A_u7528_u8D8A_u5FEB" class="headerlink" title="Chrome越用越快"></a>Chrome越用越快</h1><p><img src="/images/high-perf-network-in-chrome-trans/xchrome-speed-final.png" alt="xchrome-speed-final"></p>
+<p>现在看来，Chrome的网络栈可比一个朴素的socket管理器复杂多了。我们这个简短地介绍了在浏览网页时你不可见的很多优化。Chrome越是学习网络的拓扑和你的习惯，做得越好。<strong>这就好像魔术一样，Chrome是越用越快的，不过它不是魔法，因为你已经知道它的内部机理了</strong>。</p>
+<p>最后，还是需要提到Chrome团队一直努力迭代和实验，来不断提高性能。在你读到这里的时候，还是由很多新实验和优化在开发、测试和部署中。兴许某一天，我们达到了我们秒开（小于100ms）的目标时，我们可以歇一歇脚，不过在那之前，还有很多路要走！</p>
+<blockquote>
+<p>Ilya Grigorik，Google Web性能工程师，W3C Web性能小组的co-chair，High Performance Browser Networking (O’Reilly) 一书的作者，<a href="https://twitter.com/igrigorik" target="_blank" rel="external">Twitter</a>,<a href="https://plus.google.com/+IlyaGrigorik" target="_blank" rel="external">Google+</a></p>
+</blockquote>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2015/12/13/high-perf-network-in-chrome-trans/" itemprop="url">
                   Google Chrome 中的高性能网络技术实践（翻译）上
                 </a>
@@ -267,7 +458,7 @@
               <blockquote>
 <p>看到Ilya Grigorik写的<a href="https://www.igvita.com/posa/high-performance-networking-in-google-chrome/" target="_blank" rel="external">这篇高性能网络技术实践</a>后，一直想找个机会好好阅读一下。之前遇到英文文章的话我还是喜欢偷个懒，直接找中文版本。借这个机会，第一次体会翻译英文文章。<br>还发现了<a href="http://chimera.labs.oreilly.com/books/1230000000545/ch17.html#_deploying_websocket_infrastructure" target="_blank" rel="external">全书免费线上阅读</a>，准备细细地读一下。</p>
 </blockquote>
-<h1 id="Google_Chrome的历史和指南">Google Chrome的历史和指南</h1><p>在2008的下半年，Chrome的Beta版本的登陆Windows平台。于此同时，Google将Chrome的核心代码以BSD许可开源，并称其为Chromium。对于关注它的人来说，这一事件引发了一个惊喜的猜想：浏览器大战再燃？Google真的可以做得更好吗？</p>
+<h1 id="Google_Chrome_u7684_u5386_u53F2_u548C_u6307_u5357"><a href="#Google_Chrome_u7684_u5386_u53F2_u548C_u6307_u5357" class="headerlink" title="Google Chrome的历史和指南"></a>Google Chrome的历史和指南</h1><p>在2008的下半年，Chrome的Beta版本的登陆Windows平台。于此同时，Google将Chrome的核心代码以BSD许可开源，并称其为Chromium。对于关注它的人来说，这一事件引发了一个惊喜的猜想：浏览器大战再燃？Google真的可以做得更好吗？</p>
 <blockquote>
 <p>它体验实在太好了，这让我改变了我最初的想法。<br>– Eric Schmidt, 最初他对开发Chrome是抱有<a href="http://blogs.wsj.com/digits/2009/07/09/sun-valley-schmidt-didnt-want-to-build-chrome-initially-he-says/" target="_blank" rel="external">抵触想法</a>的</p>
 </blockquote>
@@ -280,14 +471,14 @@
 <li><code>简洁(Simplicity)</code>：用复杂的技术驱动起上层<strong>简单的用户体验</strong></li>
 </ul>
 <p>据团队观察，很多我们现在使用的网站不是简简单单的网页了，而是应用。这样看来，越来越多野心勃勃的应用都把速度、安全、稳定和简洁作为追求，而对于每一个最求，都需要单独成文来说，本文的主题是高性能，所以主要讨论速度。</p>
-<h1 id="从多个方面来看高性能">从多个方面来看高性能</h1><p>现代浏览器是一个平台，就像操作系统一样，Chrome就是照此标准设计的。在Chrome之前，所有主流的浏览器都是单进程应用。所有打开的网页共用一个内存区域，并相互争夺共享的资源。任何页面中或是浏览器中的Bug，都带来了牺牲全局体验的风险。</p>
+<h1 id="u4ECE_u591A_u4E2A_u65B9_u9762_u6765_u770B_u9AD8_u6027_u80FD"><a href="#u4ECE_u591A_u4E2A_u65B9_u9762_u6765_u770B_u9AD8_u6027_u80FD" class="headerlink" title="从多个方面来看高性能"></a>从多个方面来看高性能</h1><p>现代浏览器是一个平台，就像操作系统一样，Chrome就是照此标准设计的。在Chrome之前，所有主流的浏览器都是单进程应用。所有打开的网页共用一个内存区域，并相互争夺共享的资源。任何页面中或是浏览器中的Bug，都带来了牺牲全局体验的风险。</p>
 <p>而Chrome另辟蹊径，工作在一个多进程的模式下。它提供了进程和内存隔离，并将每一个页面运行在<a href="http://dev.chromium.org/developers/design-documents/sandbox" target="_blank" rel="external">安全的沙箱</a>环境中。在目前多核处理器流行的背景下，隔离进程和保护页面不受恶意网页攻击被证明是Chrome在激烈竞争中的很好抓手。值得注意的是，很多浏览器也迁移到了这一多进程的架构，或是正在迁移之中。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/comic-multi-process.png" alt="comic-multi-process"></p>
 <p>在多进程环境启动后，Web应用的执行主要包含一下三个任务：获取资源、页面布局与渲染、Javascript执行。渲染和脚本执行依照一个单线程、交叉执行的模型——这是由于不能对DOM进行并发修改，这也是Javascript自身单线程的特性造成的。因此，对于Web应用开发者和浏览器开发者，怎样在运行时协同优化渲染和脚本执行是关键一环。</p>
 <p>Chrome使用<a href="http://www.chromium.org/blink" target="_blank" rel="external">Blink</a>作为渲染引擎，它也是为速度而生，是一个开源的、标准支持良好的布局引擎。对于Javascript，Chrome推出了精心优化过的Javascript运行环境，<a href="http://en.wikipedia.org/wiki/V8_(JavaScript_engine" target="_blank" rel="external">V8</a>)，V8也独立作为项目开源，得到了广泛的使用，例如它也是Node.js的运行环境。<strong>不过，如果是浏览器阻塞在网络IO上，针对V8虚拟机优化，或者是对Blink解析和渲染流水线的优化不会产生很好的效果，因为大部分时间还是消耗在了等待网络资源上</strong>。</p>
 <p>总用户体验中的最关键因素之一，便是浏览器优化各种网络资源的加载顺序、优先级和延时的能力。你可能都注意不到它，但Chrome的网络栈便是每天逐步演化得更加聪明。它尝试隐去或是降低各种资源加载带来的时延：预先加载最可能的DNS查询、记住网络的拓扑结构、向可能的目标提前发起连接等等。从使用者的角度来看，它只是一个简单的资源加载工具，而从内部来看，它相当精巧和迷人地示范了怎样进行网络性能调优，以及如何带给用户最好的使用体验。</p>
 <p>那就让我们一探究竟吧。</p>
-<h1 id="现代的Web应用是怎样的？">现代的Web应用是怎样的？</h1><p>在我们接触如何对网络进行优化的技术细节之前，理解Web发展潮流和我们需要面对的问题会有所帮助。<strong>一个现代的Web页面，或者是一个Web应用究竟是怎样的？</strong></p>
+<h1 id="u73B0_u4EE3_u7684Web_u5E94_u7528_u662F_u600E_u6837_u7684_uFF1F"><a href="#u73B0_u4EE3_u7684Web_u5E94_u7528_u662F_u600E_u6837_u7684_uFF1F" class="headerlink" title="现代的Web应用是怎样的？"></a>现代的Web应用是怎样的？</h1><p>在我们接触如何对网络进行优化的技术细节之前，理解Web发展潮流和我们需要面对的问题会有所帮助。<strong>一个现代的Web页面，或者是一个Web应用究竟是怎样的？</strong></p>
 <p><a href="http://httparchive.org/" target="_blank" rel="external">HTTPArchive</a>项目追踪着互联网是如何构建的，它能帮我们回答这些问题。它周期性地爬取最流行的站点，对它们使用的资源数量、文件类型、headers和各种元数据进行记录和聚合分析，而并不关注站点的内容数据。2013年一月的数据可能会让你惊讶，在最流行的300,000个站点中，平均下来一个网页的数据如下：</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/httparchive-jan2013.png" alt="httparchive-jan2013"></p>
 <ul>
@@ -297,7 +488,7 @@
 </ul>
 <p>让我们细细分析一下。平均大于1MB的数据传输，包含88个资源文件如图片、Javascript和CSS，并是从15个独立的主机或第三方主机加载而来！这些数字在过去几年中都在<a href="http://httparchive.org/trends.php" target="_blank" rel="external">稳定增长</a>，现在看来没有减缓停止的趋势。这说明我们在不断开发更大的Web应用。</p>
 <p>稍加计算我们发现资源的平均大小是12KB（1045KB/84），这说明<strong>浏览器中大多数的网络传输是短小猝发的</strong>。因为使用的底层协议(TCP)是专为较大和流式文件传输优化的，这就带来了一系列并发问题。让我们逐步剥开一个网络Request看看。</p>
-<h1 id="一个Request的一生">一个Request的一生</h1><p>W3C <a href="http://www.w3.org/TR/navigation-timing/" target="_blank" rel="external">Navigation Timing specification</a>提供了一个浏览器API来展示每一次Request的性能数据。让我们详细观察这些组成部分，因为它们都是优化的用户体验的一个重要组成部分。</p>
+<h1 id="u4E00_u4E2ARequest_u7684_u4E00_u751F"><a href="#u4E00_u4E2ARequest_u7684_u4E00_u751F" class="headerlink" title="一个Request的一生"></a>一个Request的一生</h1><p>W3C <a href="http://www.w3.org/TR/navigation-timing/" target="_blank" rel="external">Navigation Timing specification</a>提供了一个浏览器API来展示每一次Request的性能数据。让我们详细观察这些组成部分，因为它们都是优化的用户体验的一个重要组成部分。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/request-life.png" alt="request-life"></p>
 <p>给定一个网络资源的URL，浏览器从检查本地caches开始。如果之前已经加载过这份资源并且<a href="https://developers.google.com/speed/docs/best-practices/caching" target="_blank" rel="external">和cache控制相关的headers</a>已经被设置(<em>比如Expires, Cache-Control</em>)，接着便可使用本地的拷贝来回应这个Request-<strong>最快的Request便是不产生真实的Request</strong>。有时文件过期，我们需要重新让这个文件具有最新的时效，或是之前没有加载过它，那么一个网络Request必须被发出，不过这是代价高昂的。</p>
 <p>给定一个Hostname和Resource Path，Chrome先检查是否有打开的连接可以被重用，Sockets以{scheme, host, port}的三元组被池化使用。如果Proxy被设置，或是使用了一个自动Proxy设置脚本(PAC)，Chrome会通过合适的Proxy检测连接。PAC脚本允许针对URL路由不同的Proxy，这每一套规则都有其自己的Socket池。最终，如果以上条件都不满足，那么<strong>这个Request必须首先将主机名解析为IP地址，即DNS查询开始</strong>。</p>
@@ -320,7 +511,7 @@
 <li>如果服务器的响应不能被装入一个最先的TCP<a href="http://en.wikipedia.org/wiki/Transmission_Control_Protocol#Congestion_control" target="_blank" rel="external">拥塞窗口</a> （4-15 KB），那么需要继续加上一个或多个Roundtrip延时。</li>
 <li>如果我们需要加载一个缺失的证书，或是进行一个<a href="http://en.wikipedia.org/wiki/Online_Certificate_Status_Protocol" target="_blank" rel="external">在线证书状态检查</a>（OCSP），SSL延时可能会更长。可能会增加数百上千的毫秒延时。</li>
 </ul>
-<h1 id="怎样算是“足够快”？">怎样算是“足够快”？</h1><p>在我们之前的例子中，由于DNS、握手和Roundtrip造成的延时是影响总延时的大头，其中服务器造成的延时只有区区20%。但是，<strong>从更加宏观的角度来看，这个延时有造成影响吗</strong>？在读本文的你可能已经知道了答案：对，影响很大。</p>
+<h1 id="u600E_u6837_u7B97_u662F_u201C_u8DB3_u591F_u5FEB_u201D_uFF1F"><a href="#u600E_u6837_u7B97_u662F_u201C_u8DB3_u591F_u5FEB_u201D_uFF1F" class="headerlink" title="怎样算是“足够快”？"></a>怎样算是“足够快”？</h1><p>在我们之前的例子中，由于DNS、握手和Roundtrip造成的延时是影响总延时的大头，其中服务器造成的延时只有区区20%。但是，<strong>从更加宏观的角度来看，这个延时有造成影响吗</strong>？在读本文的你可能已经知道了答案：对，影响很大。</p>
 <p>之前的<a href="http://www.useit.com/papers/responsetime.html" target="_blank" rel="external">用户体验调查</a>展示了我们作为用户，对各种应用响应程度的需求：</p>
 <table>
 <thead>
@@ -356,12 +547,12 @@
 <p>说到这你应该明白了，我们优化目标是250ms，而上述DNS查询，TCP/SSL握手和Request传输时间加在一起足足由370ms，我们已经超了50%的时间，并且我们甚至还没有考虑服务器的时间消耗！</p>
 <p>对于绝大多数用户，甚至开发者而言，DNS、TCP和SSL延时都是完全透明的，并且是在网络层进行的，我们便较少深入和思考。但这些步骤却对总体用户体验有着极大的影响，因为这都可能带来十或百的毫秒延时。<strong>这就是为什么Chrome的网络栈比一个简单的Socket处理程序复杂很多的原因</strong>。</p>
 <p><em>现在我们已经认清了问题所在，让我们深入实现细节看看</em>。</p>
-<h1 id="从10,000英尺高度鸟瞰Chrome的网络栈">从10,000英尺高度鸟瞰Chrome的网络栈</h1><h2 id="多进程架构">多进程架构</h2><p>Chrome的多进程架构明显地暗示了在浏览器中一个网络Request是如何处理的。在底层，Chrome实际上支持<a href="http://www.chromium.org/developers/design-documents/process-models" target="_blank" rel="external">四种不同的执行模型</a>来确定使用哪一种进程分配模型。</p>
+<h1 id="u4ECE10_2C000_u82F1_u5C3A_u9AD8_u5EA6_u9E1F_u77B0Chrome_u7684_u7F51_u7EDC_u6808"><a href="#u4ECE10_2C000_u82F1_u5C3A_u9AD8_u5EA6_u9E1F_u77B0Chrome_u7684_u7F51_u7EDC_u6808" class="headerlink" title="从10,000英尺高度鸟瞰Chrome的网络栈"></a>从10,000英尺高度鸟瞰Chrome的网络栈</h1><h2 id="u591A_u8FDB_u7A0B_u67B6_u6784"><a href="#u591A_u8FDB_u7A0B_u67B6_u6784" class="headerlink" title="多进程架构"></a>多进程架构</h2><p>Chrome的多进程架构明显地暗示了在浏览器中一个网络Request是如何处理的。在底层，Chrome实际上支持<a href="http://www.chromium.org/developers/design-documents/process-models" target="_blank" rel="external">四种不同的执行模型</a>来确定使用哪一种进程分配模型。</p>
 <p>默认情况下，桌面版的Chrome使用Process-per-site模型，这将不同网站隔离开来，并将同一网站的所有实例都组在一个进程中。不过，为了更加方便大家理解，让我们假设这样一个简单的情况：对于每一个打开的tab，都分配一个独立的进程。从网络性能角度来考虑，区别不是很大，但Process-per-tab的模型更加容易理解。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/process-model.png" alt="process-model"></p>
 <p>这一架构下，每一个<strong>渲染进程</strong>都对应与一个tab，其中都运行着开源Blink布局引擎，它是解释和进行HTML布局的（也就是图中的“HTML Renderer”），还运行着V8 Javascript虚拟机、桥接这两个引擎的代码和一些其他组件。如果你感兴趣的话，可以查看Chromium wiki中的<a href="http://www.chromium.org/developers/design-documents/multi-process-architecture" target="_blank" rel="external">介绍</a>。</p>
 <p>每一个这些“render”进程都在沙盒环境下执行，这保证它们对用户电脑的访问受限，当然也包含了网络。为了获取这些资源，每一个render进程和Browser主进程进行通信，这就可以为每一个render加上安全的访问策略。</p>
-<h2 id="进程内通信（IPC）和多进程资源加载">进程内通信（IPC）和多进程资源加载</h2><p>在Render和Browser进程间的所有通信都是通过IPC完成的。在Linux和OS X中，一个<code>socketpair()</code>用来提供一个异步的、有标识的管道传输。每个来自render的消息都被序列化后，传递给一个专用的I/O线程，由I/O线程再向Browser进程分发。在接收端，Browser进程提供一个过滤器接口，这运行Chrome对资源IPC请求进行拦截处理（查看<a href="http://code.google.com/p/chromium/source/search?q=resourcemessagefilter&amp;origq=resourcemessagefilter&amp;btnG=Search+Trunk" target="_blank" rel="external">ResourceMessageFilter</a>），转交给网络栈进行处理。</p>
+<h2 id="u8FDB_u7A0B_u5185_u901A_u4FE1_uFF08IPC_uFF09_u548C_u591A_u8FDB_u7A0B_u8D44_u6E90_u52A0_u8F7D"><a href="#u8FDB_u7A0B_u5185_u901A_u4FE1_uFF08IPC_uFF09_u548C_u591A_u8FDB_u7A0B_u8D44_u6E90_u52A0_u8F7D" class="headerlink" title="进程内通信（IPC）和多进程资源加载"></a>进程内通信（IPC）和多进程资源加载</h2><p>在Render和Browser进程间的所有通信都是通过IPC完成的。在Linux和OS X中，一个<code>socketpair()</code>用来提供一个异步的、有标识的管道传输。每个来自render的消息都被序列化后，传递给一个专用的I/O线程，由I/O线程再向Browser进程分发。在接收端，Browser进程提供一个过滤器接口，这运行Chrome对资源IPC请求进行拦截处理（查看<a href="http://code.google.com/p/chromium/source/search?q=resourcemessagefilter&amp;origq=resourcemessagefilter&amp;btnG=Search+Trunk" target="_blank" rel="external">ResourceMessageFilter</a>），转交给网络栈进行处理。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/network-stack.png" alt="network-stack"></p>
 <p>一个本架构的好处是<code>所有的资源Request都在I/O线程上处理，所以任何UI触发的活动或是网络事件会不相互干涉</code>。资源过滤器在Browser进程的I/O线程中执行，拦截资源Request消息，并将它们转发给Browser进程中的<a href="http://code.google.com/searchframe#OAMlx_jo-ck/src/content/public/browser/resource_dispatcher_host.h&amp;exact_package=chromium&amp;q=ResourceDispatcherHost" target="_blank" rel="external">ResourceDispatcherHost</a>单实例对象。</p>
 <p>单实例接口下，浏览器可控制每个render对网络的访问，这也让一个高效和一致的资源共享机制成为可能。</p>
@@ -375,7 +566,7 @@
 <li><em>还有很多</em></li>
 </ul>
 <p>对于render进程来说，它需要做的仅仅是用一个独特的Request ID来标记一个Request请求消息，并通过IPC发送出去，然后一切交由Browser进程接手。</p>
-<h2 id="跨平台的资源获取">跨平台的资源获取</h2><p><img src="/images/high-perf-network-in-chrome-trans/cross-platform.webp" alt="cross-platform"></p>
+<h2 id="u8DE8_u5E73_u53F0_u7684_u8D44_u6E90_u83B7_u53D6"><a href="#u8DE8_u5E73_u53F0_u7684_u8D44_u6E90_u83B7_u53D6" class="headerlink" title="跨平台的资源获取"></a>跨平台的资源获取</h2><p><img src="/images/high-perf-network-in-chrome-trans/cross-platform.webp" alt="cross-platform"></p>
 <p>在实现Chrome的网络栈中，其中一个主要的关注点便是在多个平台间的可移植性：Linux, Windows, OS X, Chrome OS, Android, 和iOS。为了应对这一挑战，<code>网络栈被实现为通常单线程工作（有分离的缓存和代理线程）的，跨平台的库</code>，这使Chrome可重用相同的基础代码，并提供相同的性能优化，这也是跨平台优化的绝佳机会。</p>
 <p>所有相关的网络的代码，都开源在<a href="https://code.google.com/p/chromium/codesearch#chromium/src/net/&amp;ct=rc&amp;cd=1&amp;q=src.net&amp;sq=package:chromium" target="_blank" rel="external">src/net 子目录</a>。在这我们不会详细讨论所有的模块，但你能从代码的布局看出它的结构和可以跨越的平台。举个例子：</p>
 <table>
@@ -433,7 +624,7 @@
 </tbody>
 </table>
 <p>以上每一个子模块都适合好奇的你阅读，代码文档齐全，并且你会找到不少单元测试。</p>
-<h2 id="在移动平台上的架构和性能">在移动平台上的架构和性能</h2><p><img src="/images/high-perf-network-in-chrome-trans/mobile.png" alt="mobile"></p>
+<h2 id="u5728_u79FB_u52A8_u5E73_u53F0_u4E0A_u7684_u67B6_u6784_u548C_u6027_u80FD"><a href="#u5728_u79FB_u52A8_u5E73_u53F0_u4E0A_u7684_u67B6_u6784_u548C_u6027_u80FD" class="headerlink" title="在移动平台上的架构和性能"></a>在移动平台上的架构和性能</h2><p><img src="/images/high-perf-network-in-chrome-trans/mobile.png" alt="mobile"></p>
 <p>即便是谨慎估计，移动浏览器的使用率也呈现出指数级的增长，可以预期在不远的将来，它将蚕食桌面浏览器的份额，令其黯然失色。因此对于Chrome团队，带给用户良好的移动浏览体验是具有极高优先级的。在2012年初，<a href="http://www.google.com/intl/en/chrome/browser/mobile/android.html" target="_blank" rel="external">Chrome Android</a>推出，几个月后，<a href="http://www.google.com/intl/en/chrome/browser/mobile/ios.html" target="_blank" rel="external">Chrome iOS</a>也推向市场。</p>
 <p><strong>对于Chrome的移动版本，你需要了解的头一件事情便是它不是桌面浏览器的直接移植</strong>，如果那样将不能获得最好的用户体验。客观来说，移动环境资源更加紧缺，并有着更多不同的操作参数：</p>
 <ul>
@@ -447,7 +638,7 @@
 <p>那网络性能呢？首先，<strong>在Android和iOS中，Chrome使用了同样的网络栈，其他平台也一样</strong>。这让Chrome可以在多平台下实现相同的网络优化，这对Chrome的性能优化工作来说十分重要。但是，某些参数比如预测优化的优先级、Socket的超时、管理逻辑和缓存大小，在不同平台间还是有所区别的，并随着设备的能力和使用的网络动态调整。</p>
 <p>例如，为了节约电池，移动版Chrome有选择地推迟关闭空闲的Socket，仅仅当打开新的Socket后，才会关闭旧的，这样可以最小化发射功率。类似的是，我们上文中提到的预渲染，是需要一笔不菲的网络和处理资源支出的，这通常在用户处于WIFI环境下才会开启。</p>
 <p>对于Chrome开发团队来说，优化移动浏览体验是处于最高优先级列表中的一个，可以预见的是，<strong>很多新的提升</strong>将不断推出。事实上，这个话题值得单独成文，兴许在POSA系列的下一篇中。</p>
-<h2 id="推测式的Chrome预测优化">推测式的Chrome预测优化</h2><p><img src="/images/high-perf-network-in-chrome-trans/chrome-wings.png" alt="chrome-wings"></p>
+<h2 id="u63A8_u6D4B_u5F0F_u7684Chrome_u9884_u6D4B_u4F18_u5316"><a href="#u63A8_u6D4B_u5F0F_u7684Chrome_u9884_u6D4B_u4F18_u5316" class="headerlink" title="推测式的Chrome预测优化"></a>推测式的Chrome预测优化</h2><p><img src="/images/high-perf-network-in-chrome-trans/chrome-wings.png" alt="chrome-wings"></p>
 <p><strong>你越是使用，Chrome越快</strong>。这得归功于<code>Predictor</code>单例对象。它在Browser进程中国被初始化，而它的职责就是观察网络模式，学习并预测用户接下来可能的动作。比如说：</p>
 <ul>
 <li>当用户将鼠标置于某一个超链接上时，这说明他接下来可能会导航到那里，Chrome便可以预先开始进行DNS查询，甚至预先进行TCP握手。等当用户真正点击的时候，这通常已经过去了大约200ms，我们很可能已经完成了DNS和TCP阶段，为这次浏览节约了数百毫秒的额外时延。</li>
@@ -492,7 +683,7 @@
 <p>举个栗子来说，Render进程在如下情况发生时，都会向Browser进程发送消息。请查看在<code>ResolutionMotivation</code>(<a href="http://code.google.com/searchframe#OAMlx_jo-ck/src/chrome/browser/net/url_info.h&amp;l=35" target="_blank" rel="external">url_info.h</a>)的定义：</p>
 <figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">ResolutionMotivation</span> &#123;</span></span><br><span class="line">    <span class="constant">MOUSE_OVER_MOTIVATED</span>,     <span class="regexp">//</span> 用户触发的鼠标经过事件<span class="constant">Mouse</span>-over initiated by the user.</span><br><span class="line">    <span class="constant">OMNIBOX_MOTIVATED</span>,        <span class="regexp">//</span> <span class="constant">Omni</span>-box 提示</span><br><span class="line">    <span class="constant">STARTUP_LIST_MOTIVATED</span>,   <span class="regexp">//</span> 本资源在<span class="number">10</span>大最常访问之列</span><br><span class="line">    <span class="constant">EARLY_LOAD_MOTIVATED</span>,     <span class="regexp">//</span> 某些情况下我们使用预加载来在发射真实的<span class="constant">Request</span>前预热连接</span><br><span class="line"></span><br><span class="line">    /<span class="regexp">/ 如下和预测式预加载有关，由浏览触发</span><br><span class="line">    /</span><span class="regexp">/ The following involve predictive prefetching, triggered by a navigation.</span><br><span class="line">    STATIC_REFERAL_MOTIVATED,  /</span><span class="regexp">/ 外界知识库</span><br><span class="line">    LEARNED_REFERAL_MOTIVATED, /</span><span class="regexp">/ 从之前的浏览习惯中总结得到</span><br><span class="line">    SELF_REFERAL_MOTIVATED,    /</span><span class="regexp">/ 猜测会产生第二次连接</span><br><span class="line"></span><br><span class="line">    /</span><span class="regexp">/ &lt;snip&gt; ..,</span><br><span class="line">&#125;;</span><br><span class="line">```</span></span><br></pre></td></tr></table></figure>
 <p>获知一个信号后，预测器的目标便是评估其正确的可能性，若资源获取到后，激活事件。每个预测都有成功性，优先级和一个有时效的时间戳。组合起来可以建立一个内部的优先队列来优化预测。最终，对于每一个从此队列发出的Request，预测器还会持续追踪它的成功率，这让后续优化成为可能。</p>
-<h2 id="果壳中的Chrome网络架构">果壳中的Chrome网络架构</h2><ul>
+<h2 id="u679C_u58F3_u4E2D_u7684Chrome_u7F51_u7EDC_u67B6_u6784"><a href="#u679C_u58F3_u4E2D_u7684Chrome_u7F51_u7EDC_u67B6_u6784" class="headerlink" title="果壳中的Chrome网络架构"></a>果壳中的Chrome网络架构</h2><ul>
 <li>Chrome使用一个<strong>多进程架构</strong>，这将Render和Browser进程隔离</li>
 <li>Chrome维护了一个<strong>资源调度分配的单例</strong>，它被所有Render进程公用，并运行在Browser进程中</li>
 <li>网络栈是一个<strong>快平台</strong>，大多数情况下单线程的库</li>
@@ -598,13 +789,13 @@
         
           <span itemprop="articleBody">
             
-              <h1 id="为什么需要这么折腾？">为什么需要这么折腾？</h1><p>我在主系统转为Linux后，虽然轻量级的Office编辑和图片/视频编辑是可以进行的，比如利用免费的LibreOffice、Kdenlive、Inkscape。对于图片处理，某些命令行工具如<code>convert</code>，可以直接脚本调用，灵活行和自动性反而比GUI软件更高。</p>
+              <h1 id="u4E3A_u4EC0_u4E48_u9700_u8981_u8FD9_u4E48_u6298_u817E_uFF1F"><a href="#u4E3A_u4EC0_u4E48_u9700_u8981_u8FD9_u4E48_u6298_u817E_uFF1F" class="headerlink" title="为什么需要这么折腾？"></a>为什么需要这么折腾？</h1><p>我在主系统转为Linux后，虽然轻量级的Office编辑和图片/视频编辑是可以进行的，比如利用免费的LibreOffice、Kdenlive、Inkscape。对于图片处理，某些命令行工具如<code>convert</code>，可以直接脚本调用，灵活行和自动性反而比GUI软件更高。</p>
 <p>但不得不承认，偶尔正式场合编辑文档表格和幻灯、PS、网银操作，还是逃脱不了更加普适的Windows。对于标准的Office套件，Adobe套件和Visual Studio等神一般的Windows软件，还是需要找一个解决方案来愉快地使用的。然而并没有入Mac的打算，所以我还是准备采用各种方法使用Windows。正好这样的话，也有机会再摸一摸Windows上的软件，比如微信电脑版等等。</p>
 <p>所以对于我80%以上是直接使用Linux，一个纯粹的系统即可，有时需要使用Office等时需要短时间密集的Windows使用。</p>
 <p>首先有两个方案也不错，但我不是很想使用，一个是Wine，兼容性总是永远的痛，一个是双系统，需要比较大的硬盘，而且相对比较麻烦，再后期与Windows to go对比后，我也抛弃了这个方案。</p>
-<h1 id="方案一:_虚拟机">方案一: 虚拟机</h1><p>虚拟机对于高性能的主机适用，对于我2012年的笔记本，运行XP非常流畅，但Win7比较吃力。虚拟机的优点很明显，做好系统后，几个文件组成的虚拟机可以任意备份与拷贝，所以我常备着几个干净的Xp和Win7虚拟机，和装有Office的。</p>
+<h1 id="u65B9_u6848_u4E00_3A__u865A_u62DF_u673A"><a href="#u65B9_u6848_u4E00_3A__u865A_u62DF_u673A" class="headerlink" title="方案一: 虚拟机"></a>方案一: 虚拟机</h1><p>虚拟机对于高性能的主机适用，对于我2012年的笔记本，运行XP非常流畅，但Win7比较吃力。虚拟机的优点很明显，做好系统后，几个文件组成的虚拟机可以任意备份与拷贝，所以我常备着几个干净的Xp和Win7虚拟机，和装有Office的。</p>
 <p><img src="/images/windows-to-go-with-SSD/vm.png" alt="vm"></p>
-<h1 id="方案二:_远程桌面">方案二: 远程桌面</h1><p>在实验室有了高性能主机入驻后（研究生的开发机，非常眼馋），我便一直寻求办法远程使用它。在争取得到学长同意后，我登记了账号，并网上查询到方法，可以让多人同时登入一台Windows主机操作，这样当学长使用电脑的时候，我还是可以远程登陆进行操作。</p>
+<h1 id="u65B9_u6848_u4E8C_3A__u8FDC_u7A0B_u684C_u9762"><a href="#u65B9_u6848_u4E8C_3A__u8FDC_u7A0B_u684C_u9762" class="headerlink" title="方案二: 远程桌面"></a>方案二: 远程桌面</h1><p>在实验室有了高性能主机入驻后（研究生的开发机，非常眼馋），我便一直寻求办法远程使用它。在争取得到学长同意后，我登记了账号，并网上查询到方法，可以让多人同时登入一台Windows主机操作，这样当学长使用电脑的时候，我还是可以远程登陆进行操作。</p>
 <p>关于操作顺畅的问题，Microsoft的RDP远程桌面协议已经十分高效，再加上如果是校园以太网连接，操作顺滑，甚至可以看视频。</p>
 <p>使用远程桌面的好处也有不少：</p>
 <ol>
@@ -614,26 +805,26 @@
 </ol>
 <p>当然也有一些弊端，比如受他人限制，远程桌面使用的虚拟显卡驱动会造成某些软件问题，需要插U盘的话比较麻烦（可以直接挂载本地硬盘共享）。</p>
 <p>推荐一个Linux上的开源远程桌面客户端，<a href="https://github.com/FreeRDP/FreeRDP" target="_blank" rel="external">FreeRdp</a>，可以添加剪贴板共享、挂载本地磁盘等功能，其他平台微软均有提供。<br><img src="/images/windows-to-go-with-SSD/freerdp.png" alt="vm"></p>
-<h1 id="方案三:_外置SSD安装Windows_to_go">方案三: 外置SSD安装Windows to go</h1><p>不过虚拟机在我笔记本上总是跑不畅快，远程桌面也并不是随时都能享用，怎样才能一直运行我的Windows（各种环境齐全），但又不受机器的限制，也就是不写死在一台主机中呢？</p>
+<h1 id="u65B9_u6848_u4E09_3A__u5916_u7F6ESSD_u5B89_u88C5Windows_to_go"><a href="#u65B9_u6848_u4E09_3A__u5916_u7F6ESSD_u5B89_u88C5Windows_to_go" class="headerlink" title="方案三: 外置SSD安装Windows to go"></a>方案三: 外置SSD安装Windows to go</h1><p>不过虚拟机在我笔记本上总是跑不畅快，远程桌面也并不是随时都能享用，怎样才能一直运行我的Windows（各种环境齐全），但又不受机器的限制，也就是不写死在一台主机中呢？</p>
 <p>事实证明<code>Windows to go</code>就是符合我的期望的，它可以直接将Windows装在外置硬盘和U盘中。这样我只需要将这个外置存储设备插入一台主机，便选择从外置存储直接启动了，这里具体请参考微软的<a href="">说明</a>，其会在启动时判别硬件并加载驱动，就算不是同一机器，也能进入同一个Windows实例。<code>Chrome OS</code>则更方便，登录即可，不过现在还不适用于我的情况，技术上也不成熟。</p>
 <p>USB3.0可以达到5Gb/s的传输速率，高于Sata3的极限，所以普通Sata3硬盘是可以这样用的，也可以弄一个高速USB3.0 U盘，但为了以后硬盘可以重用于其他，我还是牺牲了便携性。</p>
-<h2 id="Windows_8_+_HDD_+_USB_3-0">Windows 8 + HDD + USB 3.0</h2><p>于是我在十一期间立马找了一个320G的硬盘，配合一个USB3的外置盒，边体验了一番。<br>事实证明体验很差，不是因为系统不好用，而是因为HDD加劣质的外置盒太慢了。</p>
+<h2 id="Windows_8_+_HDD_+_USB_3-0"><a href="#Windows_8_+_HDD_+_USB_3-0" class="headerlink" title="Windows 8 + HDD + USB 3.0"></a>Windows 8 + HDD + USB 3.0</h2><p>于是我在十一期间立马找了一个320G的硬盘，配合一个USB3的外置盒，边体验了一番。<br>事实证明体验很差，不是因为系统不好用，而是因为HDD加劣质的外置盒太慢了。</p>
 <p>两秒的延时，太慢了。<br><img src="/images/windows-to-go-with-SSD/winsys-hdd.jpg" alt="lantency"></p>
 <p>在看到<a href="https://luolei.org/imac-5k-external-usb-ssd-update/" target="_blank" rel="external">其他人用外置SSD做iMac系统盘后</a>，我才终于决定一定需要弄一个入门的SSD来做Windows to go，这样IO便不是瓶颈，如果有高性能的主机的话，我便可以直接占领其计算资源，作图渲染视频就能节省很多时间。</p>
-<h2 id="Windows_10_+_SSD_+_USB3-0（UASP支持）">Windows 10 + SSD + USB3.0（UASP支持）</h2><h3 id="购买">购买</h3><p>硬盘性能、USB3.0协议、外置盒的主控芯片的性能，支持UASP协议都是值得考虑的，综合经济实力和使用频率考虑，由于只要装系统/Office/Adobe，120G足够，如果需要编辑的文件很大（如视频），可以后再加移动固态硬盘。</p>
+<h2 id="Windows_10_+_SSD_+_USB3-0_uFF08UASP_u652F_u6301_uFF09"><a href="#Windows_10_+_SSD_+_USB3-0_uFF08UASP_u652F_u6301_uFF09" class="headerlink" title="Windows 10 + SSD + USB3.0（UASP支持）"></a>Windows 10 + SSD + USB3.0（UASP支持）</h2><h3 id="u8D2D_u4E70"><a href="#u8D2D_u4E70" class="headerlink" title="购买"></a>购买</h3><p>硬盘性能、USB3.0协议、外置盒的主控芯片的性能，支持UASP协议都是值得考虑的，综合经济实力和使用频率考虑，由于只要装系统/Office/Adobe，120G足够，如果需要编辑的文件很大（如视频），可以后再加移动固态硬盘。</p>
 <blockquote>
 <p>USAP是USB-IF所制定的一个新传输协议用于透过USB接口连接序列设备，提供大容量储存设备的传输速度高达20％，并降低CPU的利用率、数据延迟和等待时间，USAP协议提供了高性能主机及设备之间的数据传输。 </p>
 </blockquote>
 <p>最终选择：<br>SSD   ： 入门级120G Sandisk加强版，京东购入比较放心。<br>外置盒： ORICO 2589S3，USB3.0并支持UASP，淘宝购入。</p>
 <p>共356元。</p>
-<h3 id="安装">安装</h3><ol>
+<h3 id="u5B89_u88C5"><a href="#u5B89_u88C5" class="headerlink" title="安装"></a>安装</h3><ol>
 <li>安装SSD，盒子是免工具拆卸，立马搞定。</li>
 <li>格式化为NTFS，测速发现不错。</li>
 <li>使用<a href="https://rufus.akeo.ie/" target="_blank" rel="external">rufus</a>工具，选择Windows 10镜像，并勾选<code>Windows to go</code>，过程非常傻瓜。</li>
 <li>重启选择外置SSD启动。</li>
 </ol>
 <p><img src="/images/windows-to-go-with-SSD/rufus_en.png" alt="rufus"></p>
-<h3 id="使用">使用</h3><p>装完各种常用应用后硬盘使用不超一半，测速满意，和同学的低端SSD系统盘对比后发现差距不大。</p>
+<h3 id="u4F7F_u7528"><a href="#u4F7F_u7528" class="headerlink" title="使用"></a>使用</h3><p>装完各种常用应用后硬盘使用不超一半，测速满意，和同学的低端SSD系统盘对比后发现差距不大。</p>
 <p><img src="/images/windows-to-go-with-SSD/as-ssd-test.jpg" alt="rufus"><br><img src="/images/windows-to-go-with-SSD/winsys-ssd.jpg" alt="rufus"></p>
 <p>相比之下原来硬盘的顺序读写不到50MB/s，4K根本跑不完。</p>
 <p>正好开发机性能不错，只安装了Ubuntu，也启动尝试了一下。</p>
@@ -734,11 +925,11 @@
         
           <span itemprop="articleBody">
             
-              <h1 id="问题描述">问题描述</h1><p>目前在做的小项目中，我们在浏览器中通过Hook浏览器的API，截获目标程序对浏览器API的调用。比如对于Webgl的网页程序，我们就能截获所有的gl指令，这其中主要是截获参数列表。把这些gl指令翻译为Opengl ES标准的话便可以编译为一个其他设备上的原生应用了。</p>
+              <h1 id="u95EE_u9898_u63CF_u8FF0"><a href="#u95EE_u9898_u63CF_u8FF0" class="headerlink" title="问题描述"></a>问题描述</h1><p>目前在做的小项目中，我们在浏览器中通过Hook浏览器的API，截获目标程序对浏览器API的调用。比如对于Webgl的网页程序，我们就能截获所有的gl指令，这其中主要是截获参数列表。把这些gl指令翻译为Opengl ES标准的话便可以编译为一个其他设备上的原生应用了。</p>
 <p>图形的绘制过程中经常会有大量的数组需要传递入GPU，这就造成了我们截获了大量的数组。如果想直接把这些数据保存在浏览器内存中，压力很大，实时流到其他服务器上的话也带来了stringfy瓶颈和传输瓶颈。虽然对于Javascript中的Typed Array，我们现在直接二进制传输到服务器上，是否能只传输变化的数组，或者是只传输数组的delta，这个是一个潜在的优化。当然，如果发现大部分要传输的数组都是改变过的话，或者是检测改变的开销大于直接传输的开销（毕竟是CPU时间对抗IO时间，而且由于检测比如会使目标程序运行变慢），完全便可以不考虑进行数组改变的检测了。</p>
 <p>对于给定Javascript的TypedArray，我们的目标便是当截获到的gl指令需要使用它的时候，我们需要能知道它是否内容发生了改动，更进一步能记录出上次截获到这次截获间的delta。<br>花了一些时间进行探索，然而最后还是无解，并也没有方法能占用资源尽量少地做到标记修改，记录如下。</p>
-<h1 id="暴力检测">暴力检测</h1><p>这个方法不需要多说，不过检测的时间消耗太多，由于消耗了Webgl每帧的CPU时间，很容易造成CPU性能瓶颈，导致Fps下降。</p>
-<h1 id="Object-observe()_/_Array-observe()">Object.observe() / Array.observe()</h1><p>最先查询到的便是两个内建的API，直接来看MDN上的使用：<br><figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">var obj = &#123;</span><br><span class="line">    foo: <span class="number">0</span>,</span><br><span class="line">    bar: <span class="number">1</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Object.observe(obj, <span class="keyword">function</span>(changes) &#123;</span><br><span class="line">    console.log(changes);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">obj.baz = <span class="number">2</span>;</span><br><span class="line">// [&#123;name: <span class="string">'baz'</span>, object: &lt;obj&gt;, type: <span class="string">'add'</span>&#125;]</span><br><span class="line"></span><br><span class="line">obj.foo = <span class="string">'hello'</span>;</span><br><span class="line">// [&#123;name: <span class="string">'foo'</span>, object: &lt;obj&gt;, type: <span class="string">'update'</span>, oldValue: <span class="number">0</span>&#125;]</span><br><span class="line"></span><br><span class="line"><span class="keyword">delete</span> obj.baz;</span><br><span class="line">// [&#123;name: <span class="string">'baz'</span>, object: &lt;obj&gt;, type: <span class="string">'delete'</span>, oldValue: <span class="number">2</span>&#125;]</span><br></pre></td></tr></table></figure></p>
+<h1 id="u66B4_u529B_u68C0_u6D4B"><a href="#u66B4_u529B_u68C0_u6D4B" class="headerlink" title="暴力检测"></a>暴力检测</h1><p>这个方法不需要多说，不过检测的时间消耗太多，由于消耗了Webgl每帧的CPU时间，很容易造成CPU性能瓶颈，导致Fps下降。</p>
+<h1 id="Object-observe_28_29_/_Array-observe_28_29"><a href="#Object-observe_28_29_/_Array-observe_28_29" class="headerlink" title="Object.observe() / Array.observe()"></a>Object.observe() / Array.observe()</h1><p>最先查询到的便是两个内建的API，直接来看MDN上的使用：<br><figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">var obj = &#123;</span><br><span class="line">    foo: <span class="number">0</span>,</span><br><span class="line">    bar: <span class="number">1</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Object.observe(obj, <span class="keyword">function</span>(changes) &#123;</span><br><span class="line">    console.log(changes);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">obj.baz = <span class="number">2</span>;</span><br><span class="line">// [&#123;name: <span class="string">'baz'</span>, object: &lt;obj&gt;, type: <span class="string">'add'</span>&#125;]</span><br><span class="line"></span><br><span class="line">obj.foo = <span class="string">'hello'</span>;</span><br><span class="line">// [&#123;name: <span class="string">'foo'</span>, object: &lt;obj&gt;, type: <span class="string">'update'</span>, oldValue: <span class="number">0</span>&#125;]</span><br><span class="line"></span><br><span class="line"><span class="keyword">delete</span> obj.baz;</span><br><span class="line">// [&#123;name: <span class="string">'baz'</span>, object: &lt;obj&gt;, type: <span class="string">'delete'</span>, oldValue: <span class="number">2</span>&#125;]</span><br></pre></td></tr></table></figure></p>
 <p>一开始看到的时候感觉非常符合我的需求，并且还区分了改动的类型，比如<code>update</code>、<code>add</code>、<code>delete</code>类型。<br>应该现在很多前端的工具就使用Observe便可以完全数据到显示的单向同步了。<br>于是尝试了一下在Typed Array上的操作：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">var obj = <span class="keyword">new</span> Int16Array([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</span><br><span class="line">Object.observe(obj, function(changes) &#123;</span><br><span class="line">    console.<span class="built_in">log</span>(changes);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">obj[<span class="number">0</span>] = <span class="number">9</span>; <span class="comment">// changed</span></span><br><span class="line">obj[<span class="number">0</span>] = <span class="number">9</span>; <span class="comment">// unchanged</span></span><br><span class="line">obj.sort(); <span class="comment">// changed</span></span><br></pre></td></tr></table></figure>
 <p>不过后来看到这么一个解释:</p>
@@ -747,15 +938,15 @@
 </blockquote>
 <p>说明变更事件是异步通知的，比如可以这样实验一下：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> <span class="built_in">Int16Array</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</span><br><span class="line">a.isDirty = <span class="literal">false</span>;</span><br><span class="line"><span class="built_in">Object</span>.observe(a, <span class="function"><span class="keyword">function</span>(<span class="params">changes</span>) </span>&#123;</span><br><span class="line">      a.isDirty = <span class="literal">true</span>;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'c'</span>);</span><br><span class="line">&#125;);</span><br><span class="line">a[<span class="number">0</span>]=<span class="number">9</span>;</span><br><span class="line"><span class="built_in">console</span>.log(a.isDirty);</span><br><span class="line">setTimeout(<span class="string">'console.log(a.isDirty);'</span>,<span class="number">100</span>);</span><br><span class="line"></span><br><span class="line">output:</span><br><span class="line"><span class="literal">false</span></span><br><span class="line">c</span><br><span class="line"><span class="literal">true</span></span><br></pre></td></tr></table></figure></p>
 <p>这就带来了问题，由于Javascript执行是单线程的，可能在webgl程序刚修改完后便被我截获了这个数组，但修改通知没到，我就已经错误判断数组未改变了，由于我相当于是对每个gl命令的参数进行快照，无法在未来进行记录，如果停止我当前线程的，会带来严重的性能问题。</p>
-<h1 id="Object-defineProperty">Object.defineProperty</h1><p>这个方法可以为对象定义属性，并能对属性的访问进行详细的控制，最简单的话我们给定义get和set函数，举例说明：</p>
+<h1 id="Object-defineProperty"><a href="#Object-defineProperty" class="headerlink" title="Object.defineProperty"></a>Object.defineProperty</h1><p>这个方法可以为对象定义属性，并能对属性的访问进行详细的控制，最简单的话我们给定义get和set函数，举例说明：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> arr = &#123;&#125;;</span><br><span class="line"><span class="keyword">var</span> shadow = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];</span><br><span class="line"><span class="built_in">Object</span>.defineProperty(arr, <span class="string">'0'</span>, &#123;</span><br><span class="line">  get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'get'</span>);</span><br><span class="line">    <span class="keyword">return</span> shadow[<span class="string">'0'</span>];</span><br><span class="line">  &#125;,</span><br><span class="line">  set: <span class="function"><span class="keyword">function</span>(<span class="params">v</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'set'</span>);</span><br><span class="line">    shadow[<span class="string">'0'</span>] = v;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
 <p>通常对外暴露的get，set中要访问一个内部的变量，以防止递归访问属性的get或是set。<br>这个方法其实是多加入了一个proxy的对象。并且TypedArray并不能重写数字属性的get/set，只能通过一个proxy对象了。</p>
 <p>一个简陋的实现，直接替换浏览器中提供的API:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _Float32Array = <span class="built_in">Float32Array</span>;</span><br><span class="line"><span class="built_in">Float32Array</span> = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 这里需要罗列出内部的属性和函数名</span></span><br><span class="line">  <span class="comment">// 因为数组类型只能for遍历数字属性</span></span><br><span class="line">  <span class="keyword">var</span> list = [</span><br><span class="line">    <span class="string">"BYTES_PER_ELEMENT"</span>,</span><br><span class="line">    <span class="string">"__defineGetter__"</span>,</span><br><span class="line">    <span class="string">"__defineSetter__"</span>,</span><br><span class="line">    <span class="string">"__lookupGetter__"</span>,</span><br><span class="line">    <span class="string">"__lookupSetter__"</span>,</span><br><span class="line">    <span class="string">"constructor"</span>,</span><br><span class="line">    <span class="string">"buffer"</span>,</span><br><span class="line">    <span class="string">"byteLength"</span>,</span><br><span class="line">    <span class="string">"byteOffset"</span>,</span><br><span class="line">    <span class="string">"entries"</span>,</span><br><span class="line">    <span class="string">"hasOwnProperty"</span>,</span><br><span class="line">    <span class="string">"isPrototypeOf"</span>,</span><br><span class="line">    <span class="string">"keys"</span>,</span><br><span class="line">    <span class="string">"length"</span>,</span><br><span class="line">    <span class="string">"propertyIsEnumerable"</span>,</span><br><span class="line">    <span class="string">"set"</span>,</span><br><span class="line">    <span class="string">"subarray"</span>,</span><br><span class="line">    <span class="string">"toLocaleString"</span>,</span><br><span class="line">    <span class="string">"toString"</span>,</span><br><span class="line">    <span class="string">"valueOf"</span>,</span><br><span class="line">    <span class="string">"values"</span>,</span><br><span class="line">  ]</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化的函数可能会有三个参数，还未处理</span></span><br><span class="line">  <span class="keyword">var</span> a = <span class="keyword">new</span> _Float32Array(<span class="built_in">arguments</span>[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.a = a;</span><br><span class="line">  <span class="keyword">var</span> b = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">this</span>.isDirty = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">  list.forEach(<span class="function"><span class="keyword">function</span> (<span class="params">key</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span>(a[key]) == <span class="string">'function'</span>) &#123;</span><br><span class="line">      b[key] = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        b.isDirty = <span class="literal">true</span>;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'invoke'</span>, key);</span><br><span class="line">        <span class="keyword">return</span> a[key].apply(a, <span class="built_in">arguments</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="built_in">Object</span>.defineProperty(b, key, &#123;</span><br><span class="line">        configurable: <span class="literal">true</span>,</span><br><span class="line">        enumerable: <span class="literal">true</span>,</span><br><span class="line">        get: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">'get member'</span>,i);</span><br><span class="line">            <span class="keyword">return</span> a[i];</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;(key),</span><br><span class="line">        set: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">v</span>) </span>&#123;</span><br><span class="line">            b.isDirty = <span class="literal">true</span>;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">'set member'</span>,i);</span><br><span class="line">            a[i] = v;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;(key)</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.constructor = a.constructor;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> idx <span class="keyword">in</span> a) &#123;</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(b, idx, &#123;</span><br><span class="line">      configurable: <span class="literal">true</span>,</span><br><span class="line">      enumerable: <span class="literal">true</span>,</span><br><span class="line">      get: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">'get index'</span>,i);</span><br><span class="line">          <span class="keyword">return</span> a[i];</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;(idx),</span><br><span class="line">      set: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">v</span>) </span>&#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">'set index'</span>,i);</span><br><span class="line">          b.isDirty = <span class="literal">true</span>;</span><br><span class="line">          a[i] = v;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;(idx)</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试</span></span><br><span class="line">&gt;&gt;a = <span class="keyword">new</span> <span class="built_in">Float32Array</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>])</span><br><span class="line">&lt;&lt;<span class="built_in">Float32Array</span> &#123;a: <span class="built_in">Float32Array</span>[<span class="number">3</span>], isDirty: <span class="literal">false</span>&#125;</span><br><span class="line">&gt;&gt;a.toString()</span><br><span class="line">&lt;&lt;t.js:<span class="number">64</span> invoke toString</span><br><span class="line">&lt;&lt;<span class="string">"1,2,3"</span></span><br><span class="line">&gt;&gt;a[<span class="number">0</span>]=<span class="number">1</span></span><br><span class="line">&lt;&lt;t.js:<span class="number">100</span> set index <span class="number">0</span></span><br><span class="line">&lt;&lt;<span class="number">1</span></span><br><span class="line">&gt;&gt;a[<span class="number">2</span>]</span><br><span class="line">&lt;&lt;t.js:<span class="number">94</span> get index <span class="number">2</span></span><br><span class="line">&lt;&lt;<span class="number">3</span></span><br><span class="line">&gt;&gt;a.constructor</span><br><span class="line">&lt;&lt;<span class="built_in">Float32Array</span>() &#123; [native code]  &#125;</span><br></pre></td></tr></table></figure></p>
 <p>本做法应该还有以下局限：</p>
-<h2 id="性能">性能</h2><p>大规模下创建一个1000000的数组内存占用飙升，因为创建了太多的get/set函数。</p>
+<h2 id="u6027_u80FD"><a href="#u6027_u80FD" class="headerlink" title="性能"></a>性能</h2><p>大规模下创建一个1000000的数组内存占用飙升，因为创建了太多的get/set函数。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ori = <span class="keyword">new</span> _Float32Array(<span class="number">1000000</span>)</span><br><span class="line">Float32Array[<span class="number">1000000</span>]</span><br><span class="line">mod = <span class="keyword">new</span> Float32Array(<span class="number">1000000</span>)</span><br><span class="line">Float32Array &#123;a: Float32Array[<span class="number">1000000</span>], isDirty: <span class="literal">false</span>&#125;</span><br><span class="line"></span><br><span class="line">console.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;var t = mod[i];t++;mod[i]=t;&#125;;console.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">VM741:<span class="number">2</span> a: <span class="number">5313.409</span>ms</span><br><span class="line"></span><br><span class="line">console.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;var t=ori[i];t++;ori[i]=t;&#125;;console.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">VM743:<span class="number">2</span> a: <span class="number">3884.074</span>ms</span><br></pre></td></tr></table></figure>
-<h2 id="内部创建并返回的TypedArray无法Hook">内部创建并返回的TypedArray无法Hook</h2><p>比如类似<code>subarray()</code>函数，返回值便是原生的TypedArray了，需要在Proxy对象中特殊处理一下。</p>
-<h2 id="在某些场景下不能完全替代原有的TypedArray">在某些场景下不能完全替代原有的TypedArray</h2><p>可以尽量模拟原生TypedArray的对外Api，不过还是有些场景可能照顾不到。</p>
+<h2 id="u5185_u90E8_u521B_u5EFA_u5E76_u8FD4_u56DE_u7684TypedArray_u65E0_u6CD5Hook"><a href="#u5185_u90E8_u521B_u5EFA_u5E76_u8FD4_u56DE_u7684TypedArray_u65E0_u6CD5Hook" class="headerlink" title="内部创建并返回的TypedArray无法Hook"></a>内部创建并返回的TypedArray无法Hook</h2><p>比如类似<code>subarray()</code>函数，返回值便是原生的TypedArray了，需要在Proxy对象中特殊处理一下。</p>
+<h2 id="u5728_u67D0_u4E9B_u573A_u666F_u4E0B_u4E0D_u80FD_u5B8C_u5168_u66FF_u4EE3_u539F_u6709_u7684TypedArray"><a href="#u5728_u67D0_u4E9B_u573A_u666F_u4E0B_u4E0D_u80FD_u5B8C_u5168_u66FF_u4EE3_u539F_u6709_u7684TypedArray" class="headerlink" title="在某些场景下不能完全替代原有的TypedArray"></a>在某些场景下不能完全替代原有的TypedArray</h2><p>可以尽量模拟原生TypedArray的对外Api，不过还是有些场景可能照顾不到。</p>
 <p>如果还有更好的方法，欢迎讨论。</p>
 
             
@@ -852,18 +1043,18 @@
         
           <span itemprop="articleBody">
             
-              <h1 id="为什么需要使用_Web_Page_Replay？">为什么需要使用 Web Page Replay？</h1><h2 id="需求的产生">需求的产生</h2><p>实习期间，我们经常用各种Workload对浏览器进行测试，初期大量的Workload都是手工收集或是开源的，再整理到小组内的服务器上。<br>后期产生了抓取浏览器中Javascript Trace并实时送至后端分析的需求，例如我们希望将某些网页的Webgl调用全部记录下来，或者是将用户的各种互动事件记录下来，又不用手工地修改Workload，便有了我目前写的代理服务器，它能对我们关注的Workload注入Javascript脚本，比和后端代理服务器建立通信，高效地把Trace发送到后端，并易于扩展各种功能的后端。</p>
+              <h1 id="u4E3A_u4EC0_u4E48_u9700_u8981_u4F7F_u7528_Web_Page_Replay_uFF1F"><a href="#u4E3A_u4EC0_u4E48_u9700_u8981_u4F7F_u7528_Web_Page_Replay_uFF1F" class="headerlink" title="为什么需要使用 Web Page Replay？"></a>为什么需要使用 Web Page Replay？</h1><h2 id="u9700_u6C42_u7684_u4EA7_u751F"><a href="#u9700_u6C42_u7684_u4EA7_u751F" class="headerlink" title="需求的产生"></a>需求的产生</h2><p>实习期间，我们经常用各种Workload对浏览器进行测试，初期大量的Workload都是手工收集或是开源的，再整理到小组内的服务器上。<br>后期产生了抓取浏览器中Javascript Trace并实时送至后端分析的需求，例如我们希望将某些网页的Webgl调用全部记录下来，或者是将用户的各种互动事件记录下来，又不用手工地修改Workload，便有了我目前写的代理服务器，它能对我们关注的Workload注入Javascript脚本，比和后端代理服务器建立通信，高效地把Trace发送到后端，并易于扩展各种功能的后端。</p>
 <p>一个更加常见的需求便是Localize Real life Workload，我们需要自动化地测试很多网上不开源的Workload，虽然通过我的代理服务器，注入分析不需要人工干预了，不过在公司内连接外网Workload是痛苦的。尤其是某些Workload每次需要加载50M的资源文件，一旦浏览器cache失效便要登上很长时间。而且网上的Workload在不断变动，无法直接进行组内Workload的统一化，针对浏览器测试时很难做到组内环境一致。</p>
 <p>所以一个最基本的需求就是我们访问该Workload一次，就将所有经过代理服务器的request和response本地存档，称为record；等到下次重复测试时，匹配所有的request，直接发回对应的response，这样便能做到本地replay该workload了。</p>
 <p>最近进哥说想加入这个功能在我们的代理服务器上，但由于当初没有考虑到这个功能，并且组内提出可以复用Telemetry中的Webpage Replay功能，可以将其加在我代理服务器的外层，便可以像是管道一样进行功能的扩展。正好我最近在看的Webgl Workload需要加载的资源很多，进行Replay极大加快了我自测的速度。</p>
-<h2 id="HTTP/HTTPS代理服务器的妙用">HTTP/HTTPS代理服务器的妙用</h2><p>刚才说的两个需求只是代理服务器的一个很小的用处，还有大量的妙用如下：</p>
+<h2 id="HTTP/HTTPS_u4EE3_u7406_u670D_u52A1_u5668_u7684_u5999_u7528"><a href="#HTTP/HTTPS_u4EE3_u7406_u670D_u52A1_u5668_u7684_u5999_u7528" class="headerlink" title="HTTP/HTTPS代理服务器的妙用"></a>HTTP/HTTPS代理服务器的妙用</h2><p>刚才说的两个需求只是代理服务器的一个很小的用处，还有大量的妙用如下：</p>
 <ul>
 <li>科学上网，不过HTTP代理一般只能作为国内跳板。</li>
 <li>反向代理，做网站的入口，自动后端负载均衡、流量审查、压缩、简单的逻辑直接部署等等功能。</li>
 <li>测试平台，之前看到阿里的Anyproxy便是这个作用，可以记录下所有接入终端（手机、平板）的HTTP网路请求，方便修改Header，Cookie，进行颠簸的网路环境的模拟等等，也提供Replay。</li>
 <li>内网上网，公司内部方便屏蔽外界的攻击，并限制员工上网，审查上网记录，当然有福利便是可以直接提供梯子。</li>
 </ul>
-<h1 id="Web_Page_Replay_实现原理的简单理解">Web Page Replay 实现原理的简单理解</h1><p>Replay工具可以运行在DNS劫持和HTTP代理两种模式下，实质上DNS劫持简化了设置浏览器代理的过程。</p>
+<h1 id="Web_Page_Replay__u5B9E_u73B0_u539F_u7406_u7684_u7B80_u5355_u7406_u89E3"><a href="#Web_Page_Replay__u5B9E_u73B0_u539F_u7406_u7684_u7B80_u5355_u7406_u89E3" class="headerlink" title="Web Page Replay 实现原理的简单理解"></a>Web Page Replay 实现原理的简单理解</h1><p>Replay工具可以运行在DNS劫持和HTTP代理两种模式下，实质上DNS劫持简化了设置浏览器代理的过程。</p>
 <p><img src="/images/WebPageReplayDiagram.png" alt="replay"></p>
 <p>盗图一张，可以看出Replay劫持模式便是在本机启动一个DNS服务器和Web服务器，分别占用53和80端口。<br>一般情况下，浏览器访问一个页面先进行域名的DNS解析，然后先目标服务器发送request。Record时，DNS全部返回127.0.0.1，浏览器便将请求发送给本机的服务器，服务器随后便代理请求后返回，并记录下本次request和response。Replay时本机服务器直接匹配存档文件。<br>DNS劫持的好处便是不用设置浏览器代理了，缺点也很明显：</p>
 <ul>
@@ -880,151 +1071,7 @@
 <p>如果通过本机8080代理服务器：<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ nc localhost <span class="number">8080</span></span><br><span class="line">  <span class="preprocessor">GET</span> http://<span class="keyword">baidu.com </span>HTTP/<span class="number">1</span>.<span class="number">1</span></span><br><span class="line"><span class="label">  Host:</span> <span class="keyword">baidu.com</span></span><br></pre></td></tr></table></figure></p>
 <p>代理服务器可能会输出如下日志：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">INFO:</span> Got request  baidu.com GET <span class="string">http:</span><span class="comment">//baidu.com</span></span><br><span class="line"><span class="string">INFO:</span> Sending request GET <span class="string">http:</span><span class="comment">//baidu.com</span></span><br><span class="line"><span class="string">INFO:</span> Received response <span class="number">200</span> OK</span><br></pre></td></tr></table></figure></p>
 <p>对于HTTPS:<br>代理服务收到客户端的CONNECT请求，但只可见host和port，代理服务器只能在客户端和服务器中建立起socket连接并相互双工传递，如果需要修改内容的话，需要进行中间人攻击。</p>
-<h1 id="Web_Page_Replay_使用实战">Web Page Replay 使用实战</h1><h2 id="使用DNS劫持模式">使用DNS劫持模式</h2><h2 id="使用直接代理模式">使用直接代理模式</h2><h1 id="源码分析">源码分析</h1>
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/11/15/new-in-cpp11/" itemprop="url">
-                  初尝 C++ 11
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2015-11-15T14:50:31+08:00" content="2015-11-15">
-              2015-11-15
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">programming</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <p>我学的第一门语言便是C++，不过由于后期一直没有使用C++写过较大的项目，一直处于入门阶段。最近实习，第一个小项目便是搭建一个代理服务器，Manager处于对性能的要求，希望我用C++实现。当时比较懒，觉得用C++重写代理服务器进展会比较慢，便说服Manager让我使用Golang，配合一些现有的框架实现。现在看起来达到了预期效果，但也缺少了锻炼C++能力的机会。</p>
-<p>现有的项目中，Android App几乎都是使用NDK进行开发的，近期我们有进行重构和性能优化的打算。恰逢其机，进哥在每周的Code Study上进行了 <code>C++11</code> 新标准的分享，我也借助周末的机会稍作整理。</p>
-<h1 id="概览">概览</h1><p><img src="/images/cpp-timeline.png" alt="timeline"></p>
-<p>C++自98标准化后，变动不大。直到近年开始不断推出新的标准，我们现在似乎还处在不断改进的中期。</p>
-<p>按照Manager的说法，改动可以被划分入如下几类：</p>
-<ul>
-<li>语法糖类。让代码更加简洁，易于理解。</li>
-<li>显式地进行语义申明。填之前留下的坑，并让代码更加符合最佳实践。</li>
-<li>其他语言的新特性。</li>
-<li>标准库的完善。</li>
-</ul>
-<p>Manager之前是做编译器的，所以他觉得大部分修改是标准委员会拍拍大脑制定的。的确，语言的设计不是大杂烩，维持一个简洁规范的语法规则是很有必要的，C++由于需要向前兼容，看起来便不简洁了。</p>
-<h1 id="语法糖">语法糖</h1><p>这部分是Manager痛斥的，不过也是我们大家喜闻乐见的一些小改进。</p>
-<h2 id="Auto关键字">Auto关键字</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> x = <span class="number">144000000000000</span>;</span><br><span class="line"><span class="keyword">auto</span> y = <span class="built_in">string</span>(<span class="string">"hello"</span>);</span><br><span class="line"><span class="keyword">auto</span> z = y + <span class="string">", world"</span>;</span><br><span class="line"><span class="keyword">auto</span> a = someFunc();</span><br></pre></td></tr></table></figure>
-<p>这里主要的便利还是减少了类型申明的冗余，不过对于他人来说可读性会很差。比如<code>auto x = 0;</code>只会推断为int，可能会带来不必要的内存占用（比如范围只需要-128-127），或是溢出。如果需要使用STL的string也需要使用类名，不然会被推断为char数组。</p>
-<p>最佳实践还是在能明显看出变量类型的时候使用，如容器的迭代器申明。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::const_iterator ci = vi.begin();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> i = vec.begin();i != vec.end();i++) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; (*i) &lt;&lt; <span class="built_in">std</span>::endl; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>不过还是有坑，配合新出的for loop时注意引用的问题,默认是一个拷贝。</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">for</span> (<span class="tag">auto</span> &amp;<span class="rule"><span class="attribute">i </span>:<span class="value"> vec) &#123;</span><br><span class="line">    i++</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="decltype自动化推导">decltype自动化推导</h2><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">typedef decltype<span class="list">(<span class="keyword">someFunc</span><span class="list">()</span>)</span> ITER</span><br><span class="line">auto a = someFunc<span class="list">()</span><span class="comment">; // 比如返回值为vector&lt;int&gt;::const_iterator</span></span><br><span class="line">decltype<span class="list">(<span class="keyword">a</span>)</span> b<span class="comment">;       // 自动推导为和a一样的类型</span></span><br></pre></td></tr></table></figure>
-<p>看到定义函数指针的用法，比较实用<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">myfunc</span><span class="params">(<span class="keyword">int</span> a)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">decltype</span>(&amp;myfunc) pfunc = myfunc;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; (*pfunc)(<span class="number">0</span>) &lt;&lt;<span class="built_in">std</span>::endl;</span><br><span class="line">    pfunc = [](<span class="keyword">int</span> a)&#123;<span class="keyword">return</span> a+<span class="number">1</span>;&#125;;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; (*pfunc)(<span class="number">0</span>) &lt;&lt;<span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="初始化语法">初始化语法</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">C c &#123;<span class="number">0</span>,<span class="number">0</span>&#125;; <span class="comment">//C++11 only. 相当于: C c(0,0);</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">int</span>* a = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">3</span>] &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>  &#125;; /C++<span class="number">11</span> only</span><br><span class="line">  </span><br><span class="line"><span class="keyword">class</span> X &#123;</span><br><span class="line">    <span class="keyword">int</span> a[<span class="number">4</span>];</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    X() : a&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125; &#123;&#125; <span class="comment">//C++11, member array initializer</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>看完上面几个例子，似乎很多类型的初始化都可以使用{}来统一了。<br>不过Manager指出其实只是新增加了<code>new int[3]{1,2,3};</code>这一类的，其他的方法是为了大一统加上的。这样看来，初始化的方法的确比较混乱了。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(C c)</span></span>&#123;&#125;</span><br><span class="line">foo(&#123;<span class="number">0</span>,<span class="number">0</span>&#125;);</span><br></pre></td></tr></table></figure>
-<p>其实可以这样写，进行自动化推导后初始化传入的结构体。不过不太易于阅读。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; vs=&#123; <span class="string">"first"</span>, <span class="string">"second"</span>, <span class="string">"third"</span> &#125;;</span><br><span class="line"><span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="built_in">string</span>&gt; singers =</span><br><span class="line">&#123; &#123;<span class="string">"Lady Gaga"</span>, <span class="string">"+1 (212) 555-7890"</span>&#125;,</span><br><span class="line">&#123;<span class="string">"Beyonce Knowles"</span>, <span class="string">"+1 (212) 555-0987"</span>&#125;&#125;;</span><br></pre></td></tr></table></figure>
-<p>适合进行容器初始化。以前map的初始化不友好。</p>
-<p>map和表达式配合，有一种Javascript的感觉。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">handler</span><span class="params">(<span class="keyword">int</span> a)</span></span>&#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="keyword">decltype</span>(&amp;handler)&gt; handlers =</span><br><span class="line">    &#123; </span><br><span class="line">        &#123;<span class="string">"ori"</span>, [](<span class="keyword">int</span> a)&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="built_in">std</span>::endl;&#125;&#125;,</span><br><span class="line">        &#123;<span class="string">"plusone"</span>, [](<span class="keyword">int</span> a)&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; a+<span class="number">1</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;&#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    (*handlers[<span class="string">"ori"</span>])(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h1 id="明晰语义的改动">明晰语义的改动</h1><h2 id="delete/default修饰">delete/default修饰</h2><p>我们经常需要单例模式需要<code>private</code>构造函数，可以使用<code>delete</code>告诉编译器不生成默认的构造函数。<br>不过可以申明为<code>private</code>，似乎不是特别的必要。</p>
-<p>下面例子是一个比较好的实践：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">double</span>)</span> </span>= <span class="keyword">delete</span>;</span><br></pre></td></tr></table></figure>
-<p>明晰了使用时不能编译器遇到传入double的情况，不会自动做类型转换了</p>
-<h2 id="nullptr,有类型的NULL">nullptr,有类型的NULL</h2><p><code>NULL</code>在函数重载时会产生歧义，导致具体逻辑得看编译器实现了。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span>; <span class="comment">//#1</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">char</span> *)</span></span>;<span class="comment">//#2</span></span><br><span class="line"><span class="comment">//C++03</span></span><br><span class="line">f(<span class="number">0</span>); <span class="comment">//二义性</span></span><br><span class="line"><span class="comment">//C++11</span></span><br><span class="line">f(<span class="literal">nullptr</span>) <span class="comment">//无二义性，调用f(char*)</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="final/override修饰">final/override修饰</h2><p><code>final</code>的使用不用多说了。<code>override</code>我们当时讨论了很久其存在的必要性。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> A&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> a)</span></span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"in A"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> B : <span class="keyword">public</span> A &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> a)</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"in B"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    A* p = <span class="keyword">new</span> B();</span><br><span class="line">    p-&gt;f(<span class="number">1.1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面例子中，最终调用到了B的f，不过如果A的f参数改为<code>double</code>，会由<code>override</code>产生编译错误。<br>如果不加的话，就会绕过B::f。</p>
-<h2 id="委托构造函数">委托构造函数</h2><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Student(<span class="keyword">int</span> i, string n): id(i), name(n)&#123;&#125;</span><br><span class="line">    Student(): Student(0, <span class="string">"none"</span>)&#123;&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    string name;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>之前一直需要抽出公共的构造部分，有了委托后可以更加高效，因为在初始化列表中便初始化成员了。</p>
-<h1 id="新特性">新特性</h1><h2 id="Lambda表达式">Lambda表达式</h2><p>其实在上文中已经使用过了一些，形如：<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="link_label">闭包捕捉</span>](<span class="link_url">参数列表</span>) -&gt; 返回值类型 &#123;函数体&#125;</span><br><span class="line">[](int a, double b) -&gt; double &#123;return a+b;&#125;</span><br></pre></td></tr></table></figure></p>
-<p>闭包是指在表达式中可以直接访问到表达式创建时的上下文中的变量，这样可以将特定的参数封在表达式内，调用时更加简洁。<br>在Javascript中，我们可以直接闭包。C++中区分了传值和传引用，所以我们必须通过[]来显式地捕捉外界的变量。<br>规则比较简单，<code>[=]</code>便是传值所有使用的外界变量；<code>[&amp;]</code>传引用；<code>[&amp;,x]</code>表示x传值，其他传引用；<code>[=,&amp;y]</code>表示y传递，其他传值。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100</span>, b = <span class="number">10</span>;</span><br><span class="line"><span class="comment">// auto 在这里很方便，-&gt;double也可以省去，可以被编译器自动推导</span></span><br><span class="line"><span class="keyword">auto</span> ff = [=](<span class="keyword">int</span> x, <span class="keyword">double</span> y) -&gt;<span class="keyword">double</span> &#123;<span class="keyword">return</span> a+b+x + y;&#125;;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%f\n"</span>, ff(<span class="number">1</span>, <span class="number">2.2</span>));</span><br></pre></td></tr></table></figure>
-<p>在使用标准库的高阶函数时，便可以使用函数表达式，省去了函数的申明和需要闭包的变量之前不方便传递的问题。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; nums&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line">for_each(nums.begin(), nums.end(), [&amp;sum](<span class="keyword">int</span> a)&#123;sum+=a;&#125;);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%d\n"</span>, sum);</span><br></pre></td></tr></table></figure></p>
-<p>Javascript中非常常见的立即调用表达式。<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="collection">[]</span> <span class="collection">&#123; printf<span class="list">(<span class="string">"Hi\n"</span>)</span><span class="comment">; &#125; ();</span></span><br><span class="line"><span class="collection">[]</span><span class="list">(<span class="keyword"><span class="built_in">int</span></span> i)</span> <span class="collection">&#123; printf<span class="list">(<span class="string">"Hi%d\n"</span>, i)</span><span class="comment">; &#125; (100);</span></span></span></span><br></pre></td></tr></table></figure></p>
-<h2 id="右值引用">右值引用</h2><p><a href="http://harttle.com/2015/10/11/cpp11-rvalue.html" target="_blank" rel="external">详细的介绍可参考这里</a>，写得很详细。 </p>
-<p>这个右值引用应该还是很好的特性。不过需要使用者明白自己究竟在做什么，主要是减少了同类中的一些冗余的拷贝过程。<br>不过我们当时的争论在于如果只是使用指针，也可以达到同样的效果，不过这里便没有类的封装性了，标准库也没办法通过<code>move</code>告知进行内部成员的移动。不过使用智能指针应该是可以达到同样的效果。<br>当时还认为如果内部变量是new获得的，应该自行管理不能传递，不过我认为这里的管理都是在同类型中间进行，传递也只是同类的实例传递给另外一个同类，所以管理是封闭在类的内部的，是符合自行管理new创造的对象的。</p>
-<h2 id="元组">元组</h2><p>可以用来返回多个返回值。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::tuple&lt; <span class="keyword">int</span> , <span class="keyword">double</span>, <span class="built_in">string</span>       &gt; tuple_1;</span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::tuple&lt; <span class="keyword">char</span>, <span class="keyword">short</span> , <span class="keyword">const</span> <span class="keyword">char</span> * &gt; tuple_2;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> <span class="keyword">const</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    tuple_1 t1;</span><br><span class="line">    tuple_2 t2 &#123;<span class="string">'X'</span>, <span class="number">2</span>, <span class="string">"Hola!"</span>&#125;; <span class="comment">// ()或是&#123;&#125;初始化都可以，不过建议使用新的&#123;&#125;统一初始化</span></span><br><span class="line">    t1 = t2 ; <span class="comment">// 第三个字串元素可由'const char *'隐式转换</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>摘自Wikipedia。</p>
-<h1 id="增强的标准库">增强的标准库</h1><h2 id="并发库（线程、锁、原子操作）">并发库（线程、锁、原子操作）</h2><h2 id="正则表达式库">正则表达式库</h2><h2 id="通用智能指针">通用智能指针</h2><h2 id="散列表">散列表</h2><h2 id="随机数生成">随机数生成</h2><h2 id="变长参数模板">变长参数模板</h2><h2 id="多态函数对象包装器">多态函数对象包装器</h2><h1 id="其他">其他</h1><p>最近希望做到动态的、有不同函数签名的函数的动态调用，后来只能使用switch case实现。<br>看到C++17标准中有一个<code>invoke</code>，似乎是动态地通过参数列表调用一个<code>callable</code>对象，也许以后还会加入GC和reflect。</p>
-<p><a href="https://zh.wikipedia.org/wiki/C%2B%2B11" target="_blank" rel="external">更多改动可参考Wikipedia</a><br><a href="http://coolshell.cn/articles/5265.html" target="_blank" rel="external">Coolshell</a></p>
-
+<h1 id="Web_Page_Replay__u4F7F_u7528_u5B9E_u6218"><a href="#Web_Page_Replay__u4F7F_u7528_u5B9E_u6218" class="headerlink" title="Web Page Replay 使用实战"></a>Web Page Replay 使用实战</h1><h2 id="u4F7F_u7528DNS_u52AB_u6301_u6A21_u5F0F"><a href="#u4F7F_u7528DNS_u52AB_u6301_u6A21_u5F0F" class="headerlink" title="使用DNS劫持模式"></a>使用DNS劫持模式</h2><h2 id="u4F7F_u7528_u76F4_u63A5_u4EE3_u7406_u6A21_u5F0F"><a href="#u4F7F_u7528_u76F4_u63A5_u4EE3_u7406_u6A21_u5F0F" class="headerlink" title="使用直接代理模式"></a>使用直接代理模式</h2><h1 id="u6E90_u7801_u5206_u6790"><a href="#u6E90_u7801_u5206_u6790" class="headerlink" title="源码分析"></a>源码分析</h1>
             
           </span>
         
@@ -1091,7 +1138,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">31</span>
+              <span class="site-state-item-count">32</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>

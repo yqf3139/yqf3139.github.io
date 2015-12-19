@@ -60,7 +60,7 @@
 <meta property="og:site_name" content="Yqf's Blog">
 <meta property="og:description" content="为什么需要使用 Web Page Replay？需求的产生实习期间，我们经常用各种Workload对浏览器进行测试，初期大量的Workload都是手工收集或是开源的，再整理到小组内的服务器上。后期产生了抓取浏览器中Javascript Trace并实时送至后端分析的需求，例如我们希望将某些网页的Webgl调用全部记录下来，或者是将用户的各种互动事件记录下来，又不用手工地修改Workload，便有了">
 <meta property="og:image" content="http://yqf3139.github.io/images/WebPageReplayDiagram.png">
-<meta property="og:updated_time" content="2015-11-28T08:36:22.802Z">
+<meta property="og:updated_time" content="2015-12-12T02:56:44.615Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用 Web Page Replay">
 <meta name="twitter:description" content="为什么需要使用 Web Page Replay？需求的产生实习期间，我们经常用各种Workload对浏览器进行测试，初期大量的Workload都是手工收集或是开源的，再整理到小组内的服务器上。后期产生了抓取浏览器中Javascript Trace并实时送至后端分析的需求，例如我们希望将某些网页的Webgl调用全部记录下来，或者是将用户的各种互动事件记录下来，又不用手工地修改Workload，便有了">
@@ -243,18 +243,18 @@
       
 
       
-        <span itemprop="articleBody"><h1 id="为什么需要使用_Web_Page_Replay？">为什么需要使用 Web Page Replay？</h1><h2 id="需求的产生">需求的产生</h2><p>实习期间，我们经常用各种Workload对浏览器进行测试，初期大量的Workload都是手工收集或是开源的，再整理到小组内的服务器上。<br>后期产生了抓取浏览器中Javascript Trace并实时送至后端分析的需求，例如我们希望将某些网页的Webgl调用全部记录下来，或者是将用户的各种互动事件记录下来，又不用手工地修改Workload，便有了我目前写的代理服务器，它能对我们关注的Workload注入Javascript脚本，比和后端代理服务器建立通信，高效地把Trace发送到后端，并易于扩展各种功能的后端。</p>
+        <span itemprop="articleBody"><h1 id="u4E3A_u4EC0_u4E48_u9700_u8981_u4F7F_u7528_Web_Page_Replay_uFF1F"><a href="#u4E3A_u4EC0_u4E48_u9700_u8981_u4F7F_u7528_Web_Page_Replay_uFF1F" class="headerlink" title="为什么需要使用 Web Page Replay？"></a>为什么需要使用 Web Page Replay？</h1><h2 id="u9700_u6C42_u7684_u4EA7_u751F"><a href="#u9700_u6C42_u7684_u4EA7_u751F" class="headerlink" title="需求的产生"></a>需求的产生</h2><p>实习期间，我们经常用各种Workload对浏览器进行测试，初期大量的Workload都是手工收集或是开源的，再整理到小组内的服务器上。<br>后期产生了抓取浏览器中Javascript Trace并实时送至后端分析的需求，例如我们希望将某些网页的Webgl调用全部记录下来，或者是将用户的各种互动事件记录下来，又不用手工地修改Workload，便有了我目前写的代理服务器，它能对我们关注的Workload注入Javascript脚本，比和后端代理服务器建立通信，高效地把Trace发送到后端，并易于扩展各种功能的后端。</p>
 <p>一个更加常见的需求便是Localize Real life Workload，我们需要自动化地测试很多网上不开源的Workload，虽然通过我的代理服务器，注入分析不需要人工干预了，不过在公司内连接外网Workload是痛苦的。尤其是某些Workload每次需要加载50M的资源文件，一旦浏览器cache失效便要登上很长时间。而且网上的Workload在不断变动，无法直接进行组内Workload的统一化，针对浏览器测试时很难做到组内环境一致。</p>
 <p>所以一个最基本的需求就是我们访问该Workload一次，就将所有经过代理服务器的request和response本地存档，称为record；等到下次重复测试时，匹配所有的request，直接发回对应的response，这样便能做到本地replay该workload了。</p>
 <p>最近进哥说想加入这个功能在我们的代理服务器上，但由于当初没有考虑到这个功能，并且组内提出可以复用Telemetry中的Webpage Replay功能，可以将其加在我代理服务器的外层，便可以像是管道一样进行功能的扩展。正好我最近在看的Webgl Workload需要加载的资源很多，进行Replay极大加快了我自测的速度。</p>
-<h2 id="HTTP/HTTPS代理服务器的妙用">HTTP/HTTPS代理服务器的妙用</h2><p>刚才说的两个需求只是代理服务器的一个很小的用处，还有大量的妙用如下：</p>
+<h2 id="HTTP/HTTPS_u4EE3_u7406_u670D_u52A1_u5668_u7684_u5999_u7528"><a href="#HTTP/HTTPS_u4EE3_u7406_u670D_u52A1_u5668_u7684_u5999_u7528" class="headerlink" title="HTTP/HTTPS代理服务器的妙用"></a>HTTP/HTTPS代理服务器的妙用</h2><p>刚才说的两个需求只是代理服务器的一个很小的用处，还有大量的妙用如下：</p>
 <ul>
 <li>科学上网，不过HTTP代理一般只能作为国内跳板。</li>
 <li>反向代理，做网站的入口，自动后端负载均衡、流量审查、压缩、简单的逻辑直接部署等等功能。</li>
 <li>测试平台，之前看到阿里的Anyproxy便是这个作用，可以记录下所有接入终端（手机、平板）的HTTP网路请求，方便修改Header，Cookie，进行颠簸的网路环境的模拟等等，也提供Replay。</li>
 <li>内网上网，公司内部方便屏蔽外界的攻击，并限制员工上网，审查上网记录，当然有福利便是可以直接提供梯子。</li>
 </ul>
-<h1 id="Web_Page_Replay_实现原理的简单理解">Web Page Replay 实现原理的简单理解</h1><p>Replay工具可以运行在DNS劫持和HTTP代理两种模式下，实质上DNS劫持简化了设置浏览器代理的过程。</p>
+<h1 id="Web_Page_Replay__u5B9E_u73B0_u539F_u7406_u7684_u7B80_u5355_u7406_u89E3"><a href="#Web_Page_Replay__u5B9E_u73B0_u539F_u7406_u7684_u7B80_u5355_u7406_u89E3" class="headerlink" title="Web Page Replay 实现原理的简单理解"></a>Web Page Replay 实现原理的简单理解</h1><p>Replay工具可以运行在DNS劫持和HTTP代理两种模式下，实质上DNS劫持简化了设置浏览器代理的过程。</p>
 <p><img src="/images/WebPageReplayDiagram.png" alt="replay"></p>
 <p>盗图一张，可以看出Replay劫持模式便是在本机启动一个DNS服务器和Web服务器，分别占用53和80端口。<br>一般情况下，浏览器访问一个页面先进行域名的DNS解析，然后先目标服务器发送request。Record时，DNS全部返回127.0.0.1，浏览器便将请求发送给本机的服务器，服务器随后便代理请求后返回，并记录下本次request和response。Replay时本机服务器直接匹配存档文件。<br>DNS劫持的好处便是不用设置浏览器代理了，缺点也很明显：</p>
 <ul>
@@ -271,7 +271,7 @@
 <p>如果通过本机8080代理服务器：<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ nc localhost <span class="number">8080</span></span><br><span class="line">  <span class="preprocessor">GET</span> http://<span class="keyword">baidu.com </span>HTTP/<span class="number">1</span>.<span class="number">1</span></span><br><span class="line"><span class="label">  Host:</span> <span class="keyword">baidu.com</span></span><br></pre></td></tr></table></figure></p>
 <p>代理服务器可能会输出如下日志：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">INFO:</span> Got request  baidu.com GET <span class="string">http:</span><span class="comment">//baidu.com</span></span><br><span class="line"><span class="string">INFO:</span> Sending request GET <span class="string">http:</span><span class="comment">//baidu.com</span></span><br><span class="line"><span class="string">INFO:</span> Received response <span class="number">200</span> OK</span><br></pre></td></tr></table></figure></p>
 <p>对于HTTPS:<br>代理服务收到客户端的CONNECT请求，但只可见host和port，代理服务器只能在客户端和服务器中建立起socket连接并相互双工传递，如果需要修改内容的话，需要进行中间人攻击。</p>
-<h1 id="Web_Page_Replay_使用实战">Web Page Replay 使用实战</h1><h2 id="使用DNS劫持模式">使用DNS劫持模式</h2><h2 id="使用直接代理模式">使用直接代理模式</h2><h1 id="源码分析">源码分析</h1></span>
+<h1 id="Web_Page_Replay__u4F7F_u7528_u5B9E_u6218"><a href="#Web_Page_Replay__u4F7F_u7528_u5B9E_u6218" class="headerlink" title="Web Page Replay 使用实战"></a>Web Page Replay 使用实战</h1><h2 id="u4F7F_u7528DNS_u52AB_u6301_u6A21_u5F0F"><a href="#u4F7F_u7528DNS_u52AB_u6301_u6A21_u5F0F" class="headerlink" title="使用DNS劫持模式"></a>使用DNS劫持模式</h2><h2 id="u4F7F_u7528_u76F4_u63A5_u4EE3_u7406_u6A21_u5F0F"><a href="#u4F7F_u7528_u76F4_u63A5_u4EE3_u7406_u6A21_u5F0F" class="headerlink" title="使用直接代理模式"></a>使用直接代理模式</h2><h1 id="u6E90_u7801_u5206_u6790"><a href="#u6E90_u7801_u5206_u6790" class="headerlink" title="源码分析"></a>源码分析</h1></span>
       
     </div>
 
@@ -372,7 +372,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">31</span>
+              <span class="site-state-item-count">32</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -425,7 +425,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#为什么需要使用_Web_Page_Replay？"><span class="nav-number">1.</span> <span class="nav-text">为什么需要使用 Web Page Replay？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#需求的产生"><span class="nav-number">1.1.</span> <span class="nav-text">需求的产生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP/HTTPS代理服务器的妙用"><span class="nav-number">1.2.</span> <span class="nav-text">HTTP/HTTPS代理服务器的妙用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Web_Page_Replay_实现原理的简单理解"><span class="nav-number">2.</span> <span class="nav-text">Web Page Replay 实现原理的简单理解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Web_Page_Replay_使用实战"><span class="nav-number">3.</span> <span class="nav-text">Web Page Replay 使用实战</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用DNS劫持模式"><span class="nav-number">3.1.</span> <span class="nav-text">使用DNS劫持模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用直接代理模式"><span class="nav-number">3.2.</span> <span class="nav-text">使用直接代理模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#源码分析"><span class="nav-number">4.</span> <span class="nav-text">源码分析</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#u4E3A_u4EC0_u4E48_u9700_u8981_u4F7F_u7528_Web_Page_Replay_uFF1F"><span class="nav-number">1.</span> <span class="nav-text">为什么需要使用 Web Page Replay？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#u9700_u6C42_u7684_u4EA7_u751F"><span class="nav-number">1.1.</span> <span class="nav-text">需求的产生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP/HTTPS_u4EE3_u7406_u670D_u52A1_u5668_u7684_u5999_u7528"><span class="nav-number">1.2.</span> <span class="nav-text">HTTP/HTTPS代理服务器的妙用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Web_Page_Replay__u5B9E_u73B0_u539F_u7406_u7684_u7B80_u5355_u7406_u89E3"><span class="nav-number">2.</span> <span class="nav-text">Web Page Replay 实现原理的简单理解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Web_Page_Replay__u4F7F_u7528_u5B9E_u6218"><span class="nav-number">3.</span> <span class="nav-text">Web Page Replay 使用实战</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F7F_u7528DNS_u52AB_u6301_u6A21_u5F0F"><span class="nav-number">3.1.</span> <span class="nav-text">使用DNS劫持模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F7F_u7528_u76F4_u63A5_u4EE3_u7406_u6A21_u5F0F"><span class="nav-number">3.2.</span> <span class="nav-text">使用直接代理模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#u6E90_u7801_u5206_u6790"><span class="nav-number">4.</span> <span class="nav-text">源码分析</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">
