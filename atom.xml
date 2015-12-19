@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Day day up.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yqf3139.github.io/"/>
-  <updated>2015-12-19T04:25:10.580Z</updated>
+  <updated>2015-12-19T04:34:14.267Z</updated>
   <id>http://yqf3139.github.io/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://yqf3139.github.io/2015/12/16/high-perf-network-in-chrome-trans-2/"/>
     <id>http://yqf3139.github.io/2015/12/16/high-perf-network-in-chrome-trans-2/</id>
     <published>2015-12-16T02:54:59.000Z</published>
-    <updated>2015-12-19T04:25:10.580Z</updated>
+    <updated>2015-12-19T04:34:14.267Z</updated>
     <content type="html"><![CDATA[<h1 id="u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B"><a href="#u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B" class="headerlink" title="你使用浏览器进行会话的全过程"></a>你使用浏览器进行会话的全过程</h1><p>通过前文我们已经能在心中绘制出Chrome网络栈的大致图样，现在让我们来详细了解一下浏览器中一系列面向用户的优化。现在，让我们想想我们刚刚创建了一个Chrome的用户档案，并准备开始上网冲浪了。</p>
 <h2 id="u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C"><a href="#u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C" class="headerlink" title="优化游览器的冷启动体验"></a>优化游览器的冷启动体验</h2><p><img src="/images/high-perf-network-in-chrome-trans/pagespeed.png" alt="pagespeed"></p>
 <p>第一次启动Chrome的时候，它对你喜爱的网站、浏览习惯还了解甚少。但是，<strong>大多数人在浏览器冷启动后还是遵循着一个特定的使用习惯</strong>，比如打开电邮、新闻头条、社交网络和门户网站等等。具体的网站可能不同，但是它们其中的相似性可以帮助预测器来加速你每天一开始打开浏览器的体验！</p>
