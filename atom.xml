@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Day day up.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yqf3139.github.io/"/>
-  <updated>2015-12-19T04:34:14.267Z</updated>
+  <updated>2015-12-21T11:43:06.946Z</updated>
   <id>http://yqf3139.github.io/</id>
   
   <author>
@@ -13,6 +13,34 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[养成良好的Log习惯]]></title>
+    <link href="http://yqf3139.github.io/2015/12/21/a-good-logging-habit/"/>
+    <id>http://yqf3139.github.io/2015/12/21/a-good-logging-habit/</id>
+    <published>2015-12-21T10:49:52.000Z</published>
+    <updated>2015-12-21T11:43:06.946Z</updated>
+    <content type="html"><![CDATA[<h1 id="u4E0D_u597D_u7684Log_u4E60_u60EF_u5E26_u6765_u4E86_u54EA_u4E9B_u95EE_u9898_uFF1F"><a href="#u4E0D_u597D_u7684Log_u4E60_u60EF_u5E26_u6765_u4E86_u54EA_u4E9B_u95EE_u9898_uFF1F" class="headerlink" title="不好的Log习惯带来了哪些问题？"></a>不好的Log习惯带来了哪些问题？</h1><p>通常创新项目初期，我的确不是很注意编码规范，测试以及日志。由于需求和技术实现都不明确，如果太注重测试可能会框住自己的手脚。<strong>不过编码规范和日志是什么项目都应该注意的，一开始注意便能提升整个项目的效率，避免后期重构。</strong></p>
+<p>项目各方面逐渐明确后，各种测试也是很重要的一环。在重构之前确定一些自动的回归测试和单元测试，能避免出现很多低级错误，这些错误一旦在集成时出现，可能会花费半天进行调试，最近苦不堪言下定决心改正。</p>
+<p>之前打log一般便就是<code>printf</code>大法，总之输出各种变量的值，完全就是debug时的调试，项目后期便会各种调试信息混杂在一起，非得手动注释才行。在log中使用各种“奇技淫巧”，比如输出’=’组成的分割线，使用特殊符号的数量方便搜索，不断地改log、调试、再改，最后调试出了bug，log之后再也看不懂了。</p>
+<p>最近问题来了，服务器代码需要发布和部署，后期我也没有机会维护了，重构后的代码虽然可读性好了很多，但log还是一团糟。最后花了一天时间统一了log输出的规范，方便进行fliter，调试起来也开心和效率很多。而且设置断点，单步调试的效率往往比<code>printf</code>大法好很多，应该少使用log进行调试。</p>
+<h1 id="u4E00_u4E2A_u5165_u95E8_u7EA7_u522B_u7684log_u89C4_u8303"><a href="#u4E00_u4E2A_u5165_u95E8_u7EA7_u522B_u7684log_u89C4_u8303" class="headerlink" title="一个入门级别的log规范"></a>一个入门级别的log规范</h1><h2 id="Javascript__26amp_3B_26amp_3B_Android"><a href="#Javascript__26amp_3B_26amp_3B_Android" class="headerlink" title="Javascript &amp;&amp; Android"></a>Javascript &amp;&amp; Android</h2><p>框架已经提供了足够好的log工具，<code>console.log/info/warning/error/table</code>自带分级，并且结合Chrome的fliter，十分易用。在代码中加入<code>debugger;</code>便能让Chrome陷入断点，变量查看等都非常方便，Web程序员十分幸福。<br>Android也提供了类似的Logger，设置Tag并分级，Logcat中也可以进行搜索。在JNI开发中，通过<code>#define ALOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,ALOG,__VA_ARGS__)</code>定义宏，也能很方便使用。之前一直通过stdout打印，非常混乱。</p>
+<h2 id="Golang"><a href="#Golang" class="headerlink" title="Golang"></a>Golang</h2><p>最后发现服务器的Log更是乱成一团，所有输出都是<code>printf</code>，不带分级和Tag，看起来混乱且不方便发布。Golang自带的Log包也不存在这些复杂的功能，最后并不想再依赖其他的包，还是简单封装一下为好。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">var</span> logger *log.<span class="type">Logger</span></span><br><span class="line"><span class="keyword">var</span> <span class="type">LogLevel</span> int = <span class="type">INFO</span></span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">    logger = log.<span class="type">New</span>(os.<span class="type">Stdout</span>, <span class="string">""</span>, log.<span class="type">LstdFlags</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">Debugf</span><span class="params">(tag string, argv ...interface&#123;&#125;)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="type">LogLevel</span> &lt;= <span class="type">DEBUG</span> &#123;</span><br><span class="line">        logger.<span class="type">Println</span>(<span class="string">"DEBUG: ["</span>+tag+<span class="string">"]"</span>, argv)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="comment">// 从命令行读取log level</span></span><br><span class="line">log_level := flag.<span class="type">Int</span>(<span class="string">"loglevel"</span>, <span class="type">INFO</span>, <span class="string">"the log level"</span>)</span><br><span class="line">webanalyzer.<span class="type">LogLevel</span> = *log_level</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">server</span><span class="params">(...)</span></span>&#123;</span><br><span class="line">    <span class="keyword">defer</span> <span class="func"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> err := recover(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">            <span class="comment">// 在数据处理函数中，接下所有的panic，并将它们发给browser</span></span><br><span class="line">            <span class="comment">// 这样服务器panic后，客户端可以显示一个比较友好的消息</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;()</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>最后可以通过命令行参数控制log等级，方便发布，可以直接log到文件中，并可以在这里实现一个缓存（计划中），这样混乱的Debug信息部署时就不可见了。</p>
+<p>看到其他程序很有条理的log信息，才意识到自己这里做得非常不足，养成这一习惯，应该能提升接下来的开发与调试效率。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h1 id="u4E0D_u597D_u7684Log_u4E60_u60EF_u5E26_u6765_u4E86_u54EA_u4E9B_u95EE_u9898_uFF1F"><a href="#u4E0D_u597D_u7684Log_u4E60_u60EF_u5E26_u]]>
+    </summary>
+    
+      <category term="golang" scheme="http://yqf3139.github.io/tags/golang/"/>
+    
+      <category term="javascript" scheme="http://yqf3139.github.io/tags/javascript/"/>
+    
+      <category term="program" scheme="http://yqf3139.github.io/categories/program/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[Google Chrome 中的高性能网络技术实践（翻译）下]]></title>
@@ -1049,24 +1077,6 @@
 ]]></content>
     <summary type="html">
     <![CDATA[<p>那天又听到哪处的小学有人持刀伤人了，民间传传，网上也不知哪个稍隐蔽的角落有，想必该封的也封了，那是和谐的力量。<br>我是在去年才意识到和谐的力量的。从网上各种事件，到同学笑着说发的心情关键词变成了*，昨天上网查一道物理题摆渡不出，摆渡的对我说“什么也没查到”，我问谷歌和搜]]>
-    </summary>
-    
-      <category term="flood" scheme="http://yqf3139.github.io/categories/flood/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[随便写写]]></title>
-    <link href="http://yqf3139.github.io/2010/03/19/random-thoughts/"/>
-    <id>http://yqf3139.github.io/2010/03/19/random-thoughts/</id>
-    <published>2010-03-19T09:42:00.000Z</published>
-    <updated>2015-12-12T02:56:44.615Z</updated>
-    <content type="html"><![CDATA[<h3 id="u4E00"><a href="#u4E00" class="headerlink" title="一"></a>一</h3><p>老爸出差去了，我天天问他何时回。<br>他要下礼拜回，我知道，还是天天问。<br>这礼拜事很多，很多次要用电脑。<br>他带走了大本。<br>我只能用奔三512内存的小本。<br>有一次当我正对老爸慨叹小本的慢时，<br>我突然沉默了，<br>我在思念什么呢？</p>
-<h3 id="u4E8C"><a href="#u4E8C" class="headerlink" title="二"></a>二</h3><p>楼下一棵梧桐被拦腰砍断。从家中看的不再是茂密的枝冠，而是一圈圈的年轮。<br>我昨天才看的树上的嫩芽随卡车走了。<br>那个弯曲的主干还在。<br>我们楼前似乎多了几分燥热。<br>我好像小学时还在树荫下骑过车。</p>
-<h3 id="u4E09"><a href="#u4E09" class="headerlink" title="三"></a>三</h3><p>手艺人修车，是在修车。<br>修车人修车，只换零件。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<h3 id="u4E00"><a href="#u4E00" class="headerlink" title="一"></a>一</h3><p>老爸出差去了，我天天问他何时回。<br>他要下礼拜回，我知道，还是天天问。<br>这礼拜事很多，很多次要用电脑。<br>他带走了大本]]>
     </summary>
     
       <category term="flood" scheme="http://yqf3139.github.io/categories/flood/"/>

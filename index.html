@@ -211,6 +211,117 @@
             
               
                 
+                <a class="post-title-link" href="/2015/12/21/a-good-logging-habit/" itemprop="url">
+                  养成良好的Log习惯
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-12-21T18:49:52+08:00" content="2015-12-21">
+              2015-12-21
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/program/" itemprop="url" rel="index">
+                    <span itemprop="name">program</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/12/21/a-good-logging-habit/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/21/a-good-logging-habit/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="u4E0D_u597D_u7684Log_u4E60_u60EF_u5E26_u6765_u4E86_u54EA_u4E9B_u95EE_u9898_uFF1F"><a href="#u4E0D_u597D_u7684Log_u4E60_u60EF_u5E26_u6765_u4E86_u54EA_u4E9B_u95EE_u9898_uFF1F" class="headerlink" title="不好的Log习惯带来了哪些问题？"></a>不好的Log习惯带来了哪些问题？</h1><p>通常创新项目初期，我的确不是很注意编码规范，测试以及日志。由于需求和技术实现都不明确，如果太注重测试可能会框住自己的手脚。<strong>不过编码规范和日志是什么项目都应该注意的，一开始注意便能提升整个项目的效率，避免后期重构。</strong></p>
+<p>项目各方面逐渐明确后，各种测试也是很重要的一环。在重构之前确定一些自动的回归测试和单元测试，能避免出现很多低级错误，这些错误一旦在集成时出现，可能会花费半天进行调试，最近苦不堪言下定决心改正。</p>
+<p>之前打log一般便就是<code>printf</code>大法，总之输出各种变量的值，完全就是debug时的调试，项目后期便会各种调试信息混杂在一起，非得手动注释才行。在log中使用各种“奇技淫巧”，比如输出’=’组成的分割线，使用特殊符号的数量方便搜索，不断地改log、调试、再改，最后调试出了bug，log之后再也看不懂了。</p>
+<p>最近问题来了，服务器代码需要发布和部署，后期我也没有机会维护了，重构后的代码虽然可读性好了很多，但log还是一团糟。最后花了一天时间统一了log输出的规范，方便进行fliter，调试起来也开心和效率很多。而且设置断点，单步调试的效率往往比<code>printf</code>大法好很多，应该少使用log进行调试。</p>
+<h1 id="u4E00_u4E2A_u5165_u95E8_u7EA7_u522B_u7684log_u89C4_u8303"><a href="#u4E00_u4E2A_u5165_u95E8_u7EA7_u522B_u7684log_u89C4_u8303" class="headerlink" title="一个入门级别的log规范"></a>一个入门级别的log规范</h1><h2 id="Javascript__26amp_3B_26amp_3B_Android"><a href="#Javascript__26amp_3B_26amp_3B_Android" class="headerlink" title="Javascript &amp;&amp; Android"></a>Javascript &amp;&amp; Android</h2><p>框架已经提供了足够好的log工具，<code>console.log/info/warning/error/table</code>自带分级，并且结合Chrome的fliter，十分易用。在代码中加入<code>debugger;</code>便能让Chrome陷入断点，变量查看等都非常方便，Web程序员十分幸福。<br>Android也提供了类似的Logger，设置Tag并分级，Logcat中也可以进行搜索。在JNI开发中，通过<code>#define ALOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,ALOG,__VA_ARGS__)</code>定义宏，也能很方便使用。之前一直通过stdout打印，非常混乱。</p>
+<h2 id="Golang"><a href="#Golang" class="headerlink" title="Golang"></a>Golang</h2><p>最后发现服务器的Log更是乱成一团，所有输出都是<code>printf</code>，不带分级和Tag，看起来混乱且不方便发布。Golang自带的Log包也不存在这些复杂的功能，最后并不想再依赖其他的包，还是简单封装一下为好。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">var</span> logger *log.<span class="type">Logger</span></span><br><span class="line"><span class="keyword">var</span> <span class="type">LogLevel</span> int = <span class="type">INFO</span></span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">    logger = log.<span class="type">New</span>(os.<span class="type">Stdout</span>, <span class="string">""</span>, log.<span class="type">LstdFlags</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">Debugf</span><span class="params">(tag string, argv ...interface&#123;&#125;)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="type">LogLevel</span> &lt;= <span class="type">DEBUG</span> &#123;</span><br><span class="line">        logger.<span class="type">Println</span>(<span class="string">"DEBUG: ["</span>+tag+<span class="string">"]"</span>, argv)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="comment">// 从命令行读取log level</span></span><br><span class="line">log_level := flag.<span class="type">Int</span>(<span class="string">"loglevel"</span>, <span class="type">INFO</span>, <span class="string">"the log level"</span>)</span><br><span class="line">webanalyzer.<span class="type">LogLevel</span> = *log_level</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">server</span><span class="params">(...)</span></span>&#123;</span><br><span class="line">    <span class="keyword">defer</span> <span class="func"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> err := recover(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">            <span class="comment">// 在数据处理函数中，接下所有的panic，并将它们发给browser</span></span><br><span class="line">            <span class="comment">// 这样服务器panic后，客户端可以显示一个比较友好的消息</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;()</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>最后可以通过命令行参数控制log等级，方便发布，可以直接log到文件中，并可以在这里实现一个缓存（计划中），这样混乱的Debug信息部署时就不可见了。</p>
+<p>看到其他程序很有条理的log信息，才意识到自己这里做得非常不足，养成这一习惯，应该能提升接下来的开发与调试效率。</p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2015/12/16/high-perf-network-in-chrome-trans-2/" itemprop="url">
                   Google Chrome 中的高性能网络技术实践（翻译）下
                 </a>
@@ -997,136 +1108,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/11/21/use-web-page-replay/" itemprop="url">
-                  使用 Web Page Replay
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2015-11-21T22:24:47+08:00" content="2015-11-21">
-              2015-11-21
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">programming</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2015/11/21/use-web-page-replay/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/11/21/use-web-page-replay/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <h1 id="u4E3A_u4EC0_u4E48_u9700_u8981_u4F7F_u7528_Web_Page_Replay_uFF1F"><a href="#u4E3A_u4EC0_u4E48_u9700_u8981_u4F7F_u7528_Web_Page_Replay_uFF1F" class="headerlink" title="为什么需要使用 Web Page Replay？"></a>为什么需要使用 Web Page Replay？</h1><h2 id="u9700_u6C42_u7684_u4EA7_u751F"><a href="#u9700_u6C42_u7684_u4EA7_u751F" class="headerlink" title="需求的产生"></a>需求的产生</h2><p>实习期间，我们经常用各种Workload对浏览器进行测试，初期大量的Workload都是手工收集或是开源的，再整理到小组内的服务器上。<br>后期产生了抓取浏览器中Javascript Trace并实时送至后端分析的需求，例如我们希望将某些网页的Webgl调用全部记录下来，或者是将用户的各种互动事件记录下来，又不用手工地修改Workload，便有了我目前写的代理服务器，它能对我们关注的Workload注入Javascript脚本，比和后端代理服务器建立通信，高效地把Trace发送到后端，并易于扩展各种功能的后端。</p>
-<p>一个更加常见的需求便是Localize Real life Workload，我们需要自动化地测试很多网上不开源的Workload，虽然通过我的代理服务器，注入分析不需要人工干预了，不过在公司内连接外网Workload是痛苦的。尤其是某些Workload每次需要加载50M的资源文件，一旦浏览器cache失效便要登上很长时间。而且网上的Workload在不断变动，无法直接进行组内Workload的统一化，针对浏览器测试时很难做到组内环境一致。</p>
-<p>所以一个最基本的需求就是我们访问该Workload一次，就将所有经过代理服务器的request和response本地存档，称为record；等到下次重复测试时，匹配所有的request，直接发回对应的response，这样便能做到本地replay该workload了。</p>
-<p>最近进哥说想加入这个功能在我们的代理服务器上，但由于当初没有考虑到这个功能，并且组内提出可以复用Telemetry中的Webpage Replay功能，可以将其加在我代理服务器的外层，便可以像是管道一样进行功能的扩展。正好我最近在看的Webgl Workload需要加载的资源很多，进行Replay极大加快了我自测的速度。</p>
-<h2 id="HTTP/HTTPS_u4EE3_u7406_u670D_u52A1_u5668_u7684_u5999_u7528"><a href="#HTTP/HTTPS_u4EE3_u7406_u670D_u52A1_u5668_u7684_u5999_u7528" class="headerlink" title="HTTP/HTTPS代理服务器的妙用"></a>HTTP/HTTPS代理服务器的妙用</h2><p>刚才说的两个需求只是代理服务器的一个很小的用处，还有大量的妙用如下：</p>
-<ul>
-<li>科学上网，不过HTTP代理一般只能作为国内跳板。</li>
-<li>反向代理，做网站的入口，自动后端负载均衡、流量审查、压缩、简单的逻辑直接部署等等功能。</li>
-<li>测试平台，之前看到阿里的Anyproxy便是这个作用，可以记录下所有接入终端（手机、平板）的HTTP网路请求，方便修改Header，Cookie，进行颠簸的网路环境的模拟等等，也提供Replay。</li>
-<li>内网上网，公司内部方便屏蔽外界的攻击，并限制员工上网，审查上网记录，当然有福利便是可以直接提供梯子。</li>
-</ul>
-<h1 id="Web_Page_Replay__u5B9E_u73B0_u539F_u7406_u7684_u7B80_u5355_u7406_u89E3"><a href="#Web_Page_Replay__u5B9E_u73B0_u539F_u7406_u7684_u7B80_u5355_u7406_u89E3" class="headerlink" title="Web Page Replay 实现原理的简单理解"></a>Web Page Replay 实现原理的简单理解</h1><p>Replay工具可以运行在DNS劫持和HTTP代理两种模式下，实质上DNS劫持简化了设置浏览器代理的过程。</p>
-<p><img src="/images/WebPageReplayDiagram.png" alt="replay"></p>
-<p>盗图一张，可以看出Replay劫持模式便是在本机启动一个DNS服务器和Web服务器，分别占用53和80端口。<br>一般情况下，浏览器访问一个页面先进行域名的DNS解析，然后先目标服务器发送request。Record时，DNS全部返回127.0.0.1，浏览器便将请求发送给本机的服务器，服务器随后便代理请求后返回，并记录下本次request和response。Replay时本机服务器直接匹配存档文件。<br>DNS劫持的好处便是不用设置浏览器代理了，缺点也很明显：</p>
-<ul>
-<li>如果request写明ip时，便绕过了本地的DNS请求（类似Host梯子），便无法实现replay。</li>
-<li>访问端口不是标准的80和443也会直接在record环节出错。</li>
-<li>需要占用本机的53,80,443端口，影响本机的原有的服务。</li>
-</ul>
-<p>所以这个工具也支持直接设置代理的模式，如果只是浏览器的话使用比较简单。想将多个代理服务器管道化，设置每一层的代理为上一层代理就可以了。</p>
-<p>接下来粗略了解一下代理服务器的工作方式。</p>
-<p>对于HTTP:</p>
-<p>代理服务器通过TCP Socket接收到来自客户端的请求。它从HTTP的Header中解析出host和port，如果是域名的话先DNS解析，然后就是Roundtrip最终返回真实的response，这里所有的内容都是代理服务器可见的，可以随意修改。</p>
-<p>如果我们这里使用nc，可以首先不通过代理访问百度：<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ nc baidu.<span class="keyword">com</span> <span class="number">80</span></span><br><span class="line">  GET / HTTP/<span class="number">1.1</span></span><br><span class="line">  Hos<span class="variable">t:</span> baidu.<span class="keyword">com</span></span><br></pre></td></tr></table></figure></p>
-<p>可以看见返回的response：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HTTP/<span class="number">1.1</span> <span class="number">200</span> OK</span><br><span class="line">Date: Fri, <span class="number">14</span> Aug <span class="number">2015</span> <span class="number">07</span>:<span class="number">55</span>:<span class="number">26</span> GMT</span><br><span class="line">......</span><br></pre></td></tr></table></figure></p>
-<p>如果通过本机8080代理服务器：<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ nc localhost <span class="number">8080</span></span><br><span class="line">  <span class="preprocessor">GET</span> http://<span class="keyword">baidu.com </span>HTTP/<span class="number">1</span>.<span class="number">1</span></span><br><span class="line"><span class="label">  Host:</span> <span class="keyword">baidu.com</span></span><br></pre></td></tr></table></figure></p>
-<p>代理服务器可能会输出如下日志：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">INFO:</span> Got request  baidu.com GET <span class="string">http:</span><span class="comment">//baidu.com</span></span><br><span class="line"><span class="string">INFO:</span> Sending request GET <span class="string">http:</span><span class="comment">//baidu.com</span></span><br><span class="line"><span class="string">INFO:</span> Received response <span class="number">200</span> OK</span><br></pre></td></tr></table></figure></p>
-<p>对于HTTPS:<br>代理服务收到客户端的CONNECT请求，但只可见host和port，代理服务器只能在客户端和服务器中建立起socket连接并相互双工传递，如果需要修改内容的话，需要进行中间人攻击。</p>
-<h1 id="Web_Page_Replay__u4F7F_u7528_u5B9E_u6218"><a href="#Web_Page_Replay__u4F7F_u7528_u5B9E_u6218" class="headerlink" title="Web Page Replay 使用实战"></a>Web Page Replay 使用实战</h1><h2 id="u4F7F_u7528DNS_u52AB_u6301_u6A21_u5F0F"><a href="#u4F7F_u7528DNS_u52AB_u6301_u6A21_u5F0F" class="headerlink" title="使用DNS劫持模式"></a>使用DNS劫持模式</h2><h2 id="u4F7F_u7528_u76F4_u63A5_u4EE3_u7406_u6A21_u5F0F"><a href="#u4F7F_u7528_u76F4_u63A5_u4EE3_u7406_u6A21_u5F0F" class="headerlink" title="使用直接代理模式"></a>使用直接代理模式</h2><h1 id="u6E90_u7801_u5206_u6790"><a href="#u6E90_u7801_u5206_u6790" class="headerlink" title="源码分析"></a>源码分析</h1>
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -1173,21 +1154,21 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">32</span>
+              <span class="site-state-item-count">33</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             
-              <span class="site-state-item-count">10</span>
+              <span class="site-state-item-count">11</span>
               <span class="site-state-item-name">categories</span>
               
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">17</span>
+              <span class="site-state-item-count">18</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>
