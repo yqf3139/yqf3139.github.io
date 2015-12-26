@@ -179,6 +179,137 @@
 
     
     
+      
+      
+        
+        
+        
+      
+
+      
+    
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2015/12/26/establish-a-duplex-communication-between-any-web-page-and-chrome-extension/" itemprop="url">
+                  如何在 Chrome 插件中访问任意网页中的 JavaScript 变量？
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-12-26T14:42:03+08:00" content="2015-12-26">
+              2015-12-26
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">programming</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/12/26/establish-a-duplex-communication-between-any-web-page-and-chrome-extension/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/26/establish-a-duplex-communication-between-any-web-page-and-chrome-extension/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <p>在折腾小工具的时候有产生了奇怪的需求，Chrome 插件需要监听任意网页中某个变量的变化，或是访问其中的值。但默认注入的 content.js 和原网页 Javascript 脚本并不运行在一个相同的环境中，无法相互访问。</p>
+<p>搜索和自己尝试了如下的解决方法，现罗列如下。</p>
+<h1 id="u8BBF_u95EE_u5230_u76EE_u6807_u53D8_u91CF"><a href="#u8BBF_u95EE_u5230_u76EE_u6807_u53D8_u91CF" class="headerlink" title="访问到目标变量"></a>访问到目标变量</h1><p>这个很简单。虽然默认注入的content.js不能访问到原网页的变量，但可以访问和修改Dom，所以再注入一个脚本就好。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">loadScript</span>(<span class="params">url</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> elem = <span class="built_in">document</span>.createElement(<span class="string">'script'</span>);</span><br><span class="line">    elem.type = <span class="string">'text/javascript'</span>;</span><br><span class="line">    elem.charset = <span class="string">'utf-8'</span>;</span><br><span class="line">    elem.addEventListener(<span class="string">'load'</span>, doCallback, <span class="literal">false</span>);</span><br><span class="line">    elem.src = url;</span><br><span class="line">    <span class="built_in">document</span>.getElementsByTagName(<span class="string">'head'</span>)[<span class="number">0</span>].appendChild(elem);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">url</span>(<span class="params">file</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> chrome.extension.getURL(file);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">loadScript(url(<span class="string">'inject.js'</span>));</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>在inject.js中便是和原网页一样的javascript环境了，但是问题来了，怎样才能将在此环境下的变量发送到后台插件中呢？</p>
+<h1 id="u5EFA_u7ACB_u539F_u7F51_u9875_u4F5C_u7528_u57DF_u4E0E_u63D2_u4EF6_u540E_u53F0_u9875_u9762_u7684_u53CC_u5DE5_u901A_u4FE1"><a href="#u5EFA_u7ACB_u539F_u7F51_u9875_u4F5C_u7528_u57DF_u4E0E_u63D2_u4EF6_u540E_u53F0_u9875_u9762_u7684_u53CC_u5DE5_u901A_u4FE1" class="headerlink" title="建立原网页作用域与插件后台页面的双工通信"></a>建立原网页作用域与插件后台页面的双工通信</h1><p>目标很明确，在inject.js中建立与后台background.js的双工通信，这样我们可以实时将网页中值的变化发送到插件中进行分析……</p>
+<p>不过阻碍也很明显，由于chrome的安全策略，inject.js和后台插件虽然能直接连通，但受域名限制，而content.js则可以很轻易连通。所以如果打通inject.js与content.js就好了。</p>
+<h2 id="u5916_u90E8_u670D_u52A1_u5668_u4E2D_u8F6C"><a href="#u5916_u90E8_u670D_u52A1_u5668_u4E2D_u8F6C" class="headerlink" title="外部服务器中转"></a>外部服务器中转</h2><p>inject.js和background.js连上相同的websocket服务器中转，问题解决。不过还要多加一个外部服务器。</p>
+<h2 id="inject-js_u76F4_u8FDE_u540E_u53F0_u63D2_u4EF6"><a href="#inject-js_u76F4_u8FDE_u540E_u53F0_u63D2_u4EF6" class="headerlink" title="inject.js直连后台插件"></a>inject.js直连后台插件</h2><p>的确，Chrome提供了直连的方法。</p>
+<p>首先在<code>manifest.json</code>中申明<code>externally_connectable</code>，需要申明域名限制。正当我兴高采烈地输入<code>*://*/*</code>全匹配后，发现出错，chrome文档如是说：</p>
+<blockquote>
+<p>This will expose the messaging API to any page which matches the URL patterns you specify. The URL pattern must contain at least a second-level domain - that is, hostname patterns like “<em>“, “</em>.com”, “<em>.co.uk”, and “</em>.appspot.com” are prohibited. </p>
+</blockquote>
+<p>没有办法做到让所有域名发起的连接都与<code>manifest.json</code>匹配，但对于认可的域名，只需要在inject.js中调用如下API，</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ExtensionID = <span class="string">'nnhoaecbdmfokhcnldeiadllnjeebhcb'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Make a simple request:</span></span><br><span class="line">chrome.runtime.sendMessage(ExtensionID, &#123;openUrlInEditor: url&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;&#125;);</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<h2 id="inject-js_u6CE8_u5165Dom_u4E8B_u4EF6"><a href="#inject-js_u6CE8_u5165Dom_u4E8B_u4EF6" class="headerlink" title="inject.js注入Dom事件"></a>inject.js注入Dom事件</h2><p>这是网上一个比较通行的办法，可以约定一个Dom元素，再使用<code>MutationObserver</code>监控这个Dom元素即可。<br>不过修改Dom比较重量级，不是很喜欢这种做法。</p>
+<h2 id="u8F6E_u8BE2localStorage_u7B49_u516C_u5171_u53EF_u8BBF_u95EE_u53D8_u91CF"><a href="#u8F6E_u8BE2localStorage_u7B49_u516C_u5171_u53EF_u8BBF_u95EE_u53D8_u91CF" class="headerlink" title="轮询localStorage等公共可访问变量"></a>轮询localStorage等公共可访问变量</h2><p>两个脚本均可访问到localStorage，location等变量，所以一方修改一方轮询也是一种办法，不过如果变量发生了多次修改，每次的修改事件就很难及时发出。</p>
+<h2 id="SharedWorker_u8F6C_u53D1"><a href="#SharedWorker_u8F6C_u53D1" class="headerlink" title="SharedWorker转发"></a>SharedWorker转发</h2><p>最终试验成功了一种还比较满意的方法，可由 content.js 创建一个 SharedWorker的函数，并将其转换为 Blob ，再使用<code>URL.createObjectURL</code>创建为共享链接存入localStorage ， inject.js 读取后此链接后，两个脚本同时连上同一个 SharedWorker，由 worker 转发消息，可以很好双向通信。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// background.js</span></span><br><span class="line"><span class="comment">//----------------------------------------------------------------</span></span><br><span class="line"><span class="comment">// 简单监听来自content.js的转发的内容</span></span><br><span class="line">chrome.extension.onMessage.addListener(</span><br><span class="line">    <span class="function"><span class="keyword">function</span>(<span class="params">request, sender, sendResponse</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'bg'</span>, request);</span><br><span class="line">    &#125;</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">// content.js</span></span><br><span class="line"><span class="comment">//----------------------------------------------------------------</span></span><br><span class="line"><span class="comment">// SharedWorker执行的逻辑，广播信息</span></span><br><span class="line"><span class="keyword">var</span> worker_function = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> ports = []</span><br><span class="line">    onconnect = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (e.ports &amp;&amp; e.ports.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, j = e.ports.length; i &lt; j; i++) &#123;</span><br><span class="line">                e.ports[i].onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">                    <span class="keyword">for</span> (<span class="keyword">var</span> m = <span class="number">0</span>, n = ports.length; m &lt; n; m++) &#123;</span><br><span class="line">                        ports[m].postMessage(e.data);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                ports.push(e.ports[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将上述函数转为可访问的URL, 并存入localStorage</span></span><br><span class="line">localStorage.sharedWorkerURL = URL.createObjectURL(<span class="keyword">new</span> Blob([<span class="string">"("</span> +</span><br><span class="line">    worker_function.toString() + <span class="string">")()"</span></span><br><span class="line">], &#123;</span><br><span class="line">    type: <span class="string">'text/javascript'</span></span><br><span class="line">&#125;));</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> shared = <span class="keyword">new</span> SharedWorker(localStorage.sharedWorkerURL);</span><br><span class="line">shared.port.start();</span><br><span class="line">shared.port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'content'</span>, e);</span><br><span class="line">    <span class="comment">// 向background.js转发</span></span><br><span class="line">    chrome.extension.sendMessage(&#123;</span><br><span class="line">        greeting: e.data</span><br><span class="line">    &#125;, <span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'content get bg'</span>, response);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// inject.js</span></span><br><span class="line"><span class="comment">//----------------------------------------------------------------</span></span><br><span class="line"><span class="keyword">var</span> shared = <span class="keyword">new</span> SharedWorker(localStorage.sharedWorkerURL);  </span><br><span class="line">shared.port.start();</span><br><span class="line">shared.port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'inject'</span>, e);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<h2 id="u4F7F_u7528window-postMessage"><a href="#u4F7F_u7528window-postMessage" class="headerlink" title="使用window.postMessage"></a>使用window.postMessage</h2><p>经网友提醒，参考Chrome开发文档中<a href="https://developer.chrome.com/extensions/content_scripts#host-page-communication" target="_blank" rel="external">针对content script通信的说明</a>。使用window.postMessage可以很好进行双向通信。</p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
 
     
       
@@ -987,149 +1118,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/12/12/windows-to-go-with-SSD/" itemprop="url">
-                  在外置SSD上体验 Windows 10 to go
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2015-12-12T11:16:08+08:00" content="2015-12-12">
-              2015-12-12
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/tech/" itemprop="url" rel="index">
-                    <span itemprop="name">tech</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2015/12/12/windows-to-go-with-SSD/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/12/windows-to-go-with-SSD/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <h1 id="u4E3A_u4EC0_u4E48_u9700_u8981_u8FD9_u4E48_u6298_u817E_uFF1F"><a href="#u4E3A_u4EC0_u4E48_u9700_u8981_u8FD9_u4E48_u6298_u817E_uFF1F" class="headerlink" title="为什么需要这么折腾？"></a>为什么需要这么折腾？</h1><p>我在主系统转为Linux后，虽然轻量级的Office编辑和图片/视频编辑是可以进行的，比如利用免费的LibreOffice、Kdenlive、Inkscape。对于图片处理，某些命令行工具如<code>convert</code>，可以直接脚本调用，灵活行和自动性反而比GUI软件更高。</p>
-<p>但不得不承认，偶尔正式场合编辑文档表格和幻灯、PS、网银操作，还是逃脱不了更加普适的Windows。对于标准的Office套件，Adobe套件和Visual Studio等神一般的Windows软件，还是需要找一个解决方案来愉快地使用的。然而并没有入Mac的打算，所以我还是准备采用各种方法使用Windows。正好这样的话，也有机会再摸一摸Windows上的软件，比如微信电脑版等等。</p>
-<p>所以对于我80%以上是直接使用Linux，一个纯粹的系统即可，有时需要使用Office等时需要短时间密集的Windows使用。</p>
-<p>首先有两个方案也不错，但我不是很想使用，一个是Wine，兼容性总是永远的痛，一个是双系统，需要比较大的硬盘，而且相对比较麻烦，再后期与Windows to go对比后，我也抛弃了这个方案。</p>
-<h1 id="u65B9_u6848_u4E00_3A__u865A_u62DF_u673A"><a href="#u65B9_u6848_u4E00_3A__u865A_u62DF_u673A" class="headerlink" title="方案一: 虚拟机"></a>方案一: 虚拟机</h1><p>虚拟机对于高性能的主机适用，对于我2012年的笔记本，运行XP非常流畅，但Win7比较吃力。虚拟机的优点很明显，做好系统后，几个文件组成的虚拟机可以任意备份与拷贝，所以我常备着几个干净的Xp和Win7虚拟机，和装有Office的。</p>
-<p><img src="/images/windows-to-go-with-SSD/vm.png" alt="vm"></p>
-<h1 id="u65B9_u6848_u4E8C_3A__u8FDC_u7A0B_u684C_u9762"><a href="#u65B9_u6848_u4E8C_3A__u8FDC_u7A0B_u684C_u9762" class="headerlink" title="方案二: 远程桌面"></a>方案二: 远程桌面</h1><p>在实验室有了高性能主机入驻后（研究生的开发机，非常眼馋），我便一直寻求办法远程使用它。在争取得到学长同意后，我登记了账号，并网上查询到方法，可以让多人同时登入一台Windows主机操作，这样当学长使用电脑的时候，我还是可以远程登陆进行操作。</p>
-<p>关于操作顺畅的问题，Microsoft的RDP远程桌面协议已经十分高效，再加上如果是校园以太网连接，操作顺滑，甚至可以看视频。</p>
-<p>使用远程桌面的好处也有不少：</p>
-<ol>
-<li>不占用我本地的计算/存储资源，我可以同时开发与处理文档。</li>
-<li>系统和我本机无关，我可以是Windows/Linux/Mac/iOS/Android，登陆即可享用主机资源。</li>
-<li>只要网络通畅，随时随地登录。 </li>
-</ol>
-<p>当然也有一些弊端，比如受他人限制，远程桌面使用的虚拟显卡驱动会造成某些软件问题，需要插U盘的话比较麻烦（可以直接挂载本地硬盘共享）。</p>
-<p>推荐一个Linux上的开源远程桌面客户端，<a href="https://github.com/FreeRDP/FreeRDP" target="_blank" rel="external">FreeRdp</a>，可以添加剪贴板共享、挂载本地磁盘等功能，其他平台微软均有提供。<br><img src="/images/windows-to-go-with-SSD/freerdp.png" alt="vm"></p>
-<h1 id="u65B9_u6848_u4E09_3A__u5916_u7F6ESSD_u5B89_u88C5Windows_to_go"><a href="#u65B9_u6848_u4E09_3A__u5916_u7F6ESSD_u5B89_u88C5Windows_to_go" class="headerlink" title="方案三: 外置SSD安装Windows to go"></a>方案三: 外置SSD安装Windows to go</h1><p>不过虚拟机在我笔记本上总是跑不畅快，远程桌面也并不是随时都能享用，怎样才能一直运行我的Windows（各种环境齐全），但又不受机器的限制，也就是不写死在一台主机中呢？</p>
-<p>事实证明<code>Windows to go</code>就是符合我的期望的，它可以直接将Windows装在外置硬盘和U盘中。这样我只需要将这个外置存储设备插入一台主机，便选择从外置存储直接启动了，这里具体请参考微软的<a href="">说明</a>，其会在启动时判别硬件并加载驱动，就算不是同一机器，也能进入同一个Windows实例。<code>Chrome OS</code>则更方便，登录即可，不过现在还不适用于我的情况，技术上也不成熟。</p>
-<p>USB3.0可以达到5Gb/s的传输速率，高于Sata3的极限，所以普通Sata3硬盘是可以这样用的，也可以弄一个高速USB3.0 U盘，但为了以后硬盘可以重用于其他，我还是牺牲了便携性。</p>
-<h2 id="Windows_8_+_HDD_+_USB_3-0"><a href="#Windows_8_+_HDD_+_USB_3-0" class="headerlink" title="Windows 8 + HDD + USB 3.0"></a>Windows 8 + HDD + USB 3.0</h2><p>于是我在十一期间立马找了一个320G的硬盘，配合一个USB3的外置盒，边体验了一番。<br>事实证明体验很差，不是因为系统不好用，而是因为HDD加劣质的外置盒太慢了。</p>
-<p>两秒的延时，太慢了。<br><img src="/images/windows-to-go-with-SSD/winsys-hdd.jpg" alt="lantency"></p>
-<p>在看到<a href="https://luolei.org/imac-5k-external-usb-ssd-update/" target="_blank" rel="external">其他人用外置SSD做iMac系统盘后</a>，我才终于决定一定需要弄一个入门的SSD来做Windows to go，这样IO便不是瓶颈，如果有高性能的主机的话，我便可以直接占领其计算资源，作图渲染视频就能节省很多时间。</p>
-<h2 id="Windows_10_+_SSD_+_USB3-0_uFF08UASP_u652F_u6301_uFF09"><a href="#Windows_10_+_SSD_+_USB3-0_uFF08UASP_u652F_u6301_uFF09" class="headerlink" title="Windows 10 + SSD + USB3.0（UASP支持）"></a>Windows 10 + SSD + USB3.0（UASP支持）</h2><h3 id="u8D2D_u4E70"><a href="#u8D2D_u4E70" class="headerlink" title="购买"></a>购买</h3><p>硬盘性能、USB3.0协议、外置盒的主控芯片的性能，支持UASP协议都是值得考虑的，综合经济实力和使用频率考虑，由于只要装系统/Office/Adobe，120G足够，如果需要编辑的文件很大（如视频），可以后再加移动固态硬盘。</p>
-<blockquote>
-<p>USAP是USB-IF所制定的一个新传输协议用于透过USB接口连接序列设备，提供大容量储存设备的传输速度高达20％，并降低CPU的利用率、数据延迟和等待时间，USAP协议提供了高性能主机及设备之间的数据传输。 </p>
-</blockquote>
-<p>最终选择：<br>SSD   ： 入门级120G Sandisk加强版，京东购入比较放心。<br>外置盒： ORICO 2589S3，USB3.0并支持UASP，淘宝购入。</p>
-<p>共356元。</p>
-<h3 id="u5B89_u88C5"><a href="#u5B89_u88C5" class="headerlink" title="安装"></a>安装</h3><ol>
-<li>安装SSD，盒子是免工具拆卸，立马搞定。</li>
-<li>格式化为NTFS，测速发现不错。</li>
-<li>使用<a href="https://rufus.akeo.ie/" target="_blank" rel="external">rufus</a>工具，选择Windows 10镜像，并勾选<code>Windows to go</code>，过程非常傻瓜。</li>
-<li>重启选择外置SSD启动。</li>
-</ol>
-<p><img src="/images/windows-to-go-with-SSD/rufus_en.png" alt="rufus"></p>
-<h3 id="u4F7F_u7528"><a href="#u4F7F_u7528" class="headerlink" title="使用"></a>使用</h3><p>装完各种常用应用后硬盘使用不超一半，测速满意，和同学的低端SSD系统盘对比后发现差距不大。</p>
-<p><img src="/images/windows-to-go-with-SSD/as-ssd-test.jpg" alt="rufus"><br><img src="/images/windows-to-go-with-SSD/winsys-ssd.jpg" alt="rufus"></p>
-<p>相比之下原来硬盘的顺序读写不到50MB/s，4K根本跑不完。</p>
-<p>正好开发机性能不错，只安装了Ubuntu，也启动尝试了一下。</p>
-<p><img src="/images/windows-to-go-with-SSD/winsys-info.jpg" alt="rufus"><br><img src="/images/windows-to-go-with-SSD/winsys-cpu.jpg" alt="rufus"></p>
-<p>最终认为这次折腾是值得的，终于可以再次畅快地玩玩Windows 10了，并且所有环境都在一个随时硬盘中，节省了重复布置环境的麻烦。</p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -1176,7 +1164,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">34</span>
+              <span class="site-state-item-count">35</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -1190,7 +1178,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-count">20</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>
@@ -1207,6 +1195,32 @@
         
 
         <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> twitter
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/ke-yu-beta" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> zhihu
+                  
+                </a>
+              </span>
+            
           
         </div>
 
