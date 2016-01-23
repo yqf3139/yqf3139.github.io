@@ -179,6 +179,209 @@
 
     
     
+      
+      
+
+      
+    
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2015/12/16/high-perf-network-in-chrome-trans-2/" itemprop="url">
+                  Google Chrome 中的高性能网络技术实践（翻译）下
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-12-16T10:54:59+08:00" content="2015-12-16">
+              2015-12-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/trans/" itemprop="url" rel="index">
+                    <span itemprop="name">trans</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/12/16/high-perf-network-in-chrome-trans-2/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/16/high-perf-network-in-chrome-trans-2/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B"><a href="#u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B" class="headerlink" title="你使用浏览器进行会话的全过程"></a>你使用浏览器进行会话的全过程</h1><p>通过前文我们已经能在心中绘制出Chrome网络栈的大致图样，现在让我们来详细了解一下浏览器中一系列面向用户的优化。现在，让我们想想我们刚刚创建了一个Chrome的用户档案，并准备开始上网冲浪了。</p>
+<h2 id="u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C"><a href="#u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C" class="headerlink" title="优化游览器的冷启动体验"></a>优化游览器的冷启动体验</h2><p><img src="/images/high-perf-network-in-chrome-trans/pagespeed.png" alt="pagespeed"></p>
+<p>第一次启动Chrome的时候，它对你喜爱的网站、浏览习惯还了解甚少。但是，<strong>大多数人在浏览器冷启动后还是遵循着一个特定的使用习惯</strong>，比如打开电邮、新闻头条、社交网络和门户网站等等。具体的网站可能不同，但是它们其中的相似性可以帮助预测器来加速你每天一开始打开浏览器的体验！</p>
+<p><strong>Chrome总是记着用户打开浏览器后最爱去的十大网站</strong>，不过需要注意的是这并不是全局浏览的前十，而仅仅是启动后的。浏览器加载的时候，Chrome就可以为这些站点发起DNS的预加载。好奇的你可以通过<code>chrome://dns</code>来查看你自己的启动域名列表。在这个网页的最上方，你会找到你账号的十大启动候选网站。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/startup-dns.png" alt="startup-dns"></p>
+<p>以我账号举个栗子吧，我一般如何上网的呢？如果我是在写一篇文章的时候，我会直接导航去Google Docs。如你所料，我常去一些Google站点。</p>
+<h2 id="u4F18_u5316_u4E0EOmnibox_u7684_u4E92_u52A8"><a href="#u4F18_u5316_u4E0EOmnibox_u7684_u4E92_u52A8" class="headerlink" title="优化与Omnibox的互动"></a>优化与Omnibox的互动</h2><p><img src="/images/high-perf-network-in-chrome-trans/chrome-omnibox.png" alt="chrome-omnibox"></p>
+<p>推出Omnibox是Chrome的一大创举，和先前的其他浏览器相比，Chrome的Omnibox可不仅仅只能输入目标URL。除了记住用户之前浏览过的URL以外，它也支持历史浏览记录的全文搜索，<em>(小技巧：输入网站的名称而不是URL)</em>，更可与你选择搜索引擎进行深度整合。</p>
+<p>Omnibox会自动相应用户的输入，这可以是根据你历史的一个URL，或者是一个搜索查询。底层实现中，每个提示的动作都是按照和输入的相关程度进行排序，并参考之前的记录。事实上，你可以在<code>chrome://predictors</code>中查询到这些数据。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xomnibox.png" alt="xomnibox"></p>
+<p><strong>Chrome记忆着用户输入前缀词的一份历史记录，其提示的动作和成功执行的比例</strong>。对于我的历史来说，可以发现我每次敲入g后，我有76%的机率是向打开Gmail。而当我再输入”m”后(“gm”的缩写)，这一动作的可信率升到了99.8%。事实上，在412次我输入”gm”后，我只有一次并不是想打开Gmail。</p>
+<p>但是，你可能会想，这一切关网络栈什么事情？这些黄黄绿绿的候选数据其实都是<code>ResourceDispatcher</code>的重要参考信号！如果我们产生了一个黄色信号，Chrome可能会发出一个DNS预查询。如果是一个绿色的更高可信度的信号，Chrome可能在DNS解析后发出一个TCP预连接。如果这些都做好了，但用户还没有做出决定，Chrome甚至会默默在后台页面渲染好这个网页。</p>
+<p>还有一种可能是，如果就历史数据来看，当前输入的查询词没有很好的匹配，那么Chrome会对你搜索引擎进行DNS/TCP预加载，这是预测你很有可能发出一个搜索请求。</p>
+<p><strong>对于一般用户来说，他们需要数百毫秒的时间来输入查询，并评估自动弹出的提示</strong>。在后台的Chrome便能从容地预加载、预连接甚至于在某些情况下预渲染这个网页，这样等用户敲击下”enter”键的时候，网络带来的延时影响已经没有了。</p>
+<h2 id="u4F18_u5316_u7F13_u5B58_u7684_u6027_u80FD"><a href="#u4F18_u5316_u7F13_u5B58_u7684_u6027_u80FD" class="headerlink" title="优化缓存的性能"></a>优化缓存的性能</h2><p>最快的Request，是这个请求根本没有发生。当我们谈及性能的时候，怎能不谈及缓存呢。作为网站开发人员，你得通过Expires,ETag,Last-Modified和Cache-Control这些<a href="https://developers.google.com/speed/docs/best-practices/caching" target="_blank" rel="external">response headers</a>来表明你服务器上资源文件的缓存状态，对吧？如果没有的话，快行动起来，我们等等没关系。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/chrome-incognito.webp" alt="chrome-incognito"></p>
+<p>Chrome对于内部缓存有两种不同的实现：一种是本地磁盘缓存，一种使用内存。<strong>内存缓存是为<a href="http://support.google.com/chrome/bin/answer.py?hl=en&amp;answer=95464" target="_blank" rel="external">incognito浏览模式</a>准备的，当你关闭窗口后，一切干干净净</strong>。两种模式都实现了相同的接口(<code>disk_cache::Backend</code>和<code>disk_cache::Entry</code>)，这极大简化了架构设计。如果你对此有想法，可以很轻易地实验你的缓存实现。</p>
+<p>从内部来说，磁盘缓存实现了自有的一套数据结构，它们都存放在你Profile目录下的文件夹中。其中，索引文件在浏览器启动时被直接映射入内存，而数据文件存放真实的数据，比如说HTTP头和其他统计信息。这里值得一提的是，最大不超过16KB的文件都存放在共享的数据块文件中，大文件直接存放在专有文件中。磁盘缓存需要实验LRU测量进行清扫，LRU的通常参考使用频率和资源的年龄。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/internals-cache.png" alt="internals-cache"></p>
+<p>如果你对Chrome缓存感兴趣的话，不妨看看<code>chrome://net-internals/#httoCache</code>。如果你想查看实际的HTTP元数据和缓存的Response，你可以访问<code>chrome://cache</code>，它们会列出缓存中所有的资源详情。你可以搜索，并点击URl查看。</p>
+<h2 id="u4F7F_u7528_u9884_u52A0_u8F7D_u4F18_u5316DNS"><a href="#u4F7F_u7528_u9884_u52A0_u8F7D_u4F18_u5316DNS" class="headerlink" title="使用预加载优化DNS"></a>使用预加载优化DNS</h2><p>之前我们已经几次提到了DNS预解析，那在我们展开实现细节前，我们看看哪些情况下会触发DNS解析，和触发理由：</p>
+<ul>
+<li>在Render进程中运行的Blink文档解析器，可以提供其页面的所有URL中的域名，Chrome可以选择预先解析与否。</li>
+<li>在用户发出请求之前，Render进程便可能触发一个鼠标悬浮事件，或是一个按钮点击事件。</li>
+<li>在高匹配的情况下，Omnibox可能触发一个查询请求。</li>
+<li>Chrome预测器在综合历史浏览记录和资源请求数据后，发出域名解析请求。</li>
+<li>页面的开发者可以显式告诉Chrome，哪些域名可以预先解析。</li>
+</ul>
+<p>在所有以上的情况下，DNS预解析都只是被当做暗示来处理。Chrome不保证预解析一定会执行，而是通过综合判断所有的信号，使用预测器来判断是否执行。最“糟糕”的情况下，如果我们不能提前解析DNS，用户就必须要等待一个DNS解析时间，然后才是TCP连接和资源加载。不过，如果这一切发生的话，预测器会进行记录并以此优化未来的决策。这就是你越用，Chrome越快越聪明。</p>
+<p>之前我们没有提到的一个优化是，<code>Chrome会发现每个网站的拓扑结构，并用这一信息为未来的浏览加速</code>。让我们回忆一下每个网页平均由88个资源的事实，其中资源从30+个独立的域名加载而来。这说明你每次进行网页浏览的时候，Chrome可以记录下网页上流行的资源文件。在以后它便可选择为一些、或者是全部发出一个DNS预加载和TCP预连接。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xsubresource-stats.png" alt="xsubresource-stats"></p>
+<p>你可访问<code>chrome://dns</code>来查看Chrome缓存的子站点的域名，并可以查询一下你关心的域名。上例可看出，对于Google+来说，Chrome记得六个子站点和DNS预解析/TCP预连接的统计数据，其中还有请求的期望值。这一内部的统计数据让Chrome预测器可以进行预测优化。</p>
+<p>除了上述的所有内部信号，站点开发者还可以通过以下方式，即嵌入附加的预解析信息来暗示Chrome：</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"dns-prefetch"</span> href=<span class="string">"//host_name_to_prefetch.com"</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>那让浏览器自动来做不就好了吗？<strong>在某些情况下，可能有预解析一个文章中完全没有提及的域名</strong>。最经典的栗子当然就是跳转了：一个指向域名的链接，就比如一个追踪分析的服务，它功能就是将用户跳转到真实的地址下。Chrome仅仅依靠自己是没有办法做到的，而可以通过人工提供更好。</p>
+<p>那么底层实现又是怎样的呢？不过这一答案恐怕和Chrome的版本有关，由于团队<em>总是</em>在实验更新更好的方法。不过整体上来看，Chrome的DNS组织结构有两大实现：之前Chrome使用平台无关的<code>getaddrinfo</code>系统调用，将这个查询全权交由系统进行，而现在逐步替换为<strong>Chrome自实现的异步DNS解析器</strong>。</p>
+<p>原本的实现的优点是，由于依赖操作系统，代码可以更简洁，并且还能利用上操作系统的DNS缓存。不过，<code>getaddrinfo()</code>是一个阻塞式的系统调用，这就意味着Chrome得创建并维护一个专有的线程池来进行并行的解析。<strong>这个线程池最大不超过6个worker线程</strong>，这是基于硬件最小公共分母的一个经验值，因为我们发现太高的并行请求会让一些用户的路由器过载！</p>
+<p>对于使用worker池的预解析方案，Chrome就简单地调用<code>getaddrinfo()</code>，这会阻塞到response返回，在此之后他就丢弃了返回的结果并转而处理下一个请求。<em>丢弃它？</em>由于结果已经由系统DNS守护进程缓存了，这以后就能立即返回了。这足够简单和有效。</p>
+<p><strong>嗯，很有效，但这还远远不够！</strong><code>getaddrinfo()</code>调用并不会告诉Chrome很多有用的信息，比如说每个记录的TTL，和DNS缓存自身的状态。为了提升性能，Chrome团队决定实现一个跨平台、异步的DNS解析器。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xasync-dns.png" alt="xasync-dns"></p>
+<p>Chrome自己进行DNS解析带来了以下的新优化：</p>
+<ul>
+<li>对于重传输计时器更好的控制，并且能并行多个查询</li>
+<li>TTL信息可见，这让Chrome可以在失效之前就更新热门的记录</li>
+<li>对于IPv4和IPv6更好的支持</li>
+<li>基于RTT和其他信号转换去其他的服务器（DNS服务器）</li>
+</ul>
+<p>以上，乃至还有更多，都是来源于Chrome持续不断的实验和优化。一个更加明显的问题是：<em>我们是如何验证这些想法的效果的呢？</em>，这很简单，Chrome对于每个用户，都对网络性能进行了细致的追踪和记录。你可以打开<code>chrome://histograms/DNS</code>来查看这些信息。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xdns-prefetch.png" alt="xdns-prefetch"></p>
+<p>上图显示了DNS预请求的时间延时分布情况：差不多半成的（右栏）都是在20毫秒内完成的（左栏）。这是基于最近的一次浏览回话（9869条记录）并为用户私有。如果用户选择向Chrome提交他们的使用情况数据的话，这些数据才会被匿名化后，周期性地提交到开发团队，这样我们就能看到试验成功并不断做出调整了。就这样反复迭代更新。</p>
+<h2 id="u4F7F_u7528_u9884_u8FDE_u63A5_u6765_u4F18_u5316_u7BA1_u7406TCP_u8FDE_u63A5"><a href="#u4F7F_u7528_u9884_u8FDE_u63A5_u6765_u4F18_u5316_u7BA1_u7406TCP_u8FDE_u63A5" class="headerlink" title="使用预连接来优化管理TCP连接"></a>使用预连接来优化管理TCP连接</h2><p>既然我们通过Omnibox和Chrome预测器猜测出了接下来用户的导航方向，并预先解析出了域名，<strong>那为什么不再提前一步，预先与目标域名建立TCP连接，在用户发出真实的请求前就完成TCP握手呢？</strong>这样的话，我们便又节省了一个完整的Roundtrip时延，为用户节省了数百毫秒的延时。这便是TCP预连接和它的工作原理了。</p>
+<p>首先，Chrome会先检查其socket池，找找有没有此域名的可用的socket。重用已经保持一段时间的keep-alive的sockets可以防止TCP握手和慢启动惩罚。如果没有可用的socket，那再启动TCP握手，并将它放到池中。这样的话，当用户启动导航的时候，真实的HTTP请求就能立即发送出去了。</p>
+<p>打开<code>chrome://net-internals#sockets</code>来查看Chrome中打开的socket详情统计。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xnetinternals-sockets.png" alt="xnetinternals-sockets"></p>
+<p>你还可以深入每个socket的详情并审查时间线：连接和代理时间，每个包的到达时间等等。你还可以将数据导出，用于离线分析和bug报告。<strong>一个好审视(instrumentation)系统的是性能优化的关键，而<code>chrome://net-internals</code>是Chrome网络的汇总点</strong>，如果你还没尝试它的话快去试试吧。</p>
+<h2 id="u4F7F_u7528_u9884_u52A0_u8F7D_u63D0_u5347_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D"><a href="#u4F7F_u7528_u9884_u52A0_u8F7D_u63D0_u5347_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D" class="headerlink" title="使用预加载提升来优化资源加载"></a>使用预加载提升来优化资源加载</h2><p>有时，网页开发者基于站点的布局信息，可以提供附加的导航信息，或是page context(不知原文所指)。这能帮助浏览器优化用户体验。Chrome支持以下两种提示，内嵌在网页中即可：</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"subresource"</span> href=<span class="string">"/javascript/myapp.js"</span>&gt;</span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"prefetch"</span>    href=<span class="string">"/images/big.jpeg"</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>子资源和预加载看起来没有什么不同，但却有着非常不同的语义。当一个链接声明自己与当前网页的关系是”prefetch”的时候，这只是暗示浏览器它是一个可能在未来需要打开的页面。换句话说，它只是一个跨页面提示。对比来看，”subresource”提示浏览器本资源是可能会被用于当前页面的，这需要在遇到这个资源之前发出request。</p>
+<p>如你所料，不同的语义也带来了资源加载器非常不同的行为。标注为prefetch的资源只是被赋予低优先级，只有在本页面结束加载后才会考虑。而subresource资源则一遇到就加载，优先级很高。</p>
+<p>这两个提示，如果在合适的环境下正确使用，可以显著地优化你站点的用户体验。最后，要提示大家prefetch是<a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#link-type-prefetch" target="_blank" rel="external">HTML5标准的一部分</a>，现已经获得了Firefox和Chrome的支持，而subresource只是在Chrome中支持。（此信息可能已经过期）</p>
+<h2 id="u4F7F_u7528_u6D4F_u89C8_u5668_u9884_u5237_u65B0_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D"><a href="#u4F7F_u7528_u6D4F_u89C8_u5668_u9884_u5237_u65B0_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D" class="headerlink" title="使用浏览器预刷新来优化资源加载"></a>使用浏览器预刷新来优化资源加载</h2><p>不幸的是，不是所有的站点开发人员都可以或是愿意在网页标注出subresource。就算他们这么做了，我们必须等待HTML文档返回，才能解析到这些提示，并开始获取必要的subresource。这就要看服务器的响应时间，和延时了。通常数百甚至上千的延时都有可能出现。</p>
+<p>但是，让我们眼光再放得长远一些，Chrome已经知道了热门资源的域名，并以此进行DNS的预解析。为什么我们不再向前推进一步，进行DNS查询，使用TCP预连接，并推测性地预先加载资源呢？这便是”预刷新”想做的。</p>
+<ul>
+<li>用户打开目标URL</li>
+<li>Chrome查询预测器，得到和目标URL相关的子资源，并也开始DNS预解析-TCP预连接-资源预刷新</li>
+<li>如果子资源已经缓存，那么只要从磁盘或是内存中加载就好</li>
+<li>如果资源缺失，或是缓存到期，那么才发出网络请求</li>
+</ul>
+<p><img src="/images/high-perf-network-in-chrome-trans/xchrome-experiment.png" alt="xchrome-experiment"></p>
+<p>资源预刷新是Chrome中性能优化的一个典型范例，理论上来说，它应该能带来更好的性能，不过这其中还是有很多折衷。只要一种方式来选择是否需要将这个功能融合入Chrome，就是实现它并在pre-release的Chrome中给实际用户、实际的网络和实际的浏览中进行A/B测试。</p>
+<p>在2013年早期，Chrome团队就已经在讨论这一实现。如果收集的反馈好，我们就可以在2013年后期看到这一功能。<strong>提升Chrome网络性能的脚步从未停止，团队一直在尝试新的方法、想法和技术</strong>。</p>
+<h2 id="u4F7F_u7528_u9884_u6E32_u67D3_u4F18_u5316_u6D4F_u89C8_u4F53_u9A8C"><a href="#u4F7F_u7528_u9884_u6E32_u67D3_u4F18_u5316_u6D4F_u89C8_u4F53_u9A8C" class="headerlink" title="使用预渲染优化浏览体验"></a>使用预渲染优化浏览体验</h2><p>我们以上提及的每一个优化都减少了用户真实请求发出的时间，最终让页面得以渲染。但是，<strong>一个真实的秒开的体验还需要什么呢？</strong>基于我们之前预先看到的UX数据，互动必须在100ms中结束，这便不给网络延时留多少空余时间了，我们要怎样才能在100ms中渲染好一个页面呢？</p>
+<p>当然，你应该已经猜到了答案。这通常是大多数人的习惯：如果你打开了很多网页，并在其中切换，这就是秒开的体验，可比等待加载快多了。如果浏览器已经为你提供了API来这么做呢？</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"prerender"</span> href=<span class="string">"http://example.org/index.html"</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>你猜对了，这边是<a href="https://developers.google.com/chrome/whitepapers/prerender" target="_blank" rel="external">Chrome中的预渲染</a>。不像”prefetch”只是下载一个资源，”prerender”提示Chrome在加载其所有subresource后，在一个隐藏的标签页中渲染这个页面。<strong>隐藏的tab是不为用户所见的，但当用户触发导航的时候，此tab就被从后台交换出来，形成所谓的”秒开”</strong>。</p>
+<p>你可以访问<a href="http://prerender-test.appspot.com/" target="_blank" rel="external">prerender-test.appspot.com</a>来体验一下，打开<code>chrome://net-internals/#prerender</code>来查看预渲染的历史和当前状态。</p>
+<p><img src="/images/high-perf-network-in-chrome-trans/xnetinternals-prerender.png" alt="xnetinternals-prerender.png"></p>
+<p>如你所料，在后台tab中完整地渲染一个页面需要消耗大量的CPU和网络资源，因此我们只会在此页面非常可能用到的时候才会进行预渲染！比如之前提到的Omnibox的高可能性提示。相似的是，Google搜索有时也会为第一结果加入预渲染的提示（也称谓Google Instant Pages）。</p>
+<p><a href="https://www.youtube.com/watch?v=_Jn93FDx9oI" target="_blank" rel="external">视频地址</a></p>
+<p><strong>你也可以为你的网站添加预渲染的提示</strong>。不过，在你这么做之前，你需要知道预渲染由一些限制：</p>
+<ul>
+<li>在所有进程中，只允许一个预渲染的tab</li>
+<li>不支持HTTPS和需要认证的HTTP页面</li>
+<li>如果请求的资源，或其任何subresource需要进行一个非幂等(原文：nonidempotent)请求，（只允许GET）</li>
+<li>所有的资源都是以最低网络优先级发出的</li>
+<li>所有的页面都是以最低CPU优先级渲染的</li>
+<li>如果页面使用超出100MB的内存，就会终止</li>
+<li>推迟插件的初始化，如果存在HTML 5 媒体元素的话，也会终止</li>
+</ul>
+<p>换句话说，不能保证预渲染一定进行，并只在安全的情况下进行。还需提到的是，隐藏的页面也会执行Javascript和其他逻辑，最佳实践是利用<a href="https://developers.google.com/chrome/whitepapers/pagevisibility" target="_blank" rel="external">Page Visibility API</a>来检查页面是否可见，这也是你一定<a href="http://www.html5rocks.com/en/tutorials/pagevisibility/intro/" target="_blank" rel="external">会学的</a>。</p>
+<h1 id="Chrome_u8D8A_u7528_u8D8A_u5FEB"><a href="#Chrome_u8D8A_u7528_u8D8A_u5FEB" class="headerlink" title="Chrome越用越快"></a>Chrome越用越快</h1><p><img src="/images/high-perf-network-in-chrome-trans/xchrome-speed-final.png" alt="xchrome-speed-final"></p>
+<p>现在看来，Chrome的网络栈可比一个朴素的socket管理器复杂多了。我们这个简短地介绍了在浏览网页时你不可见的很多优化。Chrome越是学习网络的拓扑和你的习惯，做得越好。<strong>这就好像魔术一样，Chrome是越用越快的，不过它不是魔法，因为你已经知道它的内部机理了</strong>。</p>
+<p>最后，还是需要提到Chrome团队一直努力迭代和实验，来不断提高性能。在你读到这里的时候，还是由很多新实验和优化在开发、测试和部署中。兴许某一天，我们达到了我们秒开（小于100ms）的目标时，我们可以歇一歇脚，不过在那之前，还有很多路要走！</p>
+<blockquote>
+<p>Ilya Grigorik，Google Web性能工程师，W3C Web性能小组的co-chair，High Performance Browser Networking (O’Reilly) 一书的作者，<a href="https://twitter.com/igrigorik" target="_blank" rel="external">Twitter</a>,<a href="https://plus.google.com/+IlyaGrigorik" target="_blank" rel="external">Google+</a></p>
+</blockquote>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
 
     
       
@@ -922,157 +1125,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/11/15/new-in-cpp11/" itemprop="url">
-                  初尝 C++ 11
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2015-11-15T14:50:31+08:00" content="2015-11-15">
-              2015-11-15
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">programming</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2015/11/15/new-in-cpp11/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/11/15/new-in-cpp11/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <p>我学的第一门语言便是C++，不过由于后期一直没有使用C++写过较大的项目，一直处于入门阶段。最近实习，第一个小项目便是搭建一个代理服务器，Manager处于对性能的要求，希望我用C++实现。当时比较懒，觉得用C++重写代理服务器进展会比较慢，便说服Manager让我使用Golang，配合一些现有的框架实现。现在看起来达到了预期效果，但也缺少了锻炼C++能力的机会。</p>
-<p>现有的项目中，Android App几乎都是使用NDK进行开发的，近期我们有进行重构和性能优化的打算。恰逢其机，进哥在每周的Code Study上进行了 <code>C++11</code> 新标准的分享，我也借助周末的机会稍作整理。</p>
-<h1 id="u6982_u89C8"><a href="#u6982_u89C8" class="headerlink" title="概览"></a>概览</h1><p><img src="/images/cpp-timeline.png" alt="timeline"></p>
-<p>C++自98标准化后，变动不大。直到近年开始不断推出新的标准，我们现在似乎还处在不断改进的中期。</p>
-<p>按照Manager的说法，改动可以被划分入如下几类：</p>
-<ul>
-<li>语法糖类。让代码更加简洁，易于理解。</li>
-<li>显式地进行语义申明。填之前留下的坑，并让代码更加符合最佳实践。</li>
-<li>其他语言的新特性。</li>
-<li>标准库的完善。</li>
-</ul>
-<p>Manager之前是做编译器的，所以他觉得大部分修改是标准委员会拍拍大脑制定的。的确，语言的设计不是大杂烩，维持一个简洁规范的语法规则是很有必要的，C++由于需要向前兼容，看起来便不简洁了。</p>
-<h1 id="u8BED_u6CD5_u7CD6"><a href="#u8BED_u6CD5_u7CD6" class="headerlink" title="语法糖"></a>语法糖</h1><p>这部分是Manager痛斥的，不过也是我们大家喜闻乐见的一些小改进。</p>
-<h2 id="Auto_u5173_u952E_u5B57"><a href="#Auto_u5173_u952E_u5B57" class="headerlink" title="Auto关键字"></a>Auto关键字</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> x = <span class="number">144000000000000</span>;</span><br><span class="line"><span class="keyword">auto</span> y = <span class="built_in">string</span>(<span class="string">"hello"</span>);</span><br><span class="line"><span class="keyword">auto</span> z = y + <span class="string">", world"</span>;</span><br><span class="line"><span class="keyword">auto</span> a = someFunc();</span><br></pre></td></tr></table></figure>
-<p>这里主要的便利还是减少了类型申明的冗余，不过对于他人来说可读性会很差。比如<code>auto x = 0;</code>只会推断为int，可能会带来不必要的内存占用（比如范围只需要-128-127），或是溢出。如果需要使用STL的string也需要使用类名，不然会被推断为char数组。</p>
-<p>最佳实践还是在能明显看出变量类型的时候使用，如容器的迭代器申明。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::const_iterator ci = vi.begin();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> i = vec.begin();i != vec.end();i++) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; (*i) &lt;&lt; <span class="built_in">std</span>::endl; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>不过还是有坑，配合新出的for loop时注意引用的问题,默认是一个拷贝。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> &amp;i : vec) &#123;</span><br><span class="line">    i++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="decltype_u81EA_u52A8_u5316_u63A8_u5BFC"><a href="#decltype_u81EA_u52A8_u5316_u63A8_u5BFC" class="headerlink" title="decltype自动化推导"></a>decltype自动化推导</h2><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">typedef decltype<span class="list">(<span class="keyword">someFunc</span><span class="list">()</span>)</span> ITER</span><br><span class="line">auto a = someFunc<span class="list">()</span><span class="comment">; // 比如返回值为vector&lt;int&gt;::const_iterator</span></span><br><span class="line">decltype<span class="list">(<span class="keyword">a</span>)</span> b<span class="comment">;       // 自动推导为和a一样的类型</span></span><br></pre></td></tr></table></figure>
-<p>看到定义函数指针的用法，比较实用<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">myfunc</span><span class="params">(<span class="keyword">int</span> a)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">decltype</span>(&amp;myfunc) pfunc = myfunc;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; (*pfunc)(<span class="number">0</span>) &lt;&lt;<span class="built_in">std</span>::endl;</span><br><span class="line">    pfunc = [](<span class="keyword">int</span> a)&#123;<span class="keyword">return</span> a+<span class="number">1</span>;&#125;;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; (*pfunc)(<span class="number">0</span>) &lt;&lt;<span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="u521D_u59CB_u5316_u8BED_u6CD5"><a href="#u521D_u59CB_u5316_u8BED_u6CD5" class="headerlink" title="初始化语法"></a>初始化语法</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">C c &#123;<span class="number">0</span>,<span class="number">0</span>&#125;; <span class="comment">//C++11 only. 相当于: C c(0,0);</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">int</span>* a = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">3</span>] &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>  &#125;; /C++<span class="number">11</span> only</span><br><span class="line">  </span><br><span class="line"><span class="keyword">class</span> X &#123;</span><br><span class="line">    <span class="keyword">int</span> a[<span class="number">4</span>];</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    X() : a&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125; &#123;&#125; <span class="comment">//C++11, member array initializer</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>看完上面几个例子，似乎很多类型的初始化都可以使用{}来统一了。<br>不过Manager指出其实只是新增加了<code>new int[3]{1,2,3};</code>这一类的，其他的方法是为了大一统加上的。这样看来，初始化的方法的确比较混乱了。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(C c)</span></span>&#123;&#125;</span><br><span class="line">foo(&#123;<span class="number">0</span>,<span class="number">0</span>&#125;);</span><br></pre></td></tr></table></figure>
-<p>其实可以这样写，进行自动化推导后初始化传入的结构体。不过不太易于阅读。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; vs=&#123; <span class="string">"first"</span>, <span class="string">"second"</span>, <span class="string">"third"</span> &#125;;</span><br><span class="line"><span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="built_in">string</span>&gt; singers =</span><br><span class="line">&#123; &#123;<span class="string">"Lady Gaga"</span>, <span class="string">"+1 (212) 555-7890"</span>&#125;,</span><br><span class="line">&#123;<span class="string">"Beyonce Knowles"</span>, <span class="string">"+1 (212) 555-0987"</span>&#125;&#125;;</span><br></pre></td></tr></table></figure>
-<p>适合进行容器初始化。以前map的初始化不友好。</p>
-<p>map和表达式配合，有一种Javascript的感觉。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">handler</span><span class="params">(<span class="keyword">int</span> a)</span></span>&#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="keyword">decltype</span>(&amp;handler)&gt; handlers =</span><br><span class="line">    &#123; </span><br><span class="line">        &#123;<span class="string">"ori"</span>, [](<span class="keyword">int</span> a)&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="built_in">std</span>::endl;&#125;&#125;,</span><br><span class="line">        &#123;<span class="string">"plusone"</span>, [](<span class="keyword">int</span> a)&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; a+<span class="number">1</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;&#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    (*handlers[<span class="string">"ori"</span>])(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h1 id="u660E_u6670_u8BED_u4E49_u7684_u6539_u52A8"><a href="#u660E_u6670_u8BED_u4E49_u7684_u6539_u52A8" class="headerlink" title="明晰语义的改动"></a>明晰语义的改动</h1><h2 id="delete/default_u4FEE_u9970"><a href="#delete/default_u4FEE_u9970" class="headerlink" title="delete/default修饰"></a>delete/default修饰</h2><p>我们经常需要单例模式需要<code>private</code>构造函数，可以使用<code>delete</code>告诉编译器不生成默认的构造函数。<br>不过可以申明为<code>private</code>，似乎不是特别的必要。</p>
-<p>下面例子是一个比较好的实践：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">double</span>)</span> </span>= <span class="keyword">delete</span>;</span><br></pre></td></tr></table></figure>
-<p>明晰了使用时不能编译器遇到传入double的情况，不会自动做类型转换了</p>
-<h2 id="nullptr_2C_u6709_u7C7B_u578B_u7684NULL"><a href="#nullptr_2C_u6709_u7C7B_u578B_u7684NULL" class="headerlink" title="nullptr,有类型的NULL"></a>nullptr,有类型的NULL</h2><p><code>NULL</code>在函数重载时会产生歧义，导致具体逻辑得看编译器实现了。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span>; <span class="comment">//#1</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">char</span> *)</span></span>;<span class="comment">//#2</span></span><br><span class="line"><span class="comment">//C++03</span></span><br><span class="line">f(<span class="number">0</span>); <span class="comment">//二义性</span></span><br><span class="line"><span class="comment">//C++11</span></span><br><span class="line">f(<span class="literal">nullptr</span>) <span class="comment">//无二义性，调用f(char*)</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="final/override_u4FEE_u9970"><a href="#final/override_u4FEE_u9970" class="headerlink" title="final/override修饰"></a>final/override修饰</h2><p><code>final</code>的使用不用多说了。<code>override</code>我们当时讨论了很久其存在的必要性。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> A&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> a)</span></span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"in A"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> B : <span class="keyword">public</span> A &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> a)</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"in B"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    A* p = <span class="keyword">new</span> B();</span><br><span class="line">    p-&gt;f(<span class="number">1.1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面例子中，最终调用到了B的f，不过如果A的f参数改为<code>double</code>，会由<code>override</code>产生编译错误。<br>如果不加的话，就会绕过B::f。</p>
-<h2 id="u59D4_u6258_u6784_u9020_u51FD_u6570"><a href="#u59D4_u6258_u6784_u9020_u51FD_u6570" class="headerlink" title="委托构造函数"></a>委托构造函数</h2><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Student(<span class="keyword">int</span> i, string n): id(i), name(n)&#123;&#125;</span><br><span class="line">    Student(): Student(0, <span class="string">"none"</span>)&#123;&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    string name;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>之前一直需要抽出公共的构造部分，有了委托后可以更加高效，因为在初始化列表中便初始化成员了。</p>
-<h1 id="u65B0_u7279_u6027"><a href="#u65B0_u7279_u6027" class="headerlink" title="新特性"></a>新特性</h1><h2 id="Lambda_u8868_u8FBE_u5F0F"><a href="#Lambda_u8868_u8FBE_u5F0F" class="headerlink" title="Lambda表达式"></a>Lambda表达式</h2><p>其实在上文中已经使用过了一些，形如：<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="link_label">闭包捕捉</span>](<span class="link_url">参数列表</span>) -&gt; 返回值类型 &#123;函数体&#125;</span><br><span class="line">[](int a, double b) -&gt; double &#123;return a+b;&#125;</span><br></pre></td></tr></table></figure></p>
-<p>闭包是指在表达式中可以直接访问到表达式创建时的上下文中的变量，这样可以将特定的参数封在表达式内，调用时更加简洁。<br>在Javascript中，我们可以直接闭包。C++中区分了传值和传引用，所以我们必须通过[]来显式地捕捉外界的变量。<br>规则比较简单，<code>[=]</code>便是传值所有使用的外界变量；<code>[&amp;]</code>传引用；<code>[&amp;,x]</code>表示x传值，其他传引用；<code>[=,&amp;y]</code>表示y传递，其他传值。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100</span>, b = <span class="number">10</span>;</span><br><span class="line"><span class="comment">// auto 在这里很方便，-&gt;double也可以省去，可以被编译器自动推导</span></span><br><span class="line"><span class="keyword">auto</span> ff = [=](<span class="keyword">int</span> x, <span class="keyword">double</span> y) -&gt;<span class="keyword">double</span> &#123;<span class="keyword">return</span> a+b+x + y;&#125;;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%f\n"</span>, ff(<span class="number">1</span>, <span class="number">2.2</span>));</span><br></pre></td></tr></table></figure>
-<p>在使用标准库的高阶函数时，便可以使用函数表达式，省去了函数的申明和需要闭包的变量之前不方便传递的问题。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; nums&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line">for_each(nums.begin(), nums.end(), [&amp;sum](<span class="keyword">int</span> a)&#123;sum+=a;&#125;);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%d\n"</span>, sum);</span><br></pre></td></tr></table></figure></p>
-<p>Javascript中非常常见的立即调用表达式。<br><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="collection">[]</span> <span class="collection">&#123; printf<span class="list">(<span class="string">"Hi\n"</span>)</span><span class="comment">; &#125; ();</span></span><br><span class="line"><span class="collection">[]</span><span class="list">(<span class="keyword"><span class="built_in">int</span></span> i)</span> <span class="collection">&#123; printf<span class="list">(<span class="string">"Hi%d\n"</span>, i)</span><span class="comment">; &#125; (100);</span></span></span></span><br></pre></td></tr></table></figure></p>
-<h2 id="u53F3_u503C_u5F15_u7528"><a href="#u53F3_u503C_u5F15_u7528" class="headerlink" title="右值引用"></a>右值引用</h2><p><a href="http://harttle.com/2015/10/11/cpp11-rvalue.html" target="_blank" rel="external">详细的介绍可参考这里</a>，写得很详细。 </p>
-<p>这个右值引用应该还是很好的特性。不过需要使用者明白自己究竟在做什么，主要是减少了同类中的一些冗余的拷贝过程。<br>不过我们当时的争论在于如果只是使用指针，也可以达到同样的效果，不过这里便没有类的封装性了，标准库也没办法通过<code>move</code>告知进行内部成员的移动。不过使用智能指针应该是可以达到同样的效果。<br>当时还认为如果内部变量是new获得的，应该自行管理不能传递，不过我认为这里的管理都是在同类型中间进行，传递也只是同类的实例传递给另外一个同类，所以管理是封闭在类的内部的，是符合自行管理new创造的对象的。</p>
-<h2 id="u5143_u7EC4"><a href="#u5143_u7EC4" class="headerlink" title="元组"></a>元组</h2><p>可以用来返回多个返回值。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::tuple&lt; <span class="keyword">int</span> , <span class="keyword">double</span>, <span class="built_in">string</span>       &gt; tuple_1;</span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::tuple&lt; <span class="keyword">char</span>, <span class="keyword">short</span> , <span class="keyword">const</span> <span class="keyword">char</span> * &gt; tuple_2;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> <span class="keyword">const</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    tuple_1 t1;</span><br><span class="line">    tuple_2 t2 &#123;<span class="string">'X'</span>, <span class="number">2</span>, <span class="string">"Hola!"</span>&#125;; <span class="comment">// ()或是&#123;&#125;初始化都可以，不过建议使用新的&#123;&#125;统一初始化</span></span><br><span class="line">    t1 = t2 ; <span class="comment">// 第三个字串元素可由'const char *'隐式转换</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>摘自Wikipedia。</p>
-<h1 id="u589E_u5F3A_u7684_u6807_u51C6_u5E93"><a href="#u589E_u5F3A_u7684_u6807_u51C6_u5E93" class="headerlink" title="增强的标准库"></a>增强的标准库</h1><h2 id="u5E76_u53D1_u5E93_uFF08_u7EBF_u7A0B_u3001_u9501_u3001_u539F_u5B50_u64CD_u4F5C_uFF09"><a href="#u5E76_u53D1_u5E93_uFF08_u7EBF_u7A0B_u3001_u9501_u3001_u539F_u5B50_u64CD_u4F5C_uFF09" class="headerlink" title="并发库（线程、锁、原子操作）"></a>并发库（线程、锁、原子操作）</h2><h2 id="u6B63_u5219_u8868_u8FBE_u5F0F_u5E93"><a href="#u6B63_u5219_u8868_u8FBE_u5F0F_u5E93" class="headerlink" title="正则表达式库"></a>正则表达式库</h2><h2 id="u901A_u7528_u667A_u80FD_u6307_u9488"><a href="#u901A_u7528_u667A_u80FD_u6307_u9488" class="headerlink" title="通用智能指针"></a>通用智能指针</h2><h2 id="u6563_u5217_u8868"><a href="#u6563_u5217_u8868" class="headerlink" title="散列表"></a>散列表</h2><h2 id="u968F_u673A_u6570_u751F_u6210"><a href="#u968F_u673A_u6570_u751F_u6210" class="headerlink" title="随机数生成"></a>随机数生成</h2><h2 id="u53D8_u957F_u53C2_u6570_u6A21_u677F"><a href="#u53D8_u957F_u53C2_u6570_u6A21_u677F" class="headerlink" title="变长参数模板"></a>变长参数模板</h2><h2 id="u591A_u6001_u51FD_u6570_u5BF9_u8C61_u5305_u88C5_u5668"><a href="#u591A_u6001_u51FD_u6570_u5BF9_u8C61_u5305_u88C5_u5668" class="headerlink" title="多态函数对象包装器"></a>多态函数对象包装器</h2><h1 id="u5176_u4ED6"><a href="#u5176_u4ED6" class="headerlink" title="其他"></a>其他</h1><p>最近希望做到动态的、有不同函数签名的函数的动态调用，后来只能使用switch case实现。<br>看到C++17标准中有一个<code>invoke</code>，似乎是动态地通过参数列表调用一个<code>callable</code>对象，也许以后还会加入GC和reflect。</p>
-<p><a href="https://zh.wikipedia.org/wiki/C%2B%2B11" target="_blank" rel="external">更多改动可参考Wikipedia</a><br><a href="http://coolshell.cn/articles/5265.html" target="_blank" rel="external">Coolshell</a></p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -1119,7 +1171,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">36</span>
+              <span class="site-state-item-count">37</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -1133,7 +1185,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">23</span>
+              <span class="site-state-item-count">25</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>
