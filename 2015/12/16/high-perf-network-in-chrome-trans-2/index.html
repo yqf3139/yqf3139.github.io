@@ -76,7 +76,7 @@
 <meta property="og:image" content="http://yqf3139.github.io/images/high-perf-network-in-chrome-trans/xchrome-experiment.png">
 <meta property="og:image" content="http://yqf3139.github.io/images/high-perf-network-in-chrome-trans/xnetinternals-prerender.png">
 <meta property="og:image" content="http://yqf3139.github.io/images/high-perf-network-in-chrome-trans/xchrome-speed-final.png">
-<meta property="og:updated_time" content="2015-12-23T14:11:41.890Z">
+<meta property="og:updated_time" content="2015-12-19T14:10:39.915Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Google Chrome 中的高性能网络技术实践（翻译）下">
 <meta name="twitter:description" content="你使用浏览器进行会话的全过程通过前文我们已经能在心中绘制出Chrome网络栈的大致图样，现在让我们来详细了解一下浏览器中一系列面向用户的优化。现在，让我们想想我们刚刚创建了一个Chrome的用户档案，并准备开始上网冲浪了。
@@ -268,13 +268,13 @@
       
 
       
-        <span itemprop="articleBody"><h1 id="u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B"><a href="#u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B" class="headerlink" title="你使用浏览器进行会话的全过程"></a>你使用浏览器进行会话的全过程</h1><p>通过前文我们已经能在心中绘制出Chrome网络栈的大致图样，现在让我们来详细了解一下浏览器中一系列面向用户的优化。现在，让我们想想我们刚刚创建了一个Chrome的用户档案，并准备开始上网冲浪了。</p>
-<h2 id="u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C"><a href="#u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C" class="headerlink" title="优化游览器的冷启动体验"></a>优化游览器的冷启动体验</h2><p><img src="/images/high-perf-network-in-chrome-trans/pagespeed.png" alt="pagespeed"></p>
+        <span itemprop="articleBody"><h1 id="你使用浏览器进行会话的全过程">你使用浏览器进行会话的全过程</h1><p>通过前文我们已经能在心中绘制出Chrome网络栈的大致图样，现在让我们来详细了解一下浏览器中一系列面向用户的优化。现在，让我们想想我们刚刚创建了一个Chrome的用户档案，并准备开始上网冲浪了。</p>
+<h2 id="优化游览器的冷启动体验">优化游览器的冷启动体验</h2><p><img src="/images/high-perf-network-in-chrome-trans/pagespeed.png" alt="pagespeed"></p>
 <p>第一次启动Chrome的时候，它对你喜爱的网站、浏览习惯还了解甚少。但是，<strong>大多数人在浏览器冷启动后还是遵循着一个特定的使用习惯</strong>，比如打开电邮、新闻头条、社交网络和门户网站等等。具体的网站可能不同，但是它们其中的相似性可以帮助预测器来加速你每天一开始打开浏览器的体验！</p>
 <p><strong>Chrome总是记着用户打开浏览器后最爱去的十大网站</strong>，不过需要注意的是这并不是全局浏览的前十，而仅仅是启动后的。浏览器加载的时候，Chrome就可以为这些站点发起DNS的预加载。好奇的你可以通过<code>chrome://dns</code>来查看你自己的启动域名列表。在这个网页的最上方，你会找到你账号的十大启动候选网站。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/startup-dns.png" alt="startup-dns"></p>
 <p>以我账号举个栗子吧，我一般如何上网的呢？如果我是在写一篇文章的时候，我会直接导航去Google Docs。如你所料，我常去一些Google站点。</p>
-<h2 id="u4F18_u5316_u4E0EOmnibox_u7684_u4E92_u52A8"><a href="#u4F18_u5316_u4E0EOmnibox_u7684_u4E92_u52A8" class="headerlink" title="优化与Omnibox的互动"></a>优化与Omnibox的互动</h2><p><img src="/images/high-perf-network-in-chrome-trans/chrome-omnibox.png" alt="chrome-omnibox"></p>
+<h2 id="优化与Omnibox的互动">优化与Omnibox的互动</h2><p><img src="/images/high-perf-network-in-chrome-trans/chrome-omnibox.png" alt="chrome-omnibox"></p>
 <p>推出Omnibox是Chrome的一大创举，和先前的其他浏览器相比，Chrome的Omnibox可不仅仅只能输入目标URL。除了记住用户之前浏览过的URL以外，它也支持历史浏览记录的全文搜索，<em>(小技巧：输入网站的名称而不是URL)</em>，更可与你选择搜索引擎进行深度整合。</p>
 <p>Omnibox会自动相应用户的输入，这可以是根据你历史的一个URL，或者是一个搜索查询。底层实现中，每个提示的动作都是按照和输入的相关程度进行排序，并参考之前的记录。事实上，你可以在<code>chrome://predictors</code>中查询到这些数据。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/xomnibox.png" alt="xomnibox"></p>
@@ -282,13 +282,13 @@
 <p>但是，你可能会想，这一切关网络栈什么事情？这些黄黄绿绿的候选数据其实都是<code>ResourceDispatcher</code>的重要参考信号！如果我们产生了一个黄色信号，Chrome可能会发出一个DNS预查询。如果是一个绿色的更高可信度的信号，Chrome可能在DNS解析后发出一个TCP预连接。如果这些都做好了，但用户还没有做出决定，Chrome甚至会默默在后台页面渲染好这个网页。</p>
 <p>还有一种可能是，如果就历史数据来看，当前输入的查询词没有很好的匹配，那么Chrome会对你搜索引擎进行DNS/TCP预加载，这是预测你很有可能发出一个搜索请求。</p>
 <p><strong>对于一般用户来说，他们需要数百毫秒的时间来输入查询，并评估自动弹出的提示</strong>。在后台的Chrome便能从容地预加载、预连接甚至于在某些情况下预渲染这个网页，这样等用户敲击下”enter”键的时候，网络带来的延时影响已经没有了。</p>
-<h2 id="u4F18_u5316_u7F13_u5B58_u7684_u6027_u80FD"><a href="#u4F18_u5316_u7F13_u5B58_u7684_u6027_u80FD" class="headerlink" title="优化缓存的性能"></a>优化缓存的性能</h2><p>最快的Request，是这个请求根本没有发生。当我们谈及性能的时候，怎能不谈及缓存呢。作为网站开发人员，你得通过Expires,ETag,Last-Modified和Cache-Control这些<a href="https://developers.google.com/speed/docs/best-practices/caching" target="_blank" rel="external">response headers</a>来表明你服务器上资源文件的缓存状态，对吧？如果没有的话，快行动起来，我们等等没关系。</p>
+<h2 id="优化缓存的性能">优化缓存的性能</h2><p>最快的Request，是这个请求根本没有发生。当我们谈及性能的时候，怎能不谈及缓存呢。作为网站开发人员，你得通过Expires,ETag,Last-Modified和Cache-Control这些<a href="https://developers.google.com/speed/docs/best-practices/caching" target="_blank" rel="external">response headers</a>来表明你服务器上资源文件的缓存状态，对吧？如果没有的话，快行动起来，我们等等没关系。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/chrome-incognito.webp" alt="chrome-incognito"></p>
 <p>Chrome对于内部缓存有两种不同的实现：一种是本地磁盘缓存，一种使用内存。<strong>内存缓存是为<a href="http://support.google.com/chrome/bin/answer.py?hl=en&amp;answer=95464" target="_blank" rel="external">incognito浏览模式</a>准备的，当你关闭窗口后，一切干干净净</strong>。两种模式都实现了相同的接口(<code>disk_cache::Backend</code>和<code>disk_cache::Entry</code>)，这极大简化了架构设计。如果你对此有想法，可以很轻易地实验你的缓存实现。</p>
 <p>从内部来说，磁盘缓存实现了自有的一套数据结构，它们都存放在你Profile目录下的文件夹中。其中，索引文件在浏览器启动时被直接映射入内存，而数据文件存放真实的数据，比如说HTTP头和其他统计信息。这里值得一提的是，最大不超过16KB的文件都存放在共享的数据块文件中，大文件直接存放在专有文件中。磁盘缓存需要实验LRU测量进行清扫，LRU的通常参考使用频率和资源的年龄。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/internals-cache.png" alt="internals-cache"></p>
 <p>如果你对Chrome缓存感兴趣的话，不妨看看<code>chrome://net-internals/#httoCache</code>。如果你想查看实际的HTTP元数据和缓存的Response，你可以访问<code>chrome://cache</code>，它们会列出缓存中所有的资源详情。你可以搜索，并点击URl查看。</p>
-<h2 id="u4F7F_u7528_u9884_u52A0_u8F7D_u4F18_u5316DNS"><a href="#u4F7F_u7528_u9884_u52A0_u8F7D_u4F18_u5316DNS" class="headerlink" title="使用预加载优化DNS"></a>使用预加载优化DNS</h2><p>之前我们已经几次提到了DNS预解析，那在我们展开实现细节前，我们看看哪些情况下会触发DNS解析，和触发理由：</p>
+<h2 id="使用预加载优化DNS">使用预加载优化DNS</h2><p>之前我们已经几次提到了DNS预解析，那在我们展开实现细节前，我们看看哪些情况下会触发DNS解析，和触发理由：</p>
 <ul>
 <li>在Render进程中运行的Blink文档解析器，可以提供其页面的所有URL中的域名，Chrome可以选择预先解析与否。</li>
 <li>在用户发出请求之前，Render进程便可能触发一个鼠标悬浮事件，或是一个按钮点击事件。</li>
@@ -318,17 +318,17 @@
 <p>以上，乃至还有更多，都是来源于Chrome持续不断的实验和优化。一个更加明显的问题是：<em>我们是如何验证这些想法的效果的呢？</em>，这很简单，Chrome对于每个用户，都对网络性能进行了细致的追踪和记录。你可以打开<code>chrome://histograms/DNS</code>来查看这些信息。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/xdns-prefetch.png" alt="xdns-prefetch"></p>
 <p>上图显示了DNS预请求的时间延时分布情况：差不多半成的（右栏）都是在20毫秒内完成的（左栏）。这是基于最近的一次浏览回话（9869条记录）并为用户私有。如果用户选择向Chrome提交他们的使用情况数据的话，这些数据才会被匿名化后，周期性地提交到开发团队，这样我们就能看到试验成功并不断做出调整了。就这样反复迭代更新。</p>
-<h2 id="u4F7F_u7528_u9884_u8FDE_u63A5_u6765_u4F18_u5316_u7BA1_u7406TCP_u8FDE_u63A5"><a href="#u4F7F_u7528_u9884_u8FDE_u63A5_u6765_u4F18_u5316_u7BA1_u7406TCP_u8FDE_u63A5" class="headerlink" title="使用预连接来优化管理TCP连接"></a>使用预连接来优化管理TCP连接</h2><p>既然我们通过Omnibox和Chrome预测器猜测出了接下来用户的导航方向，并预先解析出了域名，<strong>那为什么不再提前一步，预先与目标域名建立TCP连接，在用户发出真实的请求前就完成TCP握手呢？</strong>这样的话，我们便又节省了一个完整的Roundtrip时延，为用户节省了数百毫秒的延时。这便是TCP预连接和它的工作原理了。</p>
+<h2 id="使用预连接来优化管理TCP连接">使用预连接来优化管理TCP连接</h2><p>既然我们通过Omnibox和Chrome预测器猜测出了接下来用户的导航方向，并预先解析出了域名，<strong>那为什么不再提前一步，预先与目标域名建立TCP连接，在用户发出真实的请求前就完成TCP握手呢？</strong>这样的话，我们便又节省了一个完整的Roundtrip时延，为用户节省了数百毫秒的延时。这便是TCP预连接和它的工作原理了。</p>
 <p>首先，Chrome会先检查其socket池，找找有没有此域名的可用的socket。重用已经保持一段时间的keep-alive的sockets可以防止TCP握手和慢启动惩罚。如果没有可用的socket，那再启动TCP握手，并将它放到池中。这样的话，当用户启动导航的时候，真实的HTTP请求就能立即发送出去了。</p>
 <p>打开<code>chrome://net-internals#sockets</code>来查看Chrome中打开的socket详情统计。</p>
 <p><img src="/images/high-perf-network-in-chrome-trans/xnetinternals-sockets.png" alt="xnetinternals-sockets"></p>
 <p>你还可以深入每个socket的详情并审查时间线：连接和代理时间，每个包的到达时间等等。你还可以将数据导出，用于离线分析和bug报告。<strong>一个好审视(instrumentation)系统的是性能优化的关键，而<code>chrome://net-internals</code>是Chrome网络的汇总点</strong>，如果你还没尝试它的话快去试试吧。</p>
-<h2 id="u4F7F_u7528_u9884_u52A0_u8F7D_u63D0_u5347_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D"><a href="#u4F7F_u7528_u9884_u52A0_u8F7D_u63D0_u5347_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D" class="headerlink" title="使用预加载提升来优化资源加载"></a>使用预加载提升来优化资源加载</h2><p>有时，网页开发者基于站点的布局信息，可以提供附加的导航信息，或是page context(不知原文所指)。这能帮助浏览器优化用户体验。Chrome支持以下两种提示，内嵌在网页中即可：</p>
+<h2 id="使用预加载提升来优化资源加载">使用预加载提升来优化资源加载</h2><p>有时，网页开发者基于站点的布局信息，可以提供附加的导航信息，或是page context(不知原文所指)。这能帮助浏览器优化用户体验。Chrome支持以下两种提示，内嵌在网页中即可：</p>
 <figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"subresource"</span> href=<span class="string">"/javascript/myapp.js"</span>&gt;</span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"prefetch"</span>    href=<span class="string">"/images/big.jpeg"</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
 <p>子资源和预加载看起来没有什么不同，但却有着非常不同的语义。当一个链接声明自己与当前网页的关系是”prefetch”的时候，这只是暗示浏览器它是一个可能在未来需要打开的页面。换句话说，它只是一个跨页面提示。对比来看，”subresource”提示浏览器本资源是可能会被用于当前页面的，这需要在遇到这个资源之前发出request。</p>
 <p>如你所料，不同的语义也带来了资源加载器非常不同的行为。标注为prefetch的资源只是被赋予低优先级，只有在本页面结束加载后才会考虑。而subresource资源则一遇到就加载，优先级很高。</p>
 <p>这两个提示，如果在合适的环境下正确使用，可以显著地优化你站点的用户体验。最后，要提示大家prefetch是<a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#link-type-prefetch" target="_blank" rel="external">HTML5标准的一部分</a>，现已经获得了Firefox和Chrome的支持，而subresource只是在Chrome中支持。（此信息可能已经过期）</p>
-<h2 id="u4F7F_u7528_u6D4F_u89C8_u5668_u9884_u5237_u65B0_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D"><a href="#u4F7F_u7528_u6D4F_u89C8_u5668_u9884_u5237_u65B0_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D" class="headerlink" title="使用浏览器预刷新来优化资源加载"></a>使用浏览器预刷新来优化资源加载</h2><p>不幸的是，不是所有的站点开发人员都可以或是愿意在网页标注出subresource。就算他们这么做了，我们必须等待HTML文档返回，才能解析到这些提示，并开始获取必要的subresource。这就要看服务器的响应时间，和延时了。通常数百甚至上千的延时都有可能出现。</p>
+<h2 id="使用浏览器预刷新来优化资源加载">使用浏览器预刷新来优化资源加载</h2><p>不幸的是，不是所有的站点开发人员都可以或是愿意在网页标注出subresource。就算他们这么做了，我们必须等待HTML文档返回，才能解析到这些提示，并开始获取必要的subresource。这就要看服务器的响应时间，和延时了。通常数百甚至上千的延时都有可能出现。</p>
 <p>但是，让我们眼光再放得长远一些，Chrome已经知道了热门资源的域名，并以此进行DNS的预解析。为什么我们不再向前推进一步，进行DNS查询，使用TCP预连接，并推测性地预先加载资源呢？这便是”预刷新”想做的。</p>
 <ul>
 <li>用户打开目标URL</li>
@@ -339,7 +339,7 @@
 <p><img src="/images/high-perf-network-in-chrome-trans/xchrome-experiment.png" alt="xchrome-experiment"></p>
 <p>资源预刷新是Chrome中性能优化的一个典型范例，理论上来说，它应该能带来更好的性能，不过这其中还是有很多折衷。只要一种方式来选择是否需要将这个功能融合入Chrome，就是实现它并在pre-release的Chrome中给实际用户、实际的网络和实际的浏览中进行A/B测试。</p>
 <p>在2013年早期，Chrome团队就已经在讨论这一实现。如果收集的反馈好，我们就可以在2013年后期看到这一功能。<strong>提升Chrome网络性能的脚步从未停止，团队一直在尝试新的方法、想法和技术</strong>。</p>
-<h2 id="u4F7F_u7528_u9884_u6E32_u67D3_u4F18_u5316_u6D4F_u89C8_u4F53_u9A8C"><a href="#u4F7F_u7528_u9884_u6E32_u67D3_u4F18_u5316_u6D4F_u89C8_u4F53_u9A8C" class="headerlink" title="使用预渲染优化浏览体验"></a>使用预渲染优化浏览体验</h2><p>我们以上提及的每一个优化都减少了用户真实请求发出的时间，最终让页面得以渲染。但是，<strong>一个真实的秒开的体验还需要什么呢？</strong>基于我们之前预先看到的UX数据，互动必须在100ms中结束，这便不给网络延时留多少空余时间了，我们要怎样才能在100ms中渲染好一个页面呢？</p>
+<h2 id="使用预渲染优化浏览体验">使用预渲染优化浏览体验</h2><p>我们以上提及的每一个优化都减少了用户真实请求发出的时间，最终让页面得以渲染。但是，<strong>一个真实的秒开的体验还需要什么呢？</strong>基于我们之前预先看到的UX数据，互动必须在100ms中结束，这便不给网络延时留多少空余时间了，我们要怎样才能在100ms中渲染好一个页面呢？</p>
 <p>当然，你应该已经猜到了答案。这通常是大多数人的习惯：如果你打开了很多网页，并在其中切换，这就是秒开的体验，可比等待加载快多了。如果浏览器已经为你提供了API来这么做呢？</p>
 <figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;<span class="keyword">link</span> rel=<span class="string">"prerender"</span> href=<span class="string">"http://example.org/index.html"</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
 <p>你猜对了，这边是<a href="https://developers.google.com/chrome/whitepapers/prerender" target="_blank" rel="external">Chrome中的预渲染</a>。不像”prefetch”只是下载一个资源，”prerender”提示Chrome在加载其所有subresource后，在一个隐藏的标签页中渲染这个页面。<strong>隐藏的tab是不为用户所见的，但当用户触发导航的时候，此tab就被从后台交换出来，形成所谓的”秒开”</strong>。</p>
@@ -358,7 +358,7 @@
 <li>推迟插件的初始化，如果存在HTML 5 媒体元素的话，也会终止</li>
 </ul>
 <p>换句话说，不能保证预渲染一定进行，并只在安全的情况下进行。还需提到的是，隐藏的页面也会执行Javascript和其他逻辑，最佳实践是利用<a href="https://developers.google.com/chrome/whitepapers/pagevisibility" target="_blank" rel="external">Page Visibility API</a>来检查页面是否可见，这也是你一定<a href="http://www.html5rocks.com/en/tutorials/pagevisibility/intro/" target="_blank" rel="external">会学的</a>。</p>
-<h1 id="Chrome_u8D8A_u7528_u8D8A_u5FEB"><a href="#Chrome_u8D8A_u7528_u8D8A_u5FEB" class="headerlink" title="Chrome越用越快"></a>Chrome越用越快</h1><p><img src="/images/high-perf-network-in-chrome-trans/xchrome-speed-final.png" alt="xchrome-speed-final"></p>
+<h1 id="Chrome越用越快">Chrome越用越快</h1><p><img src="/images/high-perf-network-in-chrome-trans/xchrome-speed-final.png" alt="xchrome-speed-final"></p>
 <p>现在看来，Chrome的网络栈可比一个朴素的socket管理器复杂多了。我们这个简短地介绍了在浏览网页时你不可见的很多优化。Chrome越是学习网络的拓扑和你的习惯，做得越好。<strong>这就好像魔术一样，Chrome是越用越快的，不过它不是魔法，因为你已经知道它的内部机理了</strong>。</p>
 <p>最后，还是需要提到Chrome团队一直努力迭代和实验，来不断提高性能。在你读到这里的时候，还是由很多新实验和优化在开发、测试和部署中。兴许某一天，我们达到了我们秒开（小于100ms）的目标时，我们可以歇一歇脚，不过在那之前，还有很多路要走！</p>
 <blockquote>
@@ -546,7 +546,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#u4F60_u4F7F_u7528_u6D4F_u89C8_u5668_u8FDB_u884C_u4F1A_u8BDD_u7684_u5168_u8FC7_u7A0B"><span class="nav-number">1.</span> <span class="nav-text">你使用浏览器进行会话的全过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F18_u5316_u6E38_u89C8_u5668_u7684_u51B7_u542F_u52A8_u4F53_u9A8C"><span class="nav-number">1.1.</span> <span class="nav-text">优化游览器的冷启动体验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F18_u5316_u4E0EOmnibox_u7684_u4E92_u52A8"><span class="nav-number">1.2.</span> <span class="nav-text">优化与Omnibox的互动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F18_u5316_u7F13_u5B58_u7684_u6027_u80FD"><span class="nav-number">1.3.</span> <span class="nav-text">优化缓存的性能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F7F_u7528_u9884_u52A0_u8F7D_u4F18_u5316DNS"><span class="nav-number">1.4.</span> <span class="nav-text">使用预加载优化DNS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F7F_u7528_u9884_u8FDE_u63A5_u6765_u4F18_u5316_u7BA1_u7406TCP_u8FDE_u63A5"><span class="nav-number">1.5.</span> <span class="nav-text">使用预连接来优化管理TCP连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F7F_u7528_u9884_u52A0_u8F7D_u63D0_u5347_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D"><span class="nav-number">1.6.</span> <span class="nav-text">使用预加载提升来优化资源加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F7F_u7528_u6D4F_u89C8_u5668_u9884_u5237_u65B0_u6765_u4F18_u5316_u8D44_u6E90_u52A0_u8F7D"><span class="nav-number">1.7.</span> <span class="nav-text">使用浏览器预刷新来优化资源加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4F7F_u7528_u9884_u6E32_u67D3_u4F18_u5316_u6D4F_u89C8_u4F53_u9A8C"><span class="nav-number">1.8.</span> <span class="nav-text">使用预渲染优化浏览体验</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Chrome_u8D8A_u7528_u8D8A_u5FEB"><span class="nav-number">2.</span> <span class="nav-text">Chrome越用越快</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#你使用浏览器进行会话的全过程"><span class="nav-number">1.</span> <span class="nav-text">你使用浏览器进行会话的全过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#优化游览器的冷启动体验"><span class="nav-number">1.1.</span> <span class="nav-text">优化游览器的冷启动体验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化与Omnibox的互动"><span class="nav-number">1.2.</span> <span class="nav-text">优化与Omnibox的互动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化缓存的性能"><span class="nav-number">1.3.</span> <span class="nav-text">优化缓存的性能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用预加载优化DNS"><span class="nav-number">1.4.</span> <span class="nav-text">使用预加载优化DNS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用预连接来优化管理TCP连接"><span class="nav-number">1.5.</span> <span class="nav-text">使用预连接来优化管理TCP连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用预加载提升来优化资源加载"><span class="nav-number">1.6.</span> <span class="nav-text">使用预加载提升来优化资源加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用浏览器预刷新来优化资源加载"><span class="nav-number">1.7.</span> <span class="nav-text">使用浏览器预刷新来优化资源加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用预渲染优化浏览体验"><span class="nav-number">1.8.</span> <span class="nav-text">使用预渲染优化浏览体验</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Chrome越用越快"><span class="nav-number">2.</span> <span class="nav-text">Chrome越用越快</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">
