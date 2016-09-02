@@ -179,6 +179,138 @@
 
     
     
+      
+      
+
+      
+    
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2015/11/28/check-js-var-update/" itemprop="url">
+                  检测Javascript中变量的修改
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-11-28T16:20:08+08:00" content="2015-11-28">
+              2015-11-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">programming</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/11/28/check-js-var-update/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/11/28/check-js-var-update/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="问题描述">问题描述</h1><p>目前在做的小项目中，我们在浏览器中通过Hook浏览器的API，截获目标程序对浏览器API的调用。比如对于Webgl的网页程序，我们就能截获所有的gl指令，这其中主要是截获参数列表。把这些gl指令翻译为Opengl ES标准的话便可以编译为一个其他设备上的原生应用了。</p>
+<p>图形的绘制过程中经常会有大量的数组需要传递入GPU，这就造成了我们截获了大量的数组。如果想直接把这些数据保存在浏览器内存中，压力很大，实时流到其他服务器上的话也带来了stringfy瓶颈和传输瓶颈。虽然对于Javascript中的Typed Array，我们现在直接二进制传输到服务器上，是否能只传输变化的数组，或者是只传输数组的delta，这个是一个潜在的优化。当然，如果发现大部分要传输的数组都是改变过的话，或者是检测改变的开销大于直接传输的开销（毕竟是CPU时间对抗IO时间，而且由于检测比如会使目标程序运行变慢），完全便可以不考虑进行数组改变的检测了。</p>
+<p>对于给定Javascript的TypedArray，我们的目标便是当截获到的gl指令需要使用它的时候，我们需要能知道它是否内容发生了改动，更进一步能记录出上次截获到这次截获间的delta。<br>花了一些时间进行探索，然而最后还是无解，并也没有方法能占用资源尽量少地做到标记修改，记录如下。</p>
+<h1 id="暴力检测">暴力检测</h1><p>这个方法不需要多说，不过检测的时间消耗太多，由于消耗了Webgl每帧的CPU时间，很容易造成CPU性能瓶颈，导致Fps下降。</p>
+<h1 id="Object-observe()_/_Array-observe()">Object.observe() / Array.observe()</h1><p>最先查询到的便是两个内建的API，直接来看MDN上的使用：<br><figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">var obj = &#123;</span><br><span class="line">    foo: <span class="number">0</span>,</span><br><span class="line">    bar: <span class="number">1</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Object.observe(obj, <span class="keyword">function</span>(changes) &#123;</span><br><span class="line">    console.log(changes);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">obj.baz = <span class="number">2</span>;</span><br><span class="line">// [&#123;name: <span class="string">'baz'</span>, object: &lt;obj&gt;, type: <span class="string">'add'</span>&#125;]</span><br><span class="line"></span><br><span class="line">obj.foo = <span class="string">'hello'</span>;</span><br><span class="line">// [&#123;name: <span class="string">'foo'</span>, object: &lt;obj&gt;, type: <span class="string">'update'</span>, oldValue: <span class="number">0</span>&#125;]</span><br><span class="line"></span><br><span class="line"><span class="keyword">delete</span> obj.baz;</span><br><span class="line">// [&#123;name: <span class="string">'baz'</span>, object: &lt;obj&gt;, type: <span class="string">'delete'</span>, oldValue: <span class="number">2</span>&#125;]</span><br><span class="line">```</span><br></pre></td></tr></table></figure></p>
+<p>一开始看到的时候感觉非常符合我的需求，并且还区分了改动的类型，比如<code>update</code>、<code>add</code>、<code>delete</code>类型。<br>应该现在很多前端的工具就使用Observe便可以完全数据到显示的单向同步了。<br>于是尝试了一下在Typed Array上的操作：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">var obj = <span class="keyword">new</span> Int16Array([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</span><br><span class="line">Object.observe(obj, function(changes) &#123;</span><br><span class="line">    console.<span class="built_in">log</span>(changes);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">obj[<span class="number">0</span>] = <span class="number">9</span>; <span class="comment">// changed</span></span><br><span class="line">obj[<span class="number">0</span>] = <span class="number">9</span>; <span class="comment">// unchanged</span></span><br><span class="line">obj.sort(); <span class="comment">// changed</span></span><br><span class="line"></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>不过后来看到这么一个解释:</p>
+<blockquote>
+<p>The Object.observe() method is used for asynchronously observing the changes<br>to an object. It provides a stream of changes in the order in which they<br>occur.</p>
+</blockquote>
+<p>说明变更事件是异步通知的，比如可以这样实验一下：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> <span class="built_in">Int16Array</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</span><br><span class="line">a.isDirty = <span class="literal">false</span>;</span><br><span class="line"><span class="built_in">Object</span>.observe(a, <span class="function"><span class="keyword">function</span>(<span class="params">changes</span>) </span>&#123;</span><br><span class="line">      a.isDirty = <span class="literal">true</span>;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'c'</span>);</span><br><span class="line">&#125;);</span><br><span class="line">a[<span class="number">0</span>]=<span class="number">9</span>;</span><br><span class="line"><span class="built_in">console</span>.log(a.isDirty);</span><br><span class="line">setTimeout(<span class="string">'console.log(a.isDirty);'</span>,<span class="number">100</span>);</span><br><span class="line"></span><br><span class="line">output:</span><br><span class="line"><span class="literal">false</span></span><br><span class="line">c</span><br><span class="line"><span class="literal">true</span></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure></p>
+<p>这就带来了问题，由于Javascript执行是单线程的，可能在webgl程序刚修改完后便被我截获了这个数组，但修改通知没到，我就已经错误判断数组未改变了，由于我相当于是对每个gl命令的参数进行快照，无法在未来进行记录，如果停止我当前线程的，会带来严重的性能问题。</p>
+<h1 id="Object-defineProperty">Object.defineProperty</h1><p>这个方法可以为对象定义属性，并能对属性的访问进行详细的控制，最简单的话我们给定义get和set函数，举例说明：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> arr = &#123;&#125;;</span><br><span class="line"><span class="keyword">var</span> shadow = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];</span><br><span class="line"><span class="built_in">Object</span>.defineProperty(arr, <span class="string">'0'</span>, &#123;</span><br><span class="line">  get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'get'</span>);</span><br><span class="line">    <span class="keyword">return</span> shadow[<span class="string">'0'</span>];</span><br><span class="line">  &#125;,</span><br><span class="line">  set: <span class="function"><span class="keyword">function</span>(<span class="params">v</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'set'</span>);</span><br><span class="line">    shadow[<span class="string">'0'</span>] = v;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>通常对外暴露的get，set中要访问一个内部的变量，以防止递归访问属性的get或是set。<br>这个方法其实是多加入了一个proxy的对象。并且TypedArray并不能重写数字属性的get/set，只能通过一个proxy对象了。</p>
+<p>一个简陋的实现，直接替换浏览器中提供的API:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _Float32Array = <span class="built_in">Float32Array</span>;</span><br><span class="line"><span class="built_in">Float32Array</span> = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 这里需要罗列出内部的属性和函数名</span></span><br><span class="line">  <span class="comment">// 因为数组类型只能for遍历数字属性</span></span><br><span class="line">  <span class="keyword">var</span> list = [</span><br><span class="line">    <span class="string">"BYTES_PER_ELEMENT"</span>,</span><br><span class="line">    <span class="string">"__defineGetter__"</span>,</span><br><span class="line">    <span class="string">"__defineSetter__"</span>,</span><br><span class="line">    <span class="string">"__lookupGetter__"</span>,</span><br><span class="line">    <span class="string">"__lookupSetter__"</span>,</span><br><span class="line">    <span class="string">"constructor"</span>,</span><br><span class="line">    <span class="string">"buffer"</span>,</span><br><span class="line">    <span class="string">"byteLength"</span>,</span><br><span class="line">    <span class="string">"byteOffset"</span>,</span><br><span class="line">    <span class="string">"entries"</span>,</span><br><span class="line">    <span class="string">"hasOwnProperty"</span>,</span><br><span class="line">    <span class="string">"isPrototypeOf"</span>,</span><br><span class="line">    <span class="string">"keys"</span>,</span><br><span class="line">    <span class="string">"length"</span>,</span><br><span class="line">    <span class="string">"propertyIsEnumerable"</span>,</span><br><span class="line">    <span class="string">"set"</span>,</span><br><span class="line">    <span class="string">"subarray"</span>,</span><br><span class="line">    <span class="string">"toLocaleString"</span>,</span><br><span class="line">    <span class="string">"toString"</span>,</span><br><span class="line">    <span class="string">"valueOf"</span>,</span><br><span class="line">    <span class="string">"values"</span>,</span><br><span class="line">  ]</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化的函数可能会有三个参数，还未处理</span></span><br><span class="line">  <span class="keyword">var</span> a = <span class="keyword">new</span> _Float32Array(<span class="built_in">arguments</span>[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.a = a;</span><br><span class="line">  <span class="keyword">var</span> b = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">this</span>.isDirty = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">  list.forEach(<span class="function"><span class="keyword">function</span> (<span class="params">key</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span>(a[key]) == <span class="string">'function'</span>) &#123;</span><br><span class="line">      b[key] = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        b.isDirty = <span class="literal">true</span>;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'invoke'</span>, key);</span><br><span class="line">        <span class="keyword">return</span> a[key].apply(a, <span class="built_in">arguments</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="built_in">Object</span>.defineProperty(b, key, &#123;</span><br><span class="line">        configurable: <span class="literal">true</span>,</span><br><span class="line">        enumerable: <span class="literal">true</span>,</span><br><span class="line">        get: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">'get member'</span>,i);</span><br><span class="line">            <span class="keyword">return</span> a[i];</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;(key),</span><br><span class="line">        set: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">v</span>) </span>&#123;</span><br><span class="line">            b.isDirty = <span class="literal">true</span>;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">'set member'</span>,i);</span><br><span class="line">            a[i] = v;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;(key)</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.constructor = a.constructor;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> idx <span class="keyword">in</span> a) &#123;</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(b, idx, &#123;</span><br><span class="line">      configurable: <span class="literal">true</span>,</span><br><span class="line">      enumerable: <span class="literal">true</span>,</span><br><span class="line">      get: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">'get index'</span>,i);</span><br><span class="line">          <span class="keyword">return</span> a[i];</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;(idx),</span><br><span class="line">      set: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">v</span>) </span>&#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">'set index'</span>,i);</span><br><span class="line">          b.isDirty = <span class="literal">true</span>;</span><br><span class="line">          a[i] = v;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;(idx)</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试</span></span><br><span class="line">&gt;&gt;a = <span class="keyword">new</span> <span class="built_in">Float32Array</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>])</span><br><span class="line">&lt;&lt;<span class="built_in">Float32Array</span> &#123;a: <span class="built_in">Float32Array</span>[<span class="number">3</span>], isDirty: <span class="literal">false</span>&#125;</span><br><span class="line">&gt;&gt;a.toString()</span><br><span class="line">&lt;&lt;t.js:<span class="number">64</span> invoke toString</span><br><span class="line">&lt;&lt;<span class="string">"1,2,3"</span></span><br><span class="line">&gt;&gt;a[<span class="number">0</span>]=<span class="number">1</span></span><br><span class="line">&lt;&lt;t.js:<span class="number">100</span> set index <span class="number">0</span></span><br><span class="line">&lt;&lt;<span class="number">1</span></span><br><span class="line">&gt;&gt;a[<span class="number">2</span>]</span><br><span class="line">&lt;&lt;t.js:<span class="number">94</span> get index <span class="number">2</span></span><br><span class="line">&lt;&lt;<span class="number">3</span></span><br><span class="line">&gt;&gt;a.constructor</span><br><span class="line">&lt;&lt;<span class="built_in">Float32Array</span>() &#123; [native code]  &#125;</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure></p>
+<p>本做法应该还有以下局限：</p>
+<h2 id="性能">性能</h2><p>大规模下创建一个1000000的数组内存占用飙升，因为创建了太多的get/set函数。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ori = <span class="keyword">new</span> _Float32Array(<span class="number">1000000</span>)</span><br><span class="line">Float32Array[<span class="number">1000000</span>]</span><br><span class="line">mod = <span class="keyword">new</span> Float32Array(<span class="number">1000000</span>)</span><br><span class="line">Float32Array &#123;a: Float32Array[<span class="number">1000000</span>], isDirty: <span class="literal">false</span>&#125;</span><br><span class="line"></span><br><span class="line">console.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;var t = mod[i];t++;mod[i]=t;&#125;;console.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">VM741:<span class="number">2</span> a: <span class="number">5313.409</span>ms</span><br><span class="line"></span><br><span class="line">console.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;var t=ori[i];t++;ori[i]=t;&#125;;console.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">VM743:<span class="number">2</span> a: <span class="number">3884.074</span>ms</span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<h2 id="内部创建并返回的TypedArray无法Hook">内部创建并返回的TypedArray无法Hook</h2><p>比如类似<code>subarray()</code>函数，返回值便是原生的TypedArray了，需要在Proxy对象中特殊处理一下。</p>
+<h2 id="在某些场景下不能完全替代原有的TypedArray">在某些场景下不能完全替代原有的TypedArray</h2><p>可以尽量模拟原生TypedArray的对外Api，不过还是有些场景可能照顾不到。</p>
+<h1 id="ES6_Proxy_&amp;_Reflect">ES6 Proxy &amp; Reflect</h1><p>Chrome中还没有实现，使用Firefox一试。对某对象加一层通用的代理，非常容易实现。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">var</span> ori = <span class="keyword">new</span> <span class="built_in">Float32Array</span>(<span class="number">1000000</span>);</span><br><span class="line"><span class="keyword">var</span> obj = <span class="keyword">new</span> <span class="built_in">Proxy</span>(aa, &#123;</span><br><span class="line">    get: <span class="function"><span class="keyword">function</span> (<span class="params">target, key, receiver</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">Reflect</span>.get(target, key, receiver);          </span><br><span class="line">    &#125;,</span><br><span class="line">    set: <span class="function"><span class="keyword">function</span> (<span class="params">target, key, value, receiver</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">Reflect</span>.set(target, key, value, receiver);              </span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;<span class="keyword">var</span> t = aa[i];t++;aa[i]=t;&#125;;<span class="built_in">console</span>.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">a: 计时器开始</span><br><span class="line">a: <span class="number">1738.62</span>ms</span><br><span class="line"><span class="built_in">console</span>.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;<span class="keyword">var</span> t = obj[i];t++;obj[i]=t;&#125;;<span class="built_in">console</span>.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">a: 计时器开始</span><br><span class="line">a: <span class="number">3226.16</span>ms</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>如果还有更好的方法，欢迎讨论。</p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
 
     
       
@@ -730,117 +862,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2012/07/13/delusion-of-choices/" itemprop="url">
-                  妄想整理  选择
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2012-07-13T20:12:49+08:00" content="2012-07-13">
-              2012-07-13
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/delusion/" itemprop="url" rel="index">
-                    <span itemprop="name">delusion</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2012/07/13/delusion-of-choices/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2012/07/13/delusion-of-choices/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <p>现在寂寞时才发现难逢一人讲讲话。</p>
-<p>最近真懒，这才第二篇，也是没头没尾不成系统。</p>
-<p>刚才看完几个ted演讲，突然又想起今天看到的讲什么文科女工科男的文章。<br>以前也看到有这样的段子，文科难工科男对掐，互相说对方不懂什么，然后展现自己的特长。故意要分清界限似的。<br>我也得承认，以前我也有这类的思想，感觉班上的某些女生好什么什么，感觉某个人怎么怎么，不过我基本上都一笑了之，不做口头上的表达。<br>大家也都经常会这样，看人不爽两人闹点别扭，吵嘴甚至动动手。天师也有时对某女生的娇气和装萌直接口头表达意见，或比较形象地批评某些人。</p>
-<p>依我现在看来，我甚至会对这一切都一笑了之什么都不说了。</p>
-<p>为什么呢？因为选择。<br>在我一开始有这种想法时，我会想：这是这个人的各种生理心理因素决定的，由十几年的环境塑造的，在现在这种时空下的一种必然表现，她发嗲，因为她是女生，她受的教育或她的妈妈，姐姐对她的间接影响。他怎么怎么，想想似乎都很顺乎自然，这是他们的选择，虽然不完全是他们自己造成的，但似乎合理不需要干涉。<br>这样一看，似乎社会就很和谐了。不会有冲突了，大家相互理解和平共处。</p>
-<p>可是，还需要不断修正这种观点。<br>问题是，我不可能要求人们全用这种观点看问题。不然社会就混乱了，我的观点就不成立了。<br>我忽视了我的主观性，毕竟我不是上帝，我需要有一定的态度。<br>比如说吧，警察如果对犯人都这样，那如何主持正义公道和法律？教师也不能对犯错的学生不管。<br>所以，每个人的对其他的人的态度的选择也很重要。<br>警察对犯人审问，法庭除以公正的判决，这符合我们这个时代的需要与期望。<br>教师对学生教导和鼓励，也是社会的需要与期望，而且也是自身的选择。需要我们的尊敬。除非他不管不顾，而且体罚过分辱骂，那社会对他们是排斥的。</p>
-<p>所有我的有时不管不顾的思想也是一种选择，但有些事不能一笑了之。</p>
-<p>有时有些事的争吵也不是个人利益，大家都是为了国家社会人类，当然不可避免地会有自己。<br>比如新文化运动的时候，旧思想和新思想的问题。比如一些看似极端的问题，比如一些人提出的极端思想。<br>有人那时说打倒孔家店，我们现在一看就说过了过了，可老师有次提示我们，那时旧思想的影响很大，需要比较极端的思想来冲击。冲击过后，社会会慢慢找到平衡点。<br>那这样来看，我们的确不需要嘲笑一些极端的思想，他们对社会的提示性和维稳性很值得我们肯定，他们需要我们尊敬。就像屈原，想很多看似很极端的人。<br>社会的车轮总是向前，有时候看似后退也在螺旋上升。<br>社会的天平很是公平，有时你费心好意说给人家不听的话，以后命运会教会他理解。</p>
-<p>这么看，上帝这么多年的不管不顾就是他的选择。挺聪明的。<br>不过统治者想无为而治不太可能长久，因为我们毕竟是人。</p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -887,7 +908,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">38</span>
+              <span class="site-state-item-count">39</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -901,7 +922,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">28</span>
+              <span class="site-state-item-count">30</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>

