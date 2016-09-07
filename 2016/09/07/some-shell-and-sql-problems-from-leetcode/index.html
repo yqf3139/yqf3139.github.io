@@ -1,0 +1,780 @@
+<!doctype html>
+<html class="theme-next   use-motion ">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.4.5.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="leetcode,shell,sql," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Yqf's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+
+
+
+
+
+<meta name="description" content="Shell和Sql都是日常工作中经常使用的工具，发现LeetCode还有一些Shell和Sql问题，由于项目中写Shell和Sql不是很多，练习的时候有些题目还稍微遇到了一点困难，记录如下。
+Shell192. Word Frequency难度：Medium题目大意：
+
+写一个bash脚本计算word.txt文件中每个单词出现的频率
+只存在小写字母单词表，单词只使用一个或是多个空格分割
+输出频率时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一些来自LeetCode的Shell和Sql问题">
+<meta property="og:url" content="http://yqf3139.github.io/2016/09/07/some-shell-and-sql-problems-from-leetcode/index.html">
+<meta property="og:site_name" content="Yqf's Blog">
+<meta property="og:description" content="Shell和Sql都是日常工作中经常使用的工具，发现LeetCode还有一些Shell和Sql问题，由于项目中写Shell和Sql不是很多，练习的时候有些题目还稍微遇到了一点困难，记录如下。
+Shell192. Word Frequency难度：Medium题目大意：
+
+写一个bash脚本计算word.txt文件中每个单词出现的频率
+只存在小写字母单词表，单词只使用一个或是多个空格分割
+输出频率时">
+<meta property="og:updated_time" content="2016-09-07T15:28:38.166Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一些来自LeetCode的Shell和Sql问题">
+<meta name="twitter:description" content="Shell和Sql都是日常工作中经常使用的工具，发现LeetCode还有一些Shell和Sql问题，由于项目中写Shell和Sql不是很多，练习的时候有些题目还稍微遇到了一点困难，记录如下。
+Shell192. Word Frequency难度：Medium题目大意：
+
+写一个bash脚本计算word.txt文件中每个单词出现的频率
+只存在小写字母单词表，单词只使用一个或是多个空格分割
+输出频率时">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: '',
+    sidebar: 'post',
+    motion: true
+  };
+</script>
+
+  <title> 一些来自LeetCode的Shell和Sql问题 | Yqf's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+
+
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Yqf's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Day day up.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content">
+          
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                一些来自LeetCode的Shell和Sql问题
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2016-09-07T21:41:18+08:00" content="2016-09-07">
+              2016-09-07
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">programming</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/07/some-shell-and-sql-problems-from-leetcode/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/07/some-shell-and-sql-problems-from-leetcode/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><p>Shell和Sql都是日常工作中经常使用的工具，发现LeetCode还有一些<a href="https://leetcode.com/problemset/shell/" target="_blank" rel="external">Shell</a>和<a href="https://leetcode.com/problemset/database/" target="_blank" rel="external">Sql</a>问题，由于项目中写Shell和Sql不是很多，练习的时候有些题目还稍微遇到了一点困难，记录如下。</p>
+<h1 id="Shell">Shell</h1><h2 id="192-_Word_Frequency"><a href="https://leetcode.com/problems/word-frequency/" target="_blank" rel="external">192. Word Frequency</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>写一个bash脚本计算<code>word.txt</code>文件中每个单词出现的频率</li>
+<li>只存在小写字母单词表，单词只使用一个或是多个空格分割</li>
+<li>输出频率时候按照降序排列，由于保证单词的频率相互不重复，不用考虑再使用字典序做二次排序</li>
+</ul>
+<p>示例输入：<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">the</span> <span class="property">day</span> <span class="keyword">is</span> sunny <span class="keyword">the</span> <span class="keyword">the</span></span><br><span class="line"><span class="keyword">the</span> sunny <span class="keyword">is</span> <span class="keyword">is</span></span><br></pre></td></tr></table></figure></p>
+<p>示例输出：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">the <span class="number">4</span></span><br><span class="line">is <span class="number">3</span></span><br><span class="line">sunny <span class="number">2</span></span><br><span class="line">day <span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="使用sort/uniq计算频率">使用sort/uniq计算频率</h3><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cat</span> words.txt | tr -s ' ' '\<span class="keyword">n</span>' | <span class="keyword">sort</span> | uniq -c | <span class="keyword">sort</span> -r | awk '&#123; <span class="keyword">print</span> <span class="label">$2</span>, <span class="label">$1</span>  &#125;'</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>tr -s</strong> : 将空格替换为换行，其中<code>-s  --squeeze-repeats</code>指明将连续的空格视为一个空格</li>
+<li><strong>sort</strong>  : 按照字典序排序，为统计频率做准备，因为uniq只能统计连续出现的单词</li>
+<li><strong>uniq -c</strong> : 将排序后单词序列中连续出现的重复单词去重，<code>-c</code>将重复次数输出</li>
+<li><strong>sort -r</strong> : 按照频率降序排列结果</li>
+<li><strong>awk</strong> : 将输出结果的第一栏和第二栏调换输出</li>
+</ul>
+<h3 id="仅仅使用awk和sort">仅仅使用awk和sort</h3><p>awk功能非常强大。<br><figure class="highlight monkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="comment">'&#123;for(i=1;i&lt;=NF;i++) a[$i]++&#125; END &#123;for(k in a) print k,a[k]&#125;' words.txt | sort -k2 -nr</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>awk的对于每一行生效的指令中，对于每一行的每一栏的单词，将他们统计到map中</li>
+<li>awk最后指令，将单词与频率输出</li>
+<li><strong>sort -k2 -nr</strong> : 使用第二栏的数据，进行降序排序</li>
+</ul>
+<h2 id="194-_Transpose_File"><a href="https://leetcode.com/problems/transpose-file/" target="_blank" rel="external">194. Transpose File</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>写一个bash脚本转置<code>file.txt</code>给出单词的矩阵</li>
+<li>单词只使用一个空格分割</li>
+</ul>
+<p>示例输入：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name age</span><br><span class="line">alice <span class="number">21</span></span><br><span class="line">ryan <span class="number">30</span></span><br></pre></td></tr></table></figure></p>
+<p>示例输出：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">name alice ryan</span><br><span class="line">age <span class="number">21</span> <span class="number">30</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="awk">awk</h3><p>还是继续awk大法好，awk其实类似于一个文件处理的编程框架。<br>awk和sed使用好，比直接写shell和使用各种命令进行管道叠加要效率高并且可读性高。<br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">awk '&#123;</span><br><span class="line">    row=NR<span class="comment">;</span></span><br><span class="line">    col=NF<span class="comment">;</span></span><br><span class="line">    for(i=<span class="number">1</span><span class="comment">;i&lt;=NF;i++) a[NR, i]=$i;</span></span><br><span class="line">&#125;</span><br><span class="line">END &#123;</span><br><span class="line">    for(i=<span class="number">1</span><span class="comment">;i&lt;=col;i++) &#123;</span></span><br><span class="line">        printf(<span class="string">"%s"</span>, <span class="literal">a</span>[<span class="number">1</span>, i])<span class="comment">;</span></span><br><span class="line">        for(j=<span class="number">2</span><span class="comment">;j&lt;=row;j++)</span></span><br><span class="line">            printf(<span class="string">" %s"</span>, <span class="literal">a</span>[j, i])<span class="comment">;</span></span><br><span class="line">        print <span class="string">""</span><span class="comment">;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;' file.txt</span><br></pre></td></tr></table></figure></p>
+<p>直接将单词矩阵存下来，然后转置输出。</p>
+<h1 id="Sql">Sql</h1><h2 id="176-_Second_Highest_Salary"><a href="https://leetcode.com/problems/second-highest-salary/" target="_blank" rel="external">176. Second Highest Salary</a></h2><p>难度：<code>Easy</code><br>题目大意：</p>
+<ul>
+<li>从<code>Employee</code>表中选出第二高的薪水记录</li>
+<li>如果不存在第二高的记录，返回<code>null</code></li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">+----+</span>--------+</span><br><span class="line"><span class="header">| Id | Salary |</span><br><span class="line">+----+--------+</span></span><br><span class="line">| 1  | 100    |</span><br><span class="line">| 2  | 200    |</span><br><span class="line"><span class="header">| 3  | 300    |</span><br><span class="line">+----+--------+</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select ifnull(</span><br><span class="line">    (select <span class="keyword">distinct</span> <span class="type">Salary</span> <span class="keyword">from</span> <span class="type">Employee</span> order by <span class="type">Salary</span> desc limit <span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">, null) <span class="keyword">as</span> <span class="type">SecondHighestSalary</span></span><br></pre></td></tr></table></figure>
+<p>使用<code>ifnull</code>函数进行记录是否为空的判断。</p>
+<h2 id="178-_Rank_Scores"><a href="https://leetcode.com/problems/rank-scores/" target="_blank" rel="external">178. Rank Scores</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>用Sql来为分数分级，对于相同的分数，分为同一级，下一级和前一级别连续编号。</li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">+----+</span>-------+</span><br><span class="line"><span class="header">| Id | Score |</span><br><span class="line">+----+-------+</span></span><br><span class="line">| 1  | 3.50  |</span><br><span class="line">| 2  | 3.65  |</span><br><span class="line">| 3  | 4.00  |</span><br><span class="line">| 4  | 3.85  |</span><br><span class="line">| 5  | 4.00  |</span><br><span class="line"><span class="header">| 6  | 3.65  |</span><br><span class="line">+----+-------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">输出：</span><br><span class="line">+-------+------+</span></span><br><span class="line"><span class="header">| Score | Rank |</span><br><span class="line">+-------+------+</span></span><br><span class="line">| 4.00  | 1    |</span><br><span class="line">| 4.00  | 1    |</span><br><span class="line">| 3.85  | 2    |</span><br><span class="line">| 3.65  | 3    |</span><br><span class="line">| 3.65  | 3    |</span><br><span class="line"><span class="header">| 3.50  | 4    |</span><br><span class="line">+-------+------+</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight q"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> Score,</span><br><span class="line">       ( @<span class="built_in">rank</span> := @<span class="built_in">rank</span> + ( @<span class="built_in">prev</span> &lt;&gt; (@<span class="built_in">prev</span> := Score)  )  ) as Rank</span><br><span class="line"><span class="keyword">from</span></span><br><span class="line">(</span><br><span class="line">    <span class="keyword">select</span> Score <span class="keyword">from</span> Scores order <span class="keyword">by</span> Score <span class="built_in">desc</span></span><br><span class="line">) A, (<span class="keyword">select</span> @<span class="built_in">rank</span> := <span class="number">0</span>, @<span class="built_in">prev</span> := -<span class="number">1</span>) Init</span><br></pre></td></tr></table></figure>
+<p>参考他人解法，使用零时表中的两个变量，分别记录分级编号和上一个分数，方便判断是否分数相同。</p>
+<h2 id="180-_Consecutive_Numbers"><a href="https://leetcode.com/problems/consecutive-numbers/" target="_blank" rel="external">180. Consecutive Numbers</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>用Sql选出连续出现三次即以上的数字</li>
+</ul>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+----+-----+</span><br><span class="line">|<span class="string"> Id </span>|<span class="string"> Num </span>|</span><br><span class="line">+----+-----+</span><br><span class="line">|<span class="string"> 1  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 2  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 3  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 4  </span>|<span class="string">  2  </span>|</span><br><span class="line">|<span class="string"> 5  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 6  </span>|<span class="string">  2  </span>|</span><br><span class="line">|<span class="string"> 7  </span>|<span class="string">  2  </span>|</span><br><span class="line">+----+-----+</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> <span class="keyword">distinct</span> <span class="keyword">Num</span> <span class="keyword">as</span> ConsecutiveNums <span class="keyword">from</span> (</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">Id</span>, <span class="keyword">Num</span>, ( @<span class="keyword">rank</span> := <span class="keyword">if</span>(@prev = (@prev := <span class="keyword">NUM</span>), @<span class="keyword">rank</span>+<span class="number">1</span>, <span class="number">1</span>)  ) <span class="keyword">as</span> <span class="keyword">Rank</span></span><br><span class="line">    <span class="keyword">from</span> <span class="keyword">Logs</span>, (<span class="keyword">select</span> @<span class="keyword">rank</span> := <span class="number">1</span>, @prev := -<span class="number">1</span>) Init</span><br><span class="line">) <span class="keyword">as</span> temp <span class="keyword">where</span> <span class="keyword">Rank</span> = <span class="number">3</span>;</span></span><br></pre></td></tr></table></figure>
+<p>参考178的思路，将每条记录按照是否连续进行编号，再把所有有三次连续出现的不重复数字选出。</p>
+<h2 id="184-_Department_Highest_Salary"><a href="https://leetcode.com/problems/department-highest-salary/" target="_blank" rel="external">184. Department Highest Salary</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>挑选出每个部门最高薪水的记录</li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="header">Employee:</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line"><span class="header">| Id | Name  | Salary | DepartmentId |</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line">| 1  | Joe   | 70000  | 1            |</span><br><span class="line">| 2  | Henry | 80000  | 2            |</span><br><span class="line">| 3  | Sam   | 60000  | 2            |</span><br><span class="line">| 4  | Max   | 90000  | 1            |</span><br><span class="line">| 5  | Janet | 69000  | 1            |</span><br><span class="line"><span class="header">| 6  | Randy | 85000  | 1            |</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">Department:</span><br><span class="line">+----+----------+</span></span><br><span class="line"><span class="header">| Id | Name     |</span><br><span class="line">+----+----------+</span></span><br><span class="line">| 1  | IT       |</span><br><span class="line"><span class="header">| 2  | Sales    |</span><br><span class="line">+----+----------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">输出：</span><br><span class="line">+------------+----------+--------+</span></span><br><span class="line"><span class="header">| Department | Employee | Salary |</span><br><span class="line">+------------+----------+--------+</span></span><br><span class="line">| IT         | Max      | 90000  |</span><br><span class="line"><span class="header">| Sales      | Henry    | 80000  |</span><br><span class="line">+------------+----------+--------+</span></span><br></pre></td></tr></table></figure>
+<h3 id="解法1：900ms">解法1：900ms</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> <span class="keyword">d</span>.<span class="keyword">name</span> <span class="keyword">as</span> Department, <span class="keyword">e</span>.<span class="keyword">Name</span> <span class="keyword">as</span> Employee, Salary</span><br><span class="line"><span class="keyword">from</span> Employee <span class="keyword">e</span> <span class="keyword">inner</span> <span class="keyword">join</span> Department <span class="keyword">d</span> <span class="keyword">on</span> <span class="keyword">e</span>.DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span></span><br><span class="line"><span class="keyword">where</span> Salary = (<span class="keyword">select</span> <span class="keyword">max</span>(Salary) <span class="keyword">from</span> Employee <span class="keyword">where</span> DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span>)</span></span><br></pre></td></tr></table></figure>
+<p>比较暴力，有个Employee记录都有一个冗余的子查询。</p>
+<h3 id="解法2：600ms">解法2：600ms</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">select t3<span class="class">.Name</span> as Department, t2<span class="class">.Name</span> as Employee, t1<span class="class">.Salary</span> as Salary</span><br><span class="line">from</span><br><span class="line">(</span><br><span class="line">    select <span class="function"><span class="title">max</span><span class="params">(Salary)</span></span> as Salary, DepartmentId</span><br><span class="line">    from Employee</span><br><span class="line">    group by DepartmentId</span><br><span class="line">) t1, Employee t2, Department t3</span><br><span class="line">where t1<span class="class">.Salary</span> = t2<span class="class">.Salary</span> and t1<span class="class">.DepartmentId</span> = t2<span class="class">.DepartmentId</span> and t1<span class="class">.DepartmentId</span> = t3.Id</span><br></pre></td></tr></table></figure>
+<p>先把每个部门的最高薪水一起聚合算出，再全连接表并筛选出部门和薪水都匹配的员工记录。</p>
+<h2 id="185-_Department_Top_Three_Salaries"><a href="https://leetcode.com/problems/department-top-three-salaries/" target="_blank" rel="external">185. Department Top Three Salaries</a></h2><p>难度：<code>Hard</code><br>题目大意：</p>
+<ul>
+<li>在上一题基础上，挑选出每个部门前三高薪水的记录</li>
+<li>如果少于三条记录，则只显示存在的记录</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> t1.<span class="keyword">Name</span> <span class="keyword">as</span> Department, t2.<span class="keyword">Name</span> <span class="keyword">as</span> Employee, t2.Salary <span class="keyword">as</span> Salary</span><br><span class="line"><span class="keyword">from</span>(</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">Name</span>, <span class="keyword">ifnull</span>((</span><br><span class="line">        <span class="keyword">select</span> <span class="keyword">distinct</span> Salary <span class="keyword">from</span> Employee <span class="keyword">e</span> </span><br><span class="line">        <span class="keyword">where</span> <span class="keyword">e</span>.DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span></span><br><span class="line">        <span class="keyword">order</span> <span class="keyword">by</span> Salary <span class="keyword">desc</span> <span class="keyword">limit</span> <span class="number">2</span>,<span class="number">1</span>)</span><br><span class="line">    , <span class="number">0</span>) <span class="keyword">as</span> Salary, <span class="keyword">Id</span> <span class="keyword">as</span> DepartmentId <span class="keyword">from</span> Department <span class="keyword">d</span></span><br><span class="line">) t1, Employee t2</span><br><span class="line"><span class="keyword">where</span> t1.Salary &lt;= t2.Salary <span class="keyword">and</span> t1.DepartmentId = t2.DepartmentId</span></span><br></pre></td></tr></table></figure>
+<p>和上一题思路类似，先选出第三高的薪水，再全连接筛选。</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/leetcode/" rel="tag">#leetcode</a>
+          
+            <a href="/tags/shell/" rel="tag">#shell</a>
+          
+            <a href="/tags/sql/" rel="tag">#sql</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/02/use-ipv6-to-save-network-traffic-at-school/" rel="next" title="使用IPv6节省校内的网络流量开支">
+                <i class="fa fa-chevron-left"></i> 使用IPv6节省校内的网络流量开支
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+        </div>
+
+        
+
+
+        
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/09/07/some-shell-and-sql-problems-from-leetcode/"
+           data-title="一些来自LeetCode的Shell和Sql问题" data-url="http://yqf3139.github.io/2016/09/07/some-shell-and-sql-problems-from-leetcode/">
+      </div>
+    
+  </div>
+
+
+      </div>
+
+      
+        
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table Of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.png" alt="yqf" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">yqf</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description"></p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">40</span>
+              <span class="site-state-item-name">posts</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            
+              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-name">categories</span>
+              
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">33</span>
+              <span class="site-state-item-name">tags</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> twitter
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/ke-yu-beta" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> zhihu
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Shell"><span class="nav-number">1.</span> <span class="nav-text">Shell</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#192-_Word_Frequency"><span class="nav-number">1.1.</span> <span class="nav-text">192. Word Frequency</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用sort/uniq计算频率"><span class="nav-number">1.1.1.</span> <span class="nav-text">使用sort/uniq计算频率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#仅仅使用awk和sort"><span class="nav-number">1.1.2.</span> <span class="nav-text">仅仅使用awk和sort</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#194-_Transpose_File"><span class="nav-number">1.2.</span> <span class="nav-text">194. Transpose File</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#awk"><span class="nav-number">1.2.1.</span> <span class="nav-text">awk</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Sql"><span class="nav-number">2.</span> <span class="nav-text">Sql</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#176-_Second_Highest_Salary"><span class="nav-number">2.1.</span> <span class="nav-text">176. Second Highest Salary</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#178-_Rank_Scores"><span class="nav-number">2.2.</span> <span class="nav-text">178. Rank Scores</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#180-_Consecutive_Numbers"><span class="nav-number">2.3.</span> <span class="nav-text">180. Consecutive Numbers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#184-_Department_Highest_Salary"><span class="nav-number">2.4.</span> <span class="nav-text">184. Department Highest Salary</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#解法1：900ms"><span class="nav-number">2.4.1.</span> <span class="nav-text">解法1：900ms</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解法2：600ms"><span class="nav-number">2.4.2.</span> <span class="nav-text">解法2：600ms</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#185-_Department_Top_Three_Salaries"><span class="nav-number">2.5.</span> <span class="nav-text">185. Department Top Three Salaries</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+      
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2009 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="icon-next-heart fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yqf</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"yqf3139"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+
+
+    
+  
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+<script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+<script type="text/javascript" src="/js/motion.js?v=0.4.5.2" id="motion.global"></script>
+
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.2" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    motionMiddleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+      if (CONFIG.sidebar === 'post') {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  <script type="text/javascript" src="/js/bootstrap.js"></script>
+
+  
+  
+
+  
+  
+
+</body>
+</html>

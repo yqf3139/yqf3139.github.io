@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Day day up.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yqf3139.github.io/"/>
-  <updated>2016-09-02T02:44:19.498Z</updated>
+  <updated>2016-09-07T15:28:38.166Z</updated>
   <id>http://yqf3139.github.io/</id>
   
   <author>
@@ -15,11 +15,102 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[一些来自LeetCode的Shell和Sql问题]]></title>
+    <link href="http://yqf3139.github.io/2016/09/07/some-shell-and-sql-problems-from-leetcode/"/>
+    <id>http://yqf3139.github.io/2016/09/07/some-shell-and-sql-problems-from-leetcode/</id>
+    <published>2016-09-07T13:41:18.000Z</published>
+    <updated>2016-09-07T15:28:38.166Z</updated>
+    <content type="html"><![CDATA[<p>Shell和Sql都是日常工作中经常使用的工具，发现LeetCode还有一些<a href="https://leetcode.com/problemset/shell/" target="_blank" rel="external">Shell</a>和<a href="https://leetcode.com/problemset/database/" target="_blank" rel="external">Sql</a>问题，由于项目中写Shell和Sql不是很多，练习的时候有些题目还稍微遇到了一点困难，记录如下。</p>
+<h1 id="Shell">Shell</h1><h2 id="192-_Word_Frequency"><a href="https://leetcode.com/problems/word-frequency/" target="_blank" rel="external">192. Word Frequency</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>写一个bash脚本计算<code>word.txt</code>文件中每个单词出现的频率</li>
+<li>只存在小写字母单词表，单词只使用一个或是多个空格分割</li>
+<li>输出频率时候按照降序排列，由于保证单词的频率相互不重复，不用考虑再使用字典序做二次排序</li>
+</ul>
+<p>示例输入：<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">the</span> <span class="property">day</span> <span class="keyword">is</span> sunny <span class="keyword">the</span> <span class="keyword">the</span></span><br><span class="line"><span class="keyword">the</span> sunny <span class="keyword">is</span> <span class="keyword">is</span></span><br></pre></td></tr></table></figure></p>
+<p>示例输出：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">the <span class="number">4</span></span><br><span class="line">is <span class="number">3</span></span><br><span class="line">sunny <span class="number">2</span></span><br><span class="line">day <span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="使用sort/uniq计算频率">使用sort/uniq计算频率</h3><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cat</span> words.txt | tr -s ' ' '\<span class="keyword">n</span>' | <span class="keyword">sort</span> | uniq -c | <span class="keyword">sort</span> -r | awk '&#123; <span class="keyword">print</span> <span class="label">$2</span>, <span class="label">$1</span>  &#125;'</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>tr -s</strong> : 将空格替换为换行，其中<code>-s  --squeeze-repeats</code>指明将连续的空格视为一个空格</li>
+<li><strong>sort</strong>  : 按照字典序排序，为统计频率做准备，因为uniq只能统计连续出现的单词</li>
+<li><strong>uniq -c</strong> : 将排序后单词序列中连续出现的重复单词去重，<code>-c</code>将重复次数输出</li>
+<li><strong>sort -r</strong> : 按照频率降序排列结果</li>
+<li><strong>awk</strong> : 将输出结果的第一栏和第二栏调换输出</li>
+</ul>
+<h3 id="仅仅使用awk和sort">仅仅使用awk和sort</h3><p>awk功能非常强大。<br><figure class="highlight monkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="comment">'&#123;for(i=1;i&lt;=NF;i++) a[$i]++&#125; END &#123;for(k in a) print k,a[k]&#125;' words.txt | sort -k2 -nr</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>awk的对于每一行生效的指令中，对于每一行的每一栏的单词，将他们统计到map中</li>
+<li>awk最后指令，将单词与频率输出</li>
+<li><strong>sort -k2 -nr</strong> : 使用第二栏的数据，进行降序排序</li>
+</ul>
+<h2 id="194-_Transpose_File"><a href="https://leetcode.com/problems/transpose-file/" target="_blank" rel="external">194. Transpose File</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>写一个bash脚本转置<code>file.txt</code>给出单词的矩阵</li>
+<li>单词只使用一个空格分割</li>
+</ul>
+<p>示例输入：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name age</span><br><span class="line">alice <span class="number">21</span></span><br><span class="line">ryan <span class="number">30</span></span><br></pre></td></tr></table></figure></p>
+<p>示例输出：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">name alice ryan</span><br><span class="line">age <span class="number">21</span> <span class="number">30</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="awk">awk</h3><p>还是继续awk大法好，awk其实类似于一个文件处理的编程框架。<br>awk和sed使用好，比直接写shell和使用各种命令进行管道叠加要效率高并且可读性高。<br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">awk '&#123;</span><br><span class="line">    row=NR<span class="comment">;</span></span><br><span class="line">    col=NF<span class="comment">;</span></span><br><span class="line">    for(i=<span class="number">1</span><span class="comment">;i&lt;=NF;i++) a[NR, i]=$i;</span></span><br><span class="line">&#125;</span><br><span class="line">END &#123;</span><br><span class="line">    for(i=<span class="number">1</span><span class="comment">;i&lt;=col;i++) &#123;</span></span><br><span class="line">        printf(<span class="string">"%s"</span>, <span class="literal">a</span>[<span class="number">1</span>, i])<span class="comment">;</span></span><br><span class="line">        for(j=<span class="number">2</span><span class="comment">;j&lt;=row;j++)</span></span><br><span class="line">            printf(<span class="string">" %s"</span>, <span class="literal">a</span>[j, i])<span class="comment">;</span></span><br><span class="line">        print <span class="string">""</span><span class="comment">;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;' file.txt</span><br></pre></td></tr></table></figure></p>
+<p>直接将单词矩阵存下来，然后转置输出。</p>
+<h1 id="Sql">Sql</h1><h2 id="176-_Second_Highest_Salary"><a href="https://leetcode.com/problems/second-highest-salary/" target="_blank" rel="external">176. Second Highest Salary</a></h2><p>难度：<code>Easy</code><br>题目大意：</p>
+<ul>
+<li>从<code>Employee</code>表中选出第二高的薪水记录</li>
+<li>如果不存在第二高的记录，返回<code>null</code></li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">+----+</span>--------+</span><br><span class="line"><span class="header">| Id | Salary |</span><br><span class="line">+----+--------+</span></span><br><span class="line">| 1  | 100    |</span><br><span class="line">| 2  | 200    |</span><br><span class="line"><span class="header">| 3  | 300    |</span><br><span class="line">+----+--------+</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select ifnull(</span><br><span class="line">    (select <span class="keyword">distinct</span> <span class="type">Salary</span> <span class="keyword">from</span> <span class="type">Employee</span> order by <span class="type">Salary</span> desc limit <span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">, null) <span class="keyword">as</span> <span class="type">SecondHighestSalary</span></span><br></pre></td></tr></table></figure>
+<p>使用<code>ifnull</code>函数进行记录是否为空的判断。</p>
+<h2 id="178-_Rank_Scores"><a href="https://leetcode.com/problems/rank-scores/" target="_blank" rel="external">178. Rank Scores</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>用Sql来为分数分级，对于相同的分数，分为同一级，下一级和前一级别连续编号。</li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">+----+</span>-------+</span><br><span class="line"><span class="header">| Id | Score |</span><br><span class="line">+----+-------+</span></span><br><span class="line">| 1  | 3.50  |</span><br><span class="line">| 2  | 3.65  |</span><br><span class="line">| 3  | 4.00  |</span><br><span class="line">| 4  | 3.85  |</span><br><span class="line">| 5  | 4.00  |</span><br><span class="line"><span class="header">| 6  | 3.65  |</span><br><span class="line">+----+-------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">输出：</span><br><span class="line">+-------+------+</span></span><br><span class="line"><span class="header">| Score | Rank |</span><br><span class="line">+-------+------+</span></span><br><span class="line">| 4.00  | 1    |</span><br><span class="line">| 4.00  | 1    |</span><br><span class="line">| 3.85  | 2    |</span><br><span class="line">| 3.65  | 3    |</span><br><span class="line">| 3.65  | 3    |</span><br><span class="line"><span class="header">| 3.50  | 4    |</span><br><span class="line">+-------+------+</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight q"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> Score,</span><br><span class="line">       ( @<span class="built_in">rank</span> := @<span class="built_in">rank</span> + ( @<span class="built_in">prev</span> &lt;&gt; (@<span class="built_in">prev</span> := Score)  )  ) as Rank</span><br><span class="line"><span class="keyword">from</span></span><br><span class="line">(</span><br><span class="line">    <span class="keyword">select</span> Score <span class="keyword">from</span> Scores order <span class="keyword">by</span> Score <span class="built_in">desc</span></span><br><span class="line">) A, (<span class="keyword">select</span> @<span class="built_in">rank</span> := <span class="number">0</span>, @<span class="built_in">prev</span> := -<span class="number">1</span>) Init</span><br></pre></td></tr></table></figure>
+<p>参考他人解法，使用零时表中的两个变量，分别记录分级编号和上一个分数，方便判断是否分数相同。</p>
+<h2 id="180-_Consecutive_Numbers"><a href="https://leetcode.com/problems/consecutive-numbers/" target="_blank" rel="external">180. Consecutive Numbers</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>用Sql选出连续出现三次即以上的数字</li>
+</ul>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+----+-----+</span><br><span class="line">|<span class="string"> Id </span>|<span class="string"> Num </span>|</span><br><span class="line">+----+-----+</span><br><span class="line">|<span class="string"> 1  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 2  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 3  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 4  </span>|<span class="string">  2  </span>|</span><br><span class="line">|<span class="string"> 5  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 6  </span>|<span class="string">  2  </span>|</span><br><span class="line">|<span class="string"> 7  </span>|<span class="string">  2  </span>|</span><br><span class="line">+----+-----+</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> <span class="keyword">distinct</span> <span class="keyword">Num</span> <span class="keyword">as</span> ConsecutiveNums <span class="keyword">from</span> (</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">Id</span>, <span class="keyword">Num</span>, ( @<span class="keyword">rank</span> := <span class="keyword">if</span>(@prev = (@prev := <span class="keyword">NUM</span>), @<span class="keyword">rank</span>+<span class="number">1</span>, <span class="number">1</span>)  ) <span class="keyword">as</span> <span class="keyword">Rank</span></span><br><span class="line">    <span class="keyword">from</span> <span class="keyword">Logs</span>, (<span class="keyword">select</span> @<span class="keyword">rank</span> := <span class="number">1</span>, @prev := -<span class="number">1</span>) Init</span><br><span class="line">) <span class="keyword">as</span> temp <span class="keyword">where</span> <span class="keyword">Rank</span> = <span class="number">3</span>;</span></span><br></pre></td></tr></table></figure>
+<p>参考178的思路，将每条记录按照是否连续进行编号，再把所有有三次连续出现的不重复数字选出。</p>
+<h2 id="184-_Department_Highest_Salary"><a href="https://leetcode.com/problems/department-highest-salary/" target="_blank" rel="external">184. Department Highest Salary</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>挑选出每个部门最高薪水的记录</li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="header">Employee:</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line"><span class="header">| Id | Name  | Salary | DepartmentId |</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line">| 1  | Joe   | 70000  | 1            |</span><br><span class="line">| 2  | Henry | 80000  | 2            |</span><br><span class="line">| 3  | Sam   | 60000  | 2            |</span><br><span class="line">| 4  | Max   | 90000  | 1            |</span><br><span class="line">| 5  | Janet | 69000  | 1            |</span><br><span class="line"><span class="header">| 6  | Randy | 85000  | 1            |</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">Department:</span><br><span class="line">+----+----------+</span></span><br><span class="line"><span class="header">| Id | Name     |</span><br><span class="line">+----+----------+</span></span><br><span class="line">| 1  | IT       |</span><br><span class="line"><span class="header">| 2  | Sales    |</span><br><span class="line">+----+----------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">输出：</span><br><span class="line">+------------+----------+--------+</span></span><br><span class="line"><span class="header">| Department | Employee | Salary |</span><br><span class="line">+------------+----------+--------+</span></span><br><span class="line">| IT         | Max      | 90000  |</span><br><span class="line"><span class="header">| Sales      | Henry    | 80000  |</span><br><span class="line">+------------+----------+--------+</span></span><br></pre></td></tr></table></figure>
+<h3 id="解法1：900ms">解法1：900ms</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> <span class="keyword">d</span>.<span class="keyword">name</span> <span class="keyword">as</span> Department, <span class="keyword">e</span>.<span class="keyword">Name</span> <span class="keyword">as</span> Employee, Salary</span><br><span class="line"><span class="keyword">from</span> Employee <span class="keyword">e</span> <span class="keyword">inner</span> <span class="keyword">join</span> Department <span class="keyword">d</span> <span class="keyword">on</span> <span class="keyword">e</span>.DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span></span><br><span class="line"><span class="keyword">where</span> Salary = (<span class="keyword">select</span> <span class="keyword">max</span>(Salary) <span class="keyword">from</span> Employee <span class="keyword">where</span> DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span>)</span></span><br></pre></td></tr></table></figure>
+<p>比较暴力，有个Employee记录都有一个冗余的子查询。</p>
+<h3 id="解法2：600ms">解法2：600ms</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">select t3<span class="class">.Name</span> as Department, t2<span class="class">.Name</span> as Employee, t1<span class="class">.Salary</span> as Salary</span><br><span class="line">from</span><br><span class="line">(</span><br><span class="line">    select <span class="function"><span class="title">max</span><span class="params">(Salary)</span></span> as Salary, DepartmentId</span><br><span class="line">    from Employee</span><br><span class="line">    group by DepartmentId</span><br><span class="line">) t1, Employee t2, Department t3</span><br><span class="line">where t1<span class="class">.Salary</span> = t2<span class="class">.Salary</span> and t1<span class="class">.DepartmentId</span> = t2<span class="class">.DepartmentId</span> and t1<span class="class">.DepartmentId</span> = t3.Id</span><br></pre></td></tr></table></figure>
+<p>先把每个部门的最高薪水一起聚合算出，再全连接表并筛选出部门和薪水都匹配的员工记录。</p>
+<h2 id="185-_Department_Top_Three_Salaries"><a href="https://leetcode.com/problems/department-top-three-salaries/" target="_blank" rel="external">185. Department Top Three Salaries</a></h2><p>难度：<code>Hard</code><br>题目大意：</p>
+<ul>
+<li>在上一题基础上，挑选出每个部门前三高薪水的记录</li>
+<li>如果少于三条记录，则只显示存在的记录</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> t1.<span class="keyword">Name</span> <span class="keyword">as</span> Department, t2.<span class="keyword">Name</span> <span class="keyword">as</span> Employee, t2.Salary <span class="keyword">as</span> Salary</span><br><span class="line"><span class="keyword">from</span>(</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">Name</span>, <span class="keyword">ifnull</span>((</span><br><span class="line">        <span class="keyword">select</span> <span class="keyword">distinct</span> Salary <span class="keyword">from</span> Employee <span class="keyword">e</span> </span><br><span class="line">        <span class="keyword">where</span> <span class="keyword">e</span>.DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span></span><br><span class="line">        <span class="keyword">order</span> <span class="keyword">by</span> Salary <span class="keyword">desc</span> <span class="keyword">limit</span> <span class="number">2</span>,<span class="number">1</span>)</span><br><span class="line">    , <span class="number">0</span>) <span class="keyword">as</span> Salary, <span class="keyword">Id</span> <span class="keyword">as</span> DepartmentId <span class="keyword">from</span> Department <span class="keyword">d</span></span><br><span class="line">) t1, Employee t2</span><br><span class="line"><span class="keyword">where</span> t1.Salary &lt;= t2.Salary <span class="keyword">and</span> t1.DepartmentId = t2.DepartmentId</span></span><br></pre></td></tr></table></figure>
+<p>和上一题思路类似，先选出第三高的薪水，再全连接筛选。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>Shell和Sql都是日常工作中经常使用的工具，发现LeetCode还有一些<a href="https://leetcode.com/problemset/shell/" target="_blank" rel="external">Shell</a>和<a href="]]>
+    </summary>
+    
+      <category term="leetcode" scheme="http://yqf3139.github.io/tags/leetcode/"/>
+    
+      <category term="shell" scheme="http://yqf3139.github.io/tags/shell/"/>
+    
+      <category term="sql" scheme="http://yqf3139.github.io/tags/sql/"/>
+    
+      <category term="programming" scheme="http://yqf3139.github.io/categories/programming/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[使用IPv6节省校内的网络流量开支]]></title>
     <link href="http://yqf3139.github.io/2016/09/02/use-ipv6-to-save-network-traffic-at-school/"/>
     <id>http://yqf3139.github.io/2016/09/02/use-ipv6-to-save-network-traffic-at-school/</id>
     <published>2016-09-02T01:26:45.000Z</published>
-    <updated>2016-09-02T02:44:19.498Z</updated>
+    <updated>2016-09-07T15:28:40.534Z</updated>
     <content type="html"><![CDATA[<p>联网是一切的开始。学校的校园网建设还是比较完善的。从费用上来说每个月20G免费流量，就算用超价格也还是比较合理的；管理界面有查看流量报表、查看在线终端和登陆日志的功能，甚至能自动下线一些可能是蹭网的设备，考虑得很周到，用招行手机网银充值页很方便；宿舍每个床位都有网口，可以通过Web认证登陆，图书馆等公共场所还有免费的热点覆盖，速度也还不错。</p>
 <h1 id="所以为什么我要想方设法节省流量的开支呢？">所以为什么我要想方设法节省流量的开支呢？</h1><ul>
 <li>开支：在一周内我就把20G免费流量几乎用光，在9月的第一天用掉了1.5G流量，按照这个趋势下去，每个月开支。。。</li>
@@ -1215,91 +1306,6 @@
     </summary>
     
       <category term="data" scheme="http://yqf3139.github.io/tags/data/"/>
-    
-      <category term="techtalk" scheme="http://yqf3139.github.io/categories/techtalk/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[那朵云]]></title>
-    <link href="http://yqf3139.github.io/2011/02/02/the-cloud-2011/"/>
-    <id>http://yqf3139.github.io/2011/02/02/the-cloud-2011/</id>
-    <published>2011-02-02T02:53:00.000Z</published>
-    <updated>2015-11-04T16:02:14.825Z</updated>
-    <content type="html"><![CDATA[<blockquote>
-<p>这是我在2011年春节时写的三篇博客，现在整理如下。当时站在纯使用者的角度，对Web技术、浏览器和<br>  云服务产生了极大的研究兴趣。推崇Chrome OS这个点子。</p>
-</blockquote>
-<h2 id="Day_1">Day 1</h2><p>写些什么呢，最近很长时间没写东西了，不过最近见识了很多有意思的东西，所以准备写些下来分享一下。</p>
-<p>为了体现云的特点，我将于三十，初一，初二，在三台电脑上完成这组日志，每天写一些，输入法以及图都将来自云端。</p>
-<p>那就开始吧。</p>
-<p>首先从我认为的云的三个方面说起，我想大概可以分成云服务，云计算，云存储，就从最大的云服务开始说起。</p>
-<p>其实你可以想想，你每天上网是在干什么，你开机，等上一两分钟，然后打开浏览器上网，你可以看视频，织围脖，玩社交网站，搜索信息，玩在线小游戏等等，在你电脑里的浏览器便成了你最长面对一个软件，他可以很强大，强大的超过你的想象。大多数中国的网民都是用IE，多上网的用火狐，用apple的会用safari，当然我也试过opera等一堆浏览器，不过chrome彻底改变了我对浏览器的想法。</p>
-<p>我问你浏览器可以干什么，你或许会说他可以干以上的事情，其实它可以做的更多，甚至他可以做一切你在其他软件上做的事，让我来展示一下。</p>
-<p>比如说在线处理文档，wordppt什么的，我们一直都是打开office然后开始工作，程序文件存档都保存在客户这里，如果你没装office，如果你的文件丢失，那么你都无法进行工作。不过如果你有一个浏览器，有个网速不错的互联网，那你只要打开个网页你就能做到。</p>
-<p><img src="/images/the-cloud-2011/1.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/2.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/3.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/4.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/5.png" alt="Web"><br>比如说这个googledocs，在墙内访问还有很大困难，不过他彻底颠覆了office，你输入了几个字，网站会立即帮你保存，你可以与其他人分享文档，或一起写一份文档。</p>
-<p><img src="/images/the-cloud-2011/6.png" alt="Web"></p>
-<p>在线的相册，这个我们大家都用过</p>
-<p>你也可以娱乐一下，玩些游戏<br><img src="/images/the-cloud-2011/7.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/8.png" alt="Web"></p>
-<p>或者做些很cool的事情</p>
-<p><img src="/images/the-cloud-2011/9.png" alt="Web"></p>
-<p>google的在线人体浏览</p>
-<p><img src="/images/the-cloud-2011/10.png" alt="Web"></p>
-<p>这些都在你的Chrome Apps中<br><img src="/images/the-cloud-2011/11.png" alt="Web"></p>
-<p>其实更强大的在扩展程序中，</p>
-<p>这个浏览器起始页码，功能很多<br><img src="/images/the-cloud-2011/12.png" alt="Web"><br>read later<br><img src="/images/the-cloud-2011/13.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/14.png" alt="Web"><br>让我随时知道室外的温度与湿度<br><img src="/images/the-cloud-2011/15.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/16.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/17.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/18.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/19.png" alt="Web"><br>直接可以通过扩展程序看地球<br><img src="/images/the-cloud-2011/20.png" alt="Web"><br>告诉你每个网站的地址信息<br><img src="/images/the-cloud-2011/21.png" alt="Web"></p>
-<p>小窗口弹出<br><img src="/images/the-cloud-2011/22.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/23.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/24.png" alt="Web"></p>
-<p>在线播放器<br><img src="/images/the-cloud-2011/25.png" alt="Web"></p>
-<p>他还能做什么，我不知道，我只知道他能做的不止于此，它可以几乎取代你的操作系统，他可以让你在短时间内完成几台电脑的书签与apps，偏好同步，还有密码，the same experience every where,就是这样。</p>
-<p>以后Chrome OS会取代视窗么，也许吧，在下面我要来介绍更近一步的服务，一个完全基于网页的os</p>
-<p>Webqq 2.0</p>
-<p><img src="/images/the-cloud-2011/26.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/27.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/28.png" alt="Web"></p>
-<p>在线读杂志<br><img src="/images/the-cloud-2011/29.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/30.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/31.png" alt="Web"></p>
-<p>也就是说你只要登录，不论你用什么电脑，什么浏览器，你都能得到the same experience every where。</p>
-<p>从这方面来讲，chrome将你的系统搬到了浏览器上，webqq2将他搬到了网页上，这一切都是基于网速，</p>
-<p>那么我可以大胆的想象一下，当网速达到一定程度时，我可以把你的电脑搬到云端，只给你留下屏幕等交互的硬件。</p>
-<p><img src="/images/the-cloud-2011/32.png" alt="Web"></p>
-<p><img src="/images/the-cloud-2011/33.png" alt="Web"></p>
-<h2 id="Day_2">Day 2</h2><p>今天不过只是在我家另一台电脑的我爸的账号里，他用的也是chrome10。我输入web2.qq.com，并快速开始今天的文章。</p>
-<p>今天我随便说说我对云计算和云存储的理解。</p>
-<p>其实昨天说的云服务都是基于云计算和存储，不过他们一般消耗资源不是很大。昨天我翻订约时，我哥在一旁指着关于甲骨文云计算的文章问我什么是云计算，我说大概就是把本来给你要计算的内容发到云上的服务器上，再快速返回给你结果，我们自身并不需消耗过多的资源。这和搜索是一回事，不过搜索引擎的数据库是在他那，我给他关键词，他运算后返给结果。</p>
-<p>云计算可以是群组内的协作，像双核或四核电脑一样，一个庞大的任务，统一分配给电脑们，再收上结果来汇总，这对于网吧和机房来说就可以干很多大型计算机干的事。云计算也可以是像前面一样的单个电脑的访问，让主要运算跑在服务器上，自身轻松干大事。比如说我前些日子看了个视频，一个android上直接玩魔兽世界，不要觉得不可能，用云计算轻松做到，前提是网速要高，并有那样的服务器，说实话，云计算可以让高配机与顶配机没有区别，让我那台可怜的03年出产的二手小机跑点他以前一跑就死机的程序，这一切以后会实现的。到那时，你的配置有多高也许没什么意义。你家的未来的androidTV可以干所有的事。</p>
-<p>云存储很简单，我现在打的文字，上传的照片视频，都是在云端，这一切是为了不会有数据丢失，也是为了方便提取。云存储的制约因素还是网络，我哥有同学费劲地把视频往touch中倒，看完再删，如果网速可以的话，我完全可以随时随地看任何视频，可以看一段缓存删掉，那谁还在乎你是多少个G的touch呢，现在电脑动不动就是300多个g的硬盘，我说我的电脑可以有好几个T，近些天金山出了T盘，我很快把我的一个g的资料与精选图片的压缩传穿了上去，我还准备把我的以前的资料数字化后传上去保存，以后随时可以提取使用。传图基本是秒下，传3m的ppt也是很快，那我可以说有网的地方我就带了一个1t的硬盘，真的那时谁还在乎你是多少g硬盘的电脑呢？当然前提是网速好和隐私不泄密。</p>
-<p>云存储和云计算都无限地扩大了我们电脑和智能移动设备的性能，只要以后网速够，你再有一个较好的操作系统和浏览器，还有什么不能做呢？</p>
-<p>明天我来写写信息的聚合吧。</p>
-<h2 id="Day_3">Day 3</h2><p>今天是在外婆家的电脑上，电脑的配置很不错。我很快下好了最新版的chromium，设置帐号同步。大概在5分钟，我的书签以及偏好配置就已经下来了，因为chromium可以同步密码，我打开空间开始写今天的文章。</p>
-<p>拿我来说，每天打开电脑第一时间就打开阅读空间和微博的特别收听，大概花十分钟处理一下我的订阅。这些信息都是我所关注的，所以效率较高。这就是快速聚合的力量。</p>
-<p>我们上网，浏览与搜集我们需要与感兴趣的信息，一开始大概是浏览博客。不同博主所关注的方面不同，而我们只需关注他们就可以得到我们想要的最新的信息，但每次去打开书签十分繁琐，所以就出现了rss订阅，每天只要打开订阅器，就很快知道他们进行了什么更新。他将我获得资讯的速度上升为几个小时，不过局限也是有的。不能评论，不方便与其他人讨论，而且有的博文太长，不适合现在快节奏的生活方式–快速的获得资讯。不过他与微博相比有更大的灵活性，不受是哪家提供商的制约，也方便导出订阅，可以在googlereader中看，也可以在阅读空间中看。</p>
-<p>那微博怎么就出现了呢，首先140字，保证了信息的简明精炼，还有图片视频链接很生动，第二它本身就是一个很高效的信息聚合器，通过收听不同的人，很容易获得自己想要的信息。他方便评论交流，与他人的互动。使我们与名人之间的距离大大缩小。在这里我想说，微博对于我们普通大众来说作为信息聚合器的作用更大于信息发布器，他更适用于评论与交流。而晒心情什么的，还是留给sns吧。</p>
-<p>sns什么的我在这就不多说了，其本质与微博基本相同，不过交流的人群不一样，有一部分的交集。（刚才电源被刚上小学的弟弟拔了，亏了云，我流失的数据不多。）</p>
-<p>在这里我还是看好腾讯微博，因为微博流量大，但盈利空间不大，没有太大资金支持的新浪可能暂时不占优势。</p>
-<p>总之，如何把信息更好地聚合给需要的人是rss与微博致力于的事，而如何不让人们看到他们不该看的事，看来是和谐的事，不过这一直是件难事。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<blockquote>
-<p>这是我在2011年春节时写的三篇博客，现在整理如下。当时站在纯使用者的角度，对Web技术、浏览器和<br>  云服务产生了极大的研究兴趣。推崇Chrome OS这个点子。</p>
-</blockquote>
-<h2 id="Day_1">Day 1]]>
-    </summary>
-    
-      <category term="chrome" scheme="http://yqf3139.github.io/tags/chrome/"/>
-    
-      <category term="cloud" scheme="http://yqf3139.github.io/tags/cloud/"/>
     
       <category term="techtalk" scheme="http://yqf3139.github.io/categories/techtalk/"/>
     

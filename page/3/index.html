@@ -179,11 +179,149 @@
 
     
     
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2015/12/12/windows-to-go-with-SSD/" itemprop="url">
+                  在外置SSD上体验 Windows 10 to go
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2015-12-12T11:16:08+08:00" content="2015-12-12">
+              2015-12-12
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/tech/" itemprop="url" rel="index">
+                    <span itemprop="name">tech</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/12/12/windows-to-go-with-SSD/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/12/windows-to-go-with-SSD/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
       
       
 
       
-    
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="为什么需要这么折腾？">为什么需要这么折腾？</h1><p>我在主系统转为Linux后，虽然轻量级的Office编辑和图片/视频编辑是可以进行的，比如利用免费的LibreOffice、Kdenlive、Inkscape。对于图片处理，某些命令行工具如<code>convert</code>，可以直接脚本调用，灵活行和自动性反而比GUI软件更高。</p>
+<p>但不得不承认，偶尔正式场合编辑文档表格和幻灯、PS、网银操作，还是逃脱不了更加普适的Windows。对于标准的Office套件，Adobe套件和Visual Studio等神一般的Windows软件，还是需要找一个解决方案来愉快地使用的。然而并没有入Mac的打算，所以我还是准备采用各种方法使用Windows。正好这样的话，也有机会再摸一摸Windows上的软件，比如微信电脑版等等。</p>
+<p>所以对于我80%以上是直接使用Linux，一个纯粹的系统即可，有时需要使用Office等时需要短时间密集的Windows使用。</p>
+<p>首先有两个方案也不错，但我不是很想使用，一个是Wine，兼容性总是永远的痛，一个是双系统，需要比较大的硬盘，而且相对比较麻烦，再后期与Windows to go对比后，我也抛弃了这个方案。</p>
+<h1 id="方案一:_虚拟机">方案一: 虚拟机</h1><p>虚拟机对于高性能的主机适用，对于我2012年的笔记本，运行XP非常流畅，但Win7比较吃力。虚拟机的优点很明显，做好系统后，几个文件组成的虚拟机可以任意备份与拷贝，所以我常备着几个干净的Xp和Win7虚拟机，和装有Office的。</p>
+<p><img src="/images/windows-to-go-with-SSD/vm.png" alt="vm"></p>
+<h1 id="方案二:_远程桌面">方案二: 远程桌面</h1><p>在实验室有了高性能主机入驻后（研究生的开发机，非常眼馋），我便一直寻求办法远程使用它。在争取得到学长同意后，我登记了账号，并网上查询到方法，可以让多人同时登入一台Windows主机操作，这样当学长使用电脑的时候，我还是可以远程登陆进行操作。</p>
+<p>关于操作顺畅的问题，Microsoft的RDP远程桌面协议已经十分高效，再加上如果是校园以太网连接，操作顺滑，甚至可以看视频。</p>
+<p>使用远程桌面的好处也有不少：</p>
+<ol>
+<li>不占用我本地的计算/存储资源，我可以同时开发与处理文档。</li>
+<li>系统和我本机无关，我可以是Windows/Linux/Mac/iOS/Android，登陆即可享用主机资源。</li>
+<li>只要网络通畅，随时随地登录。 </li>
+</ol>
+<p>当然也有一些弊端，比如受他人限制，远程桌面使用的虚拟显卡驱动会造成某些软件问题，需要插U盘的话比较麻烦（可以直接挂载本地硬盘共享）。</p>
+<p>推荐一个Linux上的开源远程桌面客户端，<a href="https://github.com/FreeRDP/FreeRDP" target="_blank" rel="external">FreeRdp</a>，可以添加剪贴板共享、挂载本地磁盘等功能，其他平台微软均有提供。<br><img src="/images/windows-to-go-with-SSD/freerdp.png" alt="vm"></p>
+<h1 id="方案三:_外置SSD安装Windows_to_go">方案三: 外置SSD安装Windows to go</h1><p>不过虚拟机在我笔记本上总是跑不畅快，远程桌面也并不是随时都能享用，怎样才能一直运行我的Windows（各种环境齐全），但又不受机器的限制，也就是不写死在一台主机中呢？</p>
+<p>事实证明<code>Windows to go</code>就是符合我的期望的，它可以直接将Windows装在外置硬盘和U盘中。这样我只需要将这个外置存储设备插入一台主机，便选择从外置存储直接启动了，这里具体请参考微软的<a href="">说明</a>，其会在启动时判别硬件并加载驱动，就算不是同一机器，也能进入同一个Windows实例。<code>Chrome OS</code>则更方便，登录即可，不过现在还不适用于我的情况，技术上也不成熟。</p>
+<p>USB3.0可以达到5Gb/s的传输速率，高于Sata3的极限，所以普通Sata3硬盘是可以这样用的，也可以弄一个高速USB3.0 U盘，但为了以后硬盘可以重用于其他，我还是牺牲了便携性。</p>
+<h2 id="Windows_8_+_HDD_+_USB_3-0">Windows 8 + HDD + USB 3.0</h2><p>于是我在十一期间立马找了一个320G的硬盘，配合一个USB3的外置盒，边体验了一番。<br>事实证明体验很差，不是因为系统不好用，而是因为HDD加劣质的外置盒太慢了。</p>
+<p>两秒的延时，太慢了。<br><img src="/images/windows-to-go-with-SSD/winsys-hdd.jpg" alt="lantency"></p>
+<p>在看到<a href="https://luolei.org/imac-5k-external-usb-ssd-update/" target="_blank" rel="external">其他人用外置SSD做iMac系统盘后</a>，我才终于决定一定需要弄一个入门的SSD来做Windows to go，这样IO便不是瓶颈，如果有高性能的主机的话，我便可以直接占领其计算资源，作图渲染视频就能节省很多时间。</p>
+<h2 id="Windows_10_+_SSD_+_USB3-0（UASP支持）">Windows 10 + SSD + USB3.0（UASP支持）</h2><h3 id="购买">购买</h3><p>硬盘性能、USB3.0协议、外置盒的主控芯片的性能，支持UASP协议都是值得考虑的，综合经济实力和使用频率考虑，由于只要装系统/Office/Adobe，120G足够，如果需要编辑的文件很大（如视频），可以后再加移动固态硬盘。</p>
+<blockquote>
+<p>USAP是USB-IF所制定的一个新传输协议用于透过USB接口连接序列设备，提供大容量储存设备的传输速度高达20％，并降低CPU的利用率、数据延迟和等待时间，USAP协议提供了高性能主机及设备之间的数据传输。 </p>
+</blockquote>
+<p>最终选择：<br>SSD   ： 入门级120G Sandisk加强版，京东购入比较放心。<br>外置盒： ORICO 2589S3，USB3.0并支持UASP，淘宝购入。</p>
+<p>共356元。</p>
+<h3 id="安装">安装</h3><ol>
+<li>安装SSD，盒子是免工具拆卸，立马搞定。</li>
+<li>格式化为NTFS，测速发现不错。</li>
+<li>使用<a href="https://rufus.akeo.ie/" target="_blank" rel="external">rufus</a>工具，选择Windows 10镜像，并勾选<code>Windows to go</code>，过程非常傻瓜。</li>
+<li>重启选择外置SSD启动。</li>
+</ol>
+<p><img src="/images/windows-to-go-with-SSD/rufus_en.png" alt="rufus"></p>
+<h3 id="使用">使用</h3><p>装完各种常用应用后硬盘使用不超一半，测速满意，和同学的低端SSD系统盘对比后发现差距不大。</p>
+<p><img src="/images/windows-to-go-with-SSD/as-ssd-test.jpg" alt="rufus"><br><img src="/images/windows-to-go-with-SSD/winsys-ssd.jpg" alt="rufus"></p>
+<p>相比之下原来硬盘的顺序读写不到50MB/s，4K根本跑不完。</p>
+<p>正好开发机性能不错，只安装了Ubuntu，也启动尝试了一下。</p>
+<p><img src="/images/windows-to-go-with-SSD/winsys-info.jpg" alt="rufus"><br><img src="/images/windows-to-go-with-SSD/winsys-cpu.jpg" alt="rufus"></p>
+<p>最终认为这次折腾是值得的，终于可以再次畅快地玩玩Windows 10了，并且所有环境都在一个随时硬盘中，节省了重复布置环境的麻烦。</p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
 
     
       
@@ -743,125 +881,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/11/04/yummy-xiaolongbao/" itemprop="url">
-                  美味小笼包
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2015-11-04T21:30:05+08:00" content="2015-11-04">
-              2015-11-04
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/flood/" itemprop="url" rel="index">
-                    <span itemprop="name">flood</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2015/11/04/yummy-xiaolongbao/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/11/04/yummy-xiaolongbao/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <p><img src="/images/yummy-xiaolongbao.jpg" alt="小笼包"></p>
-<p>我作为一个在南京长大的人，小笼包是没少吃的。我妈单位离刘长兴店近，经常会下班的时候给我带上一笼解馋。<br>我会立即冲去倒醋，立即吃掉其中的两个，剩下的留到第二天作为早餐。一直算不上好好品味过小笼包的滋味，<br>并且近年经常惊讶地发现小笼包在变小，真的是越来越小了，也许是我长大了吧。</p>
-<p>所以当Yongnian邀请我们几个实习生吃个午饭，并且是去吃号称上海最好吃的蟹黄小笼包时，我还是小小激动了一把。<br>Yongnian是我们的Manager，他微微发福，能说会道，对待工作拥有极大的热情，这次的借口是为Jie回南京考试践行，并且请我们几个一次。</p>
-<p>于是我们一行五人，中午十一点不到就搭上William的车出发了。Yongnian催促我们早点走，说去晚了就吃不到了。</p>
-<p>吃不到了，难道有钱不赚？</p>
-<p>这家店的确就是这么有性格。一路上Yongnian形容了他上次没吃到招牌小笼包的遗憾。<br>“上次我是周末来的，开车一个多小时，人特别多。他们早上7店开卖，到中午就收摊了，只做一顿。”<br>“他们的主厨原来是城隍庙的店的厨师，后来自己出来单干了，就只在郊外摆个小摊，不为赚钱只为一乐。”</p>
-<p>开车20分钟，我们便到了这个小小的旅游景点，小小的店中只有几张桌子，却已经坐满了人。我们站在门口就能闻道蟹黄小笼包的香味，热情的阿姨在人群中忙碌着。<br>我不由得咽下了口水。站在门口看阿姨飞速地包着各色小笼包。</p>
-<p>“你们先去景点内转转吧，等会有位置的话叫你们”，Yongnian对我们说。</p>
-<p>一个很江南水乡的小景区，但有点开发过度的感觉。我们看着各色小吃，还是想着没入嘴的小笼包。</p>
-<p>很快我们就回去点餐了。Yongnian熟练地用上海话点餐，我们在旁边艰难地解码上海方言。我们一共要了六笼各色小笼包。<br>各种小笼包还挺讲究的，编号从1到20多，有用虾仁扇贝等海鲜做的，更多的是蟹粉汤包，更有公蟹膏和母蟹黄配出的龙凤小笼包。<br>我们每人还点了酒酿豆沙汤，和云吞。</p>
-<p>慕名而来的食客的确挤爆了这个小小的店铺，我们占据了一张大桌。旁边的食客已经在品尝小笼包了。似乎老年人偏多，看来都是老上海才找得到这种偏门小店。</p>
-<p>很快上了三种醋，果醋、姜醋等，阿姨嘱咐我们到时候要听她话，用对应的醋才能品尝到最佳的美味。每人还给倒了一碟新鲜的柠檬酱，据说吃完后一口闷便可以去除蟹的肥腻。<br>我们边喝着提前上的酒酿豆沙汤，边听阿姨介绍各种流程。我旁边已经站好了排队的食客，他们也不急，而是耐心地咨询各色小笼包的特点，Yongnian和他们讨论得不亦乐乎。</p>
-<p>正说着小笼包便上了，我们每人手持一个小碟子，舀上对应的醋，小心翼翼的夹起盛满汤汁的小笼包。不知道是手艺好还是蒸的技术高超，<br>每个小笼包被筷子的摩擦力稳稳的提起，不漏出一滴精华。我大概吃的第一个就是招牌的蟹粉小笼包，这是用蟹肉和猪肉混合做的，性价比很高。我往上面又滴了一点醋。<br>然后小心翼翼的用牙去咬这个小小的美味，诶，汤汁流出来了，我赶忙一整个吞下，好烫。我咝着嘴，立马感受到了非常猪肉和蟹肉混合的鲜美。小碟子中的汤汁也被我一饮而尽。</p>
-<p>扇贝小笼包和鲜虾小笼包也十分美味，各自像是寿司一样，在包子的褶子处装饰着对应的食材，好看又美味。<br>阿姨说她们当时在日本开店的，她非常标准的说着“chotto matte”，意思是稍等一下。</p>
-<p>最后招牌龙凤小笼包上了，一个小笼包中包裹着两只蟹的美味，比单纯吃蟹过瘾。所有的食材都是手工挑出，包括蟹肉，这可能也是她们无法扩张的一个原因吧。</p>
-<p>旁边的食客看着我们吃，一个劲得安慰我们慢慢吃，这样才能品出味道。</p>
-<p>最后吃的云吞，似乎是从天堂掉入人间。饱腹之后的我们，带着美好的记忆和嘴中柠檬的清香，返回公司继续上班。</p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -908,7 +927,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">39</span>
+              <span class="site-state-item-count">40</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -922,7 +941,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">30</span>
+              <span class="site-state-item-count">33</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>

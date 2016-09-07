@@ -179,15 +179,178 @@
 
     
     
+
+    
       
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/07/some-shell-and-sql-problems-from-leetcode/" itemprop="url">
+                  一些来自LeetCode的Shell和Sql问题
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2016-09-07T21:41:18+08:00" content="2016-09-07">
+              2016-09-07
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">programming</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/07/some-shell-and-sql-problems-from-leetcode/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/07/some-shell-and-sql-problems-from-leetcode/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
       
-        
-        
-        
       
 
       
-    
+        
+          <span itemprop="articleBody">
+            
+              <p>Shell和Sql都是日常工作中经常使用的工具，发现LeetCode还有一些<a href="https://leetcode.com/problemset/shell/" target="_blank" rel="external">Shell</a>和<a href="https://leetcode.com/problemset/database/" target="_blank" rel="external">Sql</a>问题，由于项目中写Shell和Sql不是很多，练习的时候有些题目还稍微遇到了一点困难，记录如下。</p>
+<h1 id="Shell">Shell</h1><h2 id="192-_Word_Frequency"><a href="https://leetcode.com/problems/word-frequency/" target="_blank" rel="external">192. Word Frequency</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>写一个bash脚本计算<code>word.txt</code>文件中每个单词出现的频率</li>
+<li>只存在小写字母单词表，单词只使用一个或是多个空格分割</li>
+<li>输出频率时候按照降序排列，由于保证单词的频率相互不重复，不用考虑再使用字典序做二次排序</li>
+</ul>
+<p>示例输入：<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">the</span> <span class="property">day</span> <span class="keyword">is</span> sunny <span class="keyword">the</span> <span class="keyword">the</span></span><br><span class="line"><span class="keyword">the</span> sunny <span class="keyword">is</span> <span class="keyword">is</span></span><br></pre></td></tr></table></figure></p>
+<p>示例输出：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">the <span class="number">4</span></span><br><span class="line">is <span class="number">3</span></span><br><span class="line">sunny <span class="number">2</span></span><br><span class="line">day <span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="使用sort/uniq计算频率">使用sort/uniq计算频率</h3><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cat</span> words.txt | tr -s ' ' '\<span class="keyword">n</span>' | <span class="keyword">sort</span> | uniq -c | <span class="keyword">sort</span> -r | awk '&#123; <span class="keyword">print</span> <span class="label">$2</span>, <span class="label">$1</span>  &#125;'</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>tr -s</strong> : 将空格替换为换行，其中<code>-s  --squeeze-repeats</code>指明将连续的空格视为一个空格</li>
+<li><strong>sort</strong>  : 按照字典序排序，为统计频率做准备，因为uniq只能统计连续出现的单词</li>
+<li><strong>uniq -c</strong> : 将排序后单词序列中连续出现的重复单词去重，<code>-c</code>将重复次数输出</li>
+<li><strong>sort -r</strong> : 按照频率降序排列结果</li>
+<li><strong>awk</strong> : 将输出结果的第一栏和第二栏调换输出</li>
+</ul>
+<h3 id="仅仅使用awk和sort">仅仅使用awk和sort</h3><p>awk功能非常强大。<br><figure class="highlight monkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="comment">'&#123;for(i=1;i&lt;=NF;i++) a[$i]++&#125; END &#123;for(k in a) print k,a[k]&#125;' words.txt | sort -k2 -nr</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>awk的对于每一行生效的指令中，对于每一行的每一栏的单词，将他们统计到map中</li>
+<li>awk最后指令，将单词与频率输出</li>
+<li><strong>sort -k2 -nr</strong> : 使用第二栏的数据，进行降序排序</li>
+</ul>
+<h2 id="194-_Transpose_File"><a href="https://leetcode.com/problems/transpose-file/" target="_blank" rel="external">194. Transpose File</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>写一个bash脚本转置<code>file.txt</code>给出单词的矩阵</li>
+<li>单词只使用一个空格分割</li>
+</ul>
+<p>示例输入：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name age</span><br><span class="line">alice <span class="number">21</span></span><br><span class="line">ryan <span class="number">30</span></span><br></pre></td></tr></table></figure></p>
+<p>示例输出：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">name alice ryan</span><br><span class="line">age <span class="number">21</span> <span class="number">30</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="awk">awk</h3><p>还是继续awk大法好，awk其实类似于一个文件处理的编程框架。<br>awk和sed使用好，比直接写shell和使用各种命令进行管道叠加要效率高并且可读性高。<br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">awk '&#123;</span><br><span class="line">    row=NR<span class="comment">;</span></span><br><span class="line">    col=NF<span class="comment">;</span></span><br><span class="line">    for(i=<span class="number">1</span><span class="comment">;i&lt;=NF;i++) a[NR, i]=$i;</span></span><br><span class="line">&#125;</span><br><span class="line">END &#123;</span><br><span class="line">    for(i=<span class="number">1</span><span class="comment">;i&lt;=col;i++) &#123;</span></span><br><span class="line">        printf(<span class="string">"%s"</span>, <span class="literal">a</span>[<span class="number">1</span>, i])<span class="comment">;</span></span><br><span class="line">        for(j=<span class="number">2</span><span class="comment">;j&lt;=row;j++)</span></span><br><span class="line">            printf(<span class="string">" %s"</span>, <span class="literal">a</span>[j, i])<span class="comment">;</span></span><br><span class="line">        print <span class="string">""</span><span class="comment">;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;' file.txt</span><br></pre></td></tr></table></figure></p>
+<p>直接将单词矩阵存下来，然后转置输出。</p>
+<h1 id="Sql">Sql</h1><h2 id="176-_Second_Highest_Salary"><a href="https://leetcode.com/problems/second-highest-salary/" target="_blank" rel="external">176. Second Highest Salary</a></h2><p>难度：<code>Easy</code><br>题目大意：</p>
+<ul>
+<li>从<code>Employee</code>表中选出第二高的薪水记录</li>
+<li>如果不存在第二高的记录，返回<code>null</code></li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">+----+</span>--------+</span><br><span class="line"><span class="header">| Id | Salary |</span><br><span class="line">+----+--------+</span></span><br><span class="line">| 1  | 100    |</span><br><span class="line">| 2  | 200    |</span><br><span class="line"><span class="header">| 3  | 300    |</span><br><span class="line">+----+--------+</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select ifnull(</span><br><span class="line">    (select <span class="keyword">distinct</span> <span class="type">Salary</span> <span class="keyword">from</span> <span class="type">Employee</span> order by <span class="type">Salary</span> desc limit <span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">, null) <span class="keyword">as</span> <span class="type">SecondHighestSalary</span></span><br></pre></td></tr></table></figure>
+<p>使用<code>ifnull</code>函数进行记录是否为空的判断。</p>
+<h2 id="178-_Rank_Scores"><a href="https://leetcode.com/problems/rank-scores/" target="_blank" rel="external">178. Rank Scores</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>用Sql来为分数分级，对于相同的分数，分为同一级，下一级和前一级别连续编号。</li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">+----+</span>-------+</span><br><span class="line"><span class="header">| Id | Score |</span><br><span class="line">+----+-------+</span></span><br><span class="line">| 1  | 3.50  |</span><br><span class="line">| 2  | 3.65  |</span><br><span class="line">| 3  | 4.00  |</span><br><span class="line">| 4  | 3.85  |</span><br><span class="line">| 5  | 4.00  |</span><br><span class="line"><span class="header">| 6  | 3.65  |</span><br><span class="line">+----+-------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">输出：</span><br><span class="line">+-------+------+</span></span><br><span class="line"><span class="header">| Score | Rank |</span><br><span class="line">+-------+------+</span></span><br><span class="line">| 4.00  | 1    |</span><br><span class="line">| 4.00  | 1    |</span><br><span class="line">| 3.85  | 2    |</span><br><span class="line">| 3.65  | 3    |</span><br><span class="line">| 3.65  | 3    |</span><br><span class="line"><span class="header">| 3.50  | 4    |</span><br><span class="line">+-------+------+</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight q"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> Score,</span><br><span class="line">       ( @<span class="built_in">rank</span> := @<span class="built_in">rank</span> + ( @<span class="built_in">prev</span> &lt;&gt; (@<span class="built_in">prev</span> := Score)  )  ) as Rank</span><br><span class="line"><span class="keyword">from</span></span><br><span class="line">(</span><br><span class="line">    <span class="keyword">select</span> Score <span class="keyword">from</span> Scores order <span class="keyword">by</span> Score <span class="built_in">desc</span></span><br><span class="line">) A, (<span class="keyword">select</span> @<span class="built_in">rank</span> := <span class="number">0</span>, @<span class="built_in">prev</span> := -<span class="number">1</span>) Init</span><br></pre></td></tr></table></figure>
+<p>参考他人解法，使用零时表中的两个变量，分别记录分级编号和上一个分数，方便判断是否分数相同。</p>
+<h2 id="180-_Consecutive_Numbers"><a href="https://leetcode.com/problems/consecutive-numbers/" target="_blank" rel="external">180. Consecutive Numbers</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>用Sql选出连续出现三次即以上的数字</li>
+</ul>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+----+-----+</span><br><span class="line">|<span class="string"> Id </span>|<span class="string"> Num </span>|</span><br><span class="line">+----+-----+</span><br><span class="line">|<span class="string"> 1  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 2  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 3  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 4  </span>|<span class="string">  2  </span>|</span><br><span class="line">|<span class="string"> 5  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 6  </span>|<span class="string">  2  </span>|</span><br><span class="line">|<span class="string"> 7  </span>|<span class="string">  2  </span>|</span><br><span class="line">+----+-----+</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> <span class="keyword">distinct</span> <span class="keyword">Num</span> <span class="keyword">as</span> ConsecutiveNums <span class="keyword">from</span> (</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">Id</span>, <span class="keyword">Num</span>, ( @<span class="keyword">rank</span> := <span class="keyword">if</span>(@prev = (@prev := <span class="keyword">NUM</span>), @<span class="keyword">rank</span>+<span class="number">1</span>, <span class="number">1</span>)  ) <span class="keyword">as</span> <span class="keyword">Rank</span></span><br><span class="line">    <span class="keyword">from</span> <span class="keyword">Logs</span>, (<span class="keyword">select</span> @<span class="keyword">rank</span> := <span class="number">1</span>, @prev := -<span class="number">1</span>) Init</span><br><span class="line">) <span class="keyword">as</span> temp <span class="keyword">where</span> <span class="keyword">Rank</span> = <span class="number">3</span>;</span></span><br></pre></td></tr></table></figure>
+<p>参考178的思路，将每条记录按照是否连续进行编号，再把所有有三次连续出现的不重复数字选出。</p>
+<h2 id="184-_Department_Highest_Salary"><a href="https://leetcode.com/problems/department-highest-salary/" target="_blank" rel="external">184. Department Highest Salary</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
+<ul>
+<li>挑选出每个部门最高薪水的记录</li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="header">Employee:</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line"><span class="header">| Id | Name  | Salary | DepartmentId |</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line">| 1  | Joe   | 70000  | 1            |</span><br><span class="line">| 2  | Henry | 80000  | 2            |</span><br><span class="line">| 3  | Sam   | 60000  | 2            |</span><br><span class="line">| 4  | Max   | 90000  | 1            |</span><br><span class="line">| 5  | Janet | 69000  | 1            |</span><br><span class="line"><span class="header">| 6  | Randy | 85000  | 1            |</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">Department:</span><br><span class="line">+----+----------+</span></span><br><span class="line"><span class="header">| Id | Name     |</span><br><span class="line">+----+----------+</span></span><br><span class="line">| 1  | IT       |</span><br><span class="line"><span class="header">| 2  | Sales    |</span><br><span class="line">+----+----------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">输出：</span><br><span class="line">+------------+----------+--------+</span></span><br><span class="line"><span class="header">| Department | Employee | Salary |</span><br><span class="line">+------------+----------+--------+</span></span><br><span class="line">| IT         | Max      | 90000  |</span><br><span class="line"><span class="header">| Sales      | Henry    | 80000  |</span><br><span class="line">+------------+----------+--------+</span></span><br></pre></td></tr></table></figure>
+<h3 id="解法1：900ms">解法1：900ms</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> <span class="keyword">d</span>.<span class="keyword">name</span> <span class="keyword">as</span> Department, <span class="keyword">e</span>.<span class="keyword">Name</span> <span class="keyword">as</span> Employee, Salary</span><br><span class="line"><span class="keyword">from</span> Employee <span class="keyword">e</span> <span class="keyword">inner</span> <span class="keyword">join</span> Department <span class="keyword">d</span> <span class="keyword">on</span> <span class="keyword">e</span>.DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span></span><br><span class="line"><span class="keyword">where</span> Salary = (<span class="keyword">select</span> <span class="keyword">max</span>(Salary) <span class="keyword">from</span> Employee <span class="keyword">where</span> DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span>)</span></span><br></pre></td></tr></table></figure>
+<p>比较暴力，有个Employee记录都有一个冗余的子查询。</p>
+<h3 id="解法2：600ms">解法2：600ms</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">select t3<span class="class">.Name</span> as Department, t2<span class="class">.Name</span> as Employee, t1<span class="class">.Salary</span> as Salary</span><br><span class="line">from</span><br><span class="line">(</span><br><span class="line">    select <span class="function"><span class="title">max</span><span class="params">(Salary)</span></span> as Salary, DepartmentId</span><br><span class="line">    from Employee</span><br><span class="line">    group by DepartmentId</span><br><span class="line">) t1, Employee t2, Department t3</span><br><span class="line">where t1<span class="class">.Salary</span> = t2<span class="class">.Salary</span> and t1<span class="class">.DepartmentId</span> = t2<span class="class">.DepartmentId</span> and t1<span class="class">.DepartmentId</span> = t3.Id</span><br></pre></td></tr></table></figure>
+<p>先把每个部门的最高薪水一起聚合算出，再全连接表并筛选出部门和薪水都匹配的员工记录。</p>
+<h2 id="185-_Department_Top_Three_Salaries"><a href="https://leetcode.com/problems/department-top-three-salaries/" target="_blank" rel="external">185. Department Top Three Salaries</a></h2><p>难度：<code>Hard</code><br>题目大意：</p>
+<ul>
+<li>在上一题基础上，挑选出每个部门前三高薪水的记录</li>
+<li>如果少于三条记录，则只显示存在的记录</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> t1.<span class="keyword">Name</span> <span class="keyword">as</span> Department, t2.<span class="keyword">Name</span> <span class="keyword">as</span> Employee, t2.Salary <span class="keyword">as</span> Salary</span><br><span class="line"><span class="keyword">from</span>(</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">Name</span>, <span class="keyword">ifnull</span>((</span><br><span class="line">        <span class="keyword">select</span> <span class="keyword">distinct</span> Salary <span class="keyword">from</span> Employee <span class="keyword">e</span> </span><br><span class="line">        <span class="keyword">where</span> <span class="keyword">e</span>.DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span></span><br><span class="line">        <span class="keyword">order</span> <span class="keyword">by</span> Salary <span class="keyword">desc</span> <span class="keyword">limit</span> <span class="number">2</span>,<span class="number">1</span>)</span><br><span class="line">    , <span class="number">0</span>) <span class="keyword">as</span> Salary, <span class="keyword">Id</span> <span class="keyword">as</span> DepartmentId <span class="keyword">from</span> Department <span class="keyword">d</span></span><br><span class="line">) t1, Employee t2</span><br><span class="line"><span class="keyword">where</span> t1.Salary &lt;= t2.Salary <span class="keyword">and</span> t1.DepartmentId = t2.DepartmentId</span></span><br></pre></td></tr></table></figure>
+<p>和上一题思路类似，先选出第三高的薪水，再全连接筛选。</p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
 
     
       
@@ -760,128 +923,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/12/26/establish-a-duplex-communication-between-any-web-page-and-chrome-extension/" itemprop="url">
-                  如何在 Chrome 插件中访问任意网页中的 JavaScript 变量？
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2015-12-26T14:42:03+08:00" content="2015-12-26">
-              2015-12-26
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">programming</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2015/12/26/establish-a-duplex-communication-between-any-web-page-and-chrome-extension/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/26/establish-a-duplex-communication-between-any-web-page-and-chrome-extension/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <p>在折腾小工具的时候有产生了奇怪的需求，Chrome 插件需要监听任意网页中某个变量的变化，或是访问其中的值。但默认注入的 content.js 和原网页 Javascript 脚本并不运行在一个相同的环境中，无法相互访问。</p>
-<p>搜索和自己尝试了如下的解决方法，现罗列如下。</p>
-<h1 id="访问到目标变量">访问到目标变量</h1><p>这个很简单。虽然默认注入的content.js不能访问到原网页的变量，但可以访问和修改Dom，所以再注入一个脚本就好。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">loadScript</span>(<span class="params">url</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> elem = <span class="built_in">document</span>.createElement(<span class="string">'script'</span>);</span><br><span class="line">    elem.type = <span class="string">'text/javascript'</span>;</span><br><span class="line">    elem.charset = <span class="string">'utf-8'</span>;</span><br><span class="line">    elem.addEventListener(<span class="string">'load'</span>, doCallback, <span class="literal">false</span>);</span><br><span class="line">    elem.src = url;</span><br><span class="line">    <span class="built_in">document</span>.getElementsByTagName(<span class="string">'head'</span>)[<span class="number">0</span>].appendChild(elem);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">url</span>(<span class="params">file</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> chrome.extension.getURL(file);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">loadScript(url(<span class="string">'inject.js'</span>));</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
-<p>在inject.js中便是和原网页一样的javascript环境了，但是问题来了，怎样才能将在此环境下的变量发送到后台插件中呢？</p>
-<h1 id="建立原网页作用域与插件后台页面的双工通信">建立原网页作用域与插件后台页面的双工通信</h1><p>目标很明确，在inject.js中建立与后台background.js的双工通信，这样我们可以实时将网页中值的变化发送到插件中进行分析……</p>
-<p>不过阻碍也很明显，由于chrome的安全策略，inject.js和后台插件虽然能直接连通，但受域名限制，而content.js则可以很轻易连通。所以如果打通inject.js与content.js就好了。</p>
-<h2 id="外部服务器中转">外部服务器中转</h2><p>inject.js和background.js连上相同的websocket服务器中转，问题解决。不过还要多加一个外部服务器。</p>
-<h2 id="inject-js直连后台插件">inject.js直连后台插件</h2><p>的确，Chrome提供了直连的方法。</p>
-<p>首先在<code>manifest.json</code>中申明<code>externally_connectable</code>，需要申明域名限制。正当我兴高采烈地输入<code>*://*/*</code>全匹配后，发现出错，chrome文档如是说：</p>
-<blockquote>
-<p>This will expose the messaging API to any page which matches the URL patterns you specify. The URL pattern must contain at least a second-level domain - that is, hostname patterns like “<em>“, “</em>.com”, “<em>.co.uk”, and “</em>.appspot.com” are prohibited. </p>
-</blockquote>
-<p>没有办法做到让所有域名发起的连接都与<code>manifest.json</code>匹配，但对于认可的域名，只需要在inject.js中调用如下API，</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ExtensionID = <span class="string">'nnhoaecbdmfokhcnldeiadllnjeebhcb'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Make a simple request:</span></span><br><span class="line">chrome.runtime.sendMessage(ExtensionID, &#123;openUrlInEditor: url&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;&#125;);</span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
-<h2 id="inject-js注入Dom事件">inject.js注入Dom事件</h2><p>这是网上一个比较通行的办法，可以约定一个Dom元素，再使用<code>MutationObserver</code>监控这个Dom元素即可。<br>不过修改Dom比较重量级，不是很喜欢这种做法。</p>
-<h2 id="轮询localStorage等公共可访问变量">轮询localStorage等公共可访问变量</h2><p>两个脚本均可访问到localStorage，location等变量，所以一方修改一方轮询也是一种办法，不过如果变量发生了多次修改，每次的修改事件就很难及时发出。</p>
-<h2 id="SharedWorker转发">SharedWorker转发</h2><p>最终试验成功了一种还比较满意的方法，可由 content.js 创建一个 SharedWorker的函数，并将其转换为 Blob ，再使用<code>URL.createObjectURL</code>创建为共享链接存入localStorage ， inject.js 读取后此链接后，两个脚本同时连上同一个 SharedWorker，由 worker 转发消息，可以很好双向通信。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// background.js</span></span><br><span class="line"><span class="comment">//----------------------------------------------------------------</span></span><br><span class="line"><span class="comment">// 简单监听来自content.js的转发的内容</span></span><br><span class="line">chrome.extension.onMessage.addListener(</span><br><span class="line">    <span class="function"><span class="keyword">function</span>(<span class="params">request, sender, sendResponse</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'bg'</span>, request);</span><br><span class="line">    &#125;</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">// content.js</span></span><br><span class="line"><span class="comment">//----------------------------------------------------------------</span></span><br><span class="line"><span class="comment">// SharedWorker执行的逻辑，广播信息</span></span><br><span class="line"><span class="keyword">var</span> worker_function = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> ports = []</span><br><span class="line">    onconnect = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (e.ports &amp;&amp; e.ports.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, j = e.ports.length; i &lt; j; i++) &#123;</span><br><span class="line">                e.ports[i].onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">                    <span class="keyword">for</span> (<span class="keyword">var</span> m = <span class="number">0</span>, n = ports.length; m &lt; n; m++) &#123;</span><br><span class="line">                        ports[m].postMessage(e.data);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                ports.push(e.ports[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将上述函数转为可访问的URL, 并存入localStorage</span></span><br><span class="line">localStorage.sharedWorkerURL = URL.createObjectURL(<span class="keyword">new</span> Blob([<span class="string">"("</span> +</span><br><span class="line">    worker_function.toString() + <span class="string">")()"</span></span><br><span class="line">], &#123;</span><br><span class="line">    type: <span class="string">'text/javascript'</span></span><br><span class="line">&#125;));</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> shared = <span class="keyword">new</span> SharedWorker(localStorage.sharedWorkerURL);</span><br><span class="line">shared.port.start();</span><br><span class="line">shared.port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'content'</span>, e);</span><br><span class="line">    <span class="comment">// 向background.js转发</span></span><br><span class="line">    chrome.extension.sendMessage(&#123;</span><br><span class="line">        greeting: e.data</span><br><span class="line">    &#125;, <span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'content get bg'</span>, response);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// inject.js</span></span><br><span class="line"><span class="comment">//----------------------------------------------------------------</span></span><br><span class="line"><span class="keyword">var</span> shared = <span class="keyword">new</span> SharedWorker(localStorage.sharedWorkerURL);  </span><br><span class="line">shared.port.start();</span><br><span class="line">shared.port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'inject'</span>, e);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="string">``</span><span class="string">`</span></span><br></pre></td></tr></table></figure>
-<h2 id="使用window-postMessage">使用window.postMessage</h2><p>经网友提醒，参考Chrome开发文档中<a href="https://developer.chrome.com/extensions/content_scripts#host-page-communication" target="_blank" rel="external">针对content script通信的说明</a>。使用window.postMessage可以很好进行双向通信。</p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -928,7 +969,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">39</span>
+              <span class="site-state-item-count">40</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -942,7 +983,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">30</span>
+              <span class="site-state-item-count">33</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>
