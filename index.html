@@ -179,6 +179,140 @@
 
     
     
+      
+      
+        
+        
+        
+      
+
+      
+    
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/10/find-more-transmission-peers-to-boost-seeding-speed-automaticly/" itemprop="url">
+                  为了加快PT分享速度，自动督促Transmission获取更多Peers
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2016-09-10T14:40:37+08:00" content="2016-09-10">
+              2016-09-10
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/tech/" itemprop="url" rel="index">
+                    <span itemprop="name">tech</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/10/find-more-transmission-peers-to-boost-seeding-speed-automaticly/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/10/find-more-transmission-peers-to-boost-seeding-speed-automaticly/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="为何要如此努力地增加PT分享率">为何要如此努力地增加PT分享率</h1><p>学校内连接外网的代价还是挺大的，更不要说在线串流电影或是下载了。虽然我没有追剧的压力，看电影的偏好也比较单一，PT的压力不会很大，不过加入北邮人PT后，使用的是全新的账号，由于怕分享率太低被封禁账号，还是需要在下载资源后，利用电脑的空闲资源，在电影看完被删掉前借此增加一点分享率。</p>
+<p>理想情况是，电影下好后在观看过程中进行分享，如果一直有较好的上传速度的话，很快就可以流量回本了，无奈几次实验下来，几乎没有分享多少流量，导致分享率已经跌倒了0.1。</p>
+<p>大概有这几点原因导致了我分享率很低：</p>
+<ul>
+<li>有些我想看的资源已经是冷门资源</li>
+<li>我的网络环境太差，其他人从我这获取资源的速度太慢，导致我只能分享他下载流量的很小比例</li>
+<li>我一般看完就删，分享时间非常有限</li>
+<li>PT内网环境中，大家的下载速度都很快，并且有很多人分享，别人在不知道我这里有资源的情况下就已经下载完成了</li>
+</ul>
+<p>其中冷门资源想看只能使用其他资源的上传来补了；从我的下载速度可以稳定在10MB/s看来，网络环境不是瓶颈；我并不想囤积电影，看完就删的习惯不准备改变，也不准备话很长时间挂机分享；看来，针对免费的热门资源，如何提高自己的分享效率成为了比较好的方案。</p>
+<h1 id="Transmission">Transmission</h1><p>Transmission是Linux上很不错的BT下载器，PT资源也支持，它还支持一个Web客户端，Web客户端使用Http与Transmission服务部通信，这就为我们自动话督促分享量提供了机会。</p>
+<p>细看Transmission的一个任务，发现其中Peers通常是由Tracker来提供的，但这里显示Transmission每半个小时才会去询问一次有没有更多Peers，这边就带来了可能很多Peers需要下载我分享的资源时候，我并不知道这一情况，错失了很多上传机会。</p>
+<p><img src="/images/find-more-transmission-peers-to-boost-seeding-speed-automaticly/transmission.png" alt="Transmission"></p>
+<p>人工通过在任务上<code>右键</code>&gt;<code>Ask Tracker For More Peers</code>刷了几分钟后，发现上传速度能维持在一个不错的水平了。</p>
+<h1 id="解决方案">解决方案</h1><p>其实就通过查看Web客户端是如何请求Transmission服务器，每隔一段时间强制刷新Peers列表就可以了。</p>
+<h2 id="获取Web客户端与Transmission的通信规范">获取Web客户端与Transmission的通信规范</h2><p>首先通过<code>Transmission</code>&gt;<code>Preferences</code>&gt;<code>Remote</code>&gt;<code>Allow Remote Access</code>打开Web客户端。</p>
+<p><img src="/images/find-more-transmission-peers-to-boost-seeding-speed-automaticly/web-client.png" alt="Webclient"></p>
+<p>然后通过<code>Chrome Dev Tools</code>审查Web客户端和服务器的请求。</p>
+<p><img src="/images/find-more-transmission-peers-to-boost-seeding-speed-automaticly/chrome-devtools.png" alt="ChromeDevTools"></p>
+<p>分析请求发现<code>torrent-get</code>获取任务ID和详情信息，<code>torrent-reannounce</code>向Tracker发出刷新Peers列表的请求。</p>
+<p>通过<code>Copy as cURL</code>直接复制Chrome发出的请求，方便进行实验。</p>
+<h2 id="通过脚本自动化刷新Peers列表的过程">通过脚本自动化刷新Peers列表的过程</h2><p>最终整理Shell脚本如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">true</span>; <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取Transmission的Session ID，不然后续请求无效</span></span><br><span class="line">TSID=`curl <span class="operator">-s</span>I <span class="string">'http://localhost:9091/transmission/rpc'</span> |grep -Fi <span class="string">"X-Transmission-Session-Id"</span> | tr <span class="operator">-d</span> <span class="string">'\r'</span>`</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$TSID</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取当前任务的ID列表，通过jq工具解析Json</span></span><br><span class="line">TDATA=`curl <span class="operator">-s</span> <span class="string">'http://localhost:9091/transmission/rpc'</span> -H <span class="string">'Origin: http://localhost:9091'</span> -H <span class="string">'Accept-Encoding: gzip, deflate'</span> -H <span class="string">'Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.6,en;q=0.4'</span> -H <span class="string">"<span class="variable">$TSID</span>"</span> -H <span class="string">'Content-Type: json'</span> -H <span class="string">'Accept: application/json, text/javascript, */*; q=0.01'</span> -H <span class="string">'Referer: http://localhost:9091/transmission/web/'</span> -H <span class="string">'X-Requested-With: XMLHttpRequest'</span> -H <span class="string">'DNT: 1'</span> --data-binary <span class="string">'&#123;"method":"torrent-get","arguments":&#123;"fields":["id"],"ids":"recently-active"&#125;&#125;'</span> --compressed | jq -c <span class="string">'&#123;"method":"torrent-reannounce","arguments":&#123;ids: [.arguments.torrents[].id]&#125;&#125;'</span> | tr <span class="operator">-d</span> <span class="string">'\r'</span>`</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$TDATA</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 发出刷新Peers列表的请求</span></span><br><span class="line">curl <span class="string">'http://localhost:9091/transmission/rpc'</span> -H <span class="string">'Origin: http://localhost:9091'</span> -H <span class="string">'Accept-Encoding: gzip, deflate'</span> -H <span class="string">'Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.6,en;q=0.4'</span> -H <span class="string">"<span class="variable">$TSID</span>"</span> -H <span class="string">'Content-Type: json'</span> -H <span class="string">'Accept: application/json, text/javascript, */*; q=0.01'</span> -H <span class="string">'Referer: http://localhost:9091/transmission/web/'</span> -H <span class="string">'X-Requested-With: XMLHttpRequest'</span> -H <span class="string">'DNT: 1'</span> --data-binary <span class="string">"<span class="variable">$TDATA</span>"</span> --compressed</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每隔一分钟刷新一次</span></span><br><span class="line">sleep <span class="number">60</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure></p>
+<p>其中有一个坑在将一个命令的输出存入Shell变量时候，有时末尾会有’\r’这个字符，但echo这个变量又和不带’\r’的字符串看不出区别。如果不通过<code>tr -d &#39;\r&#39;</code>删除的话，curl发出的请求就不能被正常相应。</p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
 
     
       
@@ -807,128 +941,12 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/01/01/the-coplay-chrome-extension/" itemprop="url">
-                  为coplay Chrome扩展添油加醋
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2016-01-01T17:16:57+08:00" content="2016-01-01">
-              2016-01-01
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">programming</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/01/01/the-coplay-chrome-extension/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/01/the-coplay-chrome-extension/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <p>上次参加黑客马拉松之前有一个想法，就是希望能为两个人异地同看一个在线视频提供更好的体验：进度同步，弹幕，实时涂鸦等等。还有更多的实时语言功能就其实直接使用现成的微信就好。这样看来，视频进度同步和播放/暂停和拖动进度条的指令同步是核心功能。</p>
-<p>当初想的通信技术方案是搭建一个私有服务器，两个浏览器通过一个<a href="https://zh.wikipedia.org/wiki/%E5%B0%8F%E4%B9%A6%E7%AD%BE" target="_blank" rel="external">Bookmarklet</a>注入脚本，Websocket通信，并由中间的私人服务器中转进行。视频控制准备强制将flash视频转为Html5播放，方便控制，不过拖着一直没去实现。</p>
-<p>最近看到一个<a href="https://www.zhihu.com/question/23228162/answer/36767934" target="_blank" rel="external">推荐Chrome插件的知乎回答</a>，答主使用Chrome扩展注入脚本，使用<a href="http://peerjs.com/" target="_blank" rel="external">Peer.js</a>，底层是<a href="https://zh.wikipedia.org/zh/WebRTC" target="_blank" rel="external">WebRTC通信</a>。去中心服务器直接通信，的确方便很多，并且已经支持多个视频站，插件也已经在<a href="https://chrome.google.com/webstore/detail/coplay/heolgpojkkeacaokbpolhalhlaidpkkc/" target="_blank" rel="external">Chrome Web Store</a>上架，并<a href="https://github.com/Justineo/coplay" target="_blank" rel="external">Github开源</a>，试用后立即Star了。</p>
-<p>不过应该还有很多功能可以加，查看代码后觉得可扩展性也很好，不过在那之前，我想也许应该支持更多的视频站、让视频同步的体验更好才是纯粹的。</p>
-<h1 id="Flash的视频控制">Flash的视频控制</h1><p>之前固执地认为Flash视频是不可与Javascript交互的，2014年HackShanghai的时候，我们需要控制优酷视频的播放，后来由颢神找到了获取视频地址的方法，便转Html5的方式播放。不过那次由于想给用户提供一个更好的体验，很多UI都重写了，视频更加一体地融合在网页中，而这是Flash播放器做不到的。在看coplay源码的时候发现某些视频站已经发布了可以直接使用的API，如优酷的<code>PlayerPause(false);</code>，<code>info = PlayerInfo()；</code>等，可以直接方便地控制，更多的视频站由于自身需要，也加上了对javascript的API，通常我们query到DOM中的flash节点后，可以调用一个方法，比如土豆的<code>player.notify(&#39;play&#39;)</code>，更多是类似<code>player.pauseQiyiVideo()</code>这样。</p>
-<p>Flash节点没有办法遍历这些在Flash中对外暴露的方法，那是怎么获得这些API的呢，可能官网上有文档，懒得去找了，跟随网页上Javascript的蛛丝马迹也许也能猜到。</p>
-<h1 id="尝试添加芒果台的适配器">尝试添加芒果台的适配器</h1><p>于是我便开始猜测芒果台的API，在众多Javascript中（看到不少typo）找到了和Flash节点的调用，比如<code>c(&#39;hunantv-player-1&#39;).getActionLogInfo()</code>，不过只是一些视频信息。</p>
-<p>我又开始尝试跟踪console中的播放和暂停的log，不过log是从Flash中打出的，或者是eval获得的，无法追踪源头。最终发现了一点Javascript中供Flash调用的回调函数，也没用什么用。我便觉得可能芒果台没有提供对外的API了。</p>
-<p>看来硬猜是效率很低的。</p>
-<h1 id="通过反编译获知Flash视频控制的API">通过反编译获知Flash视频控制的API</h1><p>回想起之前Flash被Adobe降低优先级的新闻，提到Flash是ActionScript语言编写的，并交由FlashPlayer执行，之前并没有Flash的编程经验，但感觉应该很类似Java和JVM，便搜索到了<a href="https://www.free-decompiler.com/flash/download/" target="_blank" rel="external">一个免费的SWF decompiler</a>，于是兴致勃勃地试了一下。</p>
-<p><img src="/images/the-coplay-chrome-extension/ffdec.png" alt="ffdec"></p>
-<p>反编译以后几乎是源码，ActionScript也基本上能读懂。查询Adobe文档后定位到<code>ExternalInterface.addCallback()</code>是注册对外的接口，而<code>ExternalInterface.call()</code>是Flash调用外部的Javascript函数，全文搜索反编译的结果很快就能定位到API了。</p>
-<p>不过芒果台没有提供Seek，也就是设置视频进度的API，尝试Hack无果，最后还是放弃了。好在Bilibili和Acfun的API比较全，于是我便简单地加上了Bilibili的适配器。</p>
-<p>应该来说一个好工具让我们效率倍增，尤其是Hack和性能调优的时候，比如Chrome的Javascript Profiler，Timeline和Trace就很好用，Web调优必备。</p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -969,7 +987,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">40</span>
+              <span class="site-state-item-count">41</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -983,7 +1001,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">33</span>
+              <span class="site-state-item-count">35</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>
