@@ -1,0 +1,782 @@
+<!doctype html>
+<html class="theme-next   use-motion ">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.4.5.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="beckman,database," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Yqf's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+
+
+
+
+
+<meta name="description" content="数据库研究者将大数据描绘为一个决定性的挑战。我们需要集中精力在五个研究热点上才能最大程度地利用现在众多的机会。
+数据库的一小队核心研究人员通过周期性的例会，交流探讨领域内的发展状态，并指出未来的核心发展方向。例会已经成功举办了多届，比如1989,1990,1995,1996,1998,2003,2008。28名数据库研究员和2位受邀的嘉宾于2013年10月在加州大小Irvine分校的Beckman">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Beckman Report on Database Research (翻译)">
+<meta property="og:url" content="http://yqf3139.github.io/2016/09/19/trans-the-beckman-report-on-database-research/index.html">
+<meta property="og:site_name" content="Yqf's Blog">
+<meta property="og:description" content="数据库研究者将大数据描绘为一个决定性的挑战。我们需要集中精力在五个研究热点上才能最大程度地利用现在众多的机会。
+数据库的一小队核心研究人员通过周期性的例会，交流探讨领域内的发展状态，并指出未来的核心发展方向。例会已经成功举办了多届，比如1989,1990,1995,1996,1998,2003,2008。28名数据库研究员和2位受邀的嘉宾于2013年10月在加州大小Irvine分校的Beckman">
+<meta property="og:updated_time" content="2016-09-20T15:01:57.991Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Beckman Report on Database Research (翻译)">
+<meta name="twitter:description" content="数据库研究者将大数据描绘为一个决定性的挑战。我们需要集中精力在五个研究热点上才能最大程度地利用现在众多的机会。
+数据库的一小队核心研究人员通过周期性的例会，交流探讨领域内的发展状态，并指出未来的核心发展方向。例会已经成功举办了多届，比如1989,1990,1995,1996,1998,2003,2008。28名数据库研究员和2位受邀的嘉宾于2013年10月在加州大小Irvine分校的Beckman">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: '',
+    sidebar: 'post',
+    motion: true
+  };
+</script>
+
+  <title> The Beckman Report on Database Research (翻译) | Yqf's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+
+
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Yqf's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Day day up.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content">
+          
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                The Beckman Report on Database Research (翻译)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2016-09-19T11:15:04+08:00" content="2016-09-19">
+              2016-09-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/trans/" itemprop="url" rel="index">
+                    <span itemprop="name">trans</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/19/trans-the-beckman-report-on-database-research/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/19/trans-the-beckman-report-on-database-research/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><p>数据库研究者将大数据描绘为一个决定性的挑战。我们需要集中精力在五个研究热点上才能最大程度地利用现在众多的机会。</p>
+<p>数据库的一小队核心研究人员通过周期性的例会，交流探讨领域内的发展状态，并指出未来的核心发展方向。例会已经成功举办了多届，比如1989,1990,1995,1996,1998,2003,2008。28名数据库研究员和2位受邀的嘉宾于2013年10月在加州大小Irvine分校的Beckman中心举行了为期两天的讨论，延续了这一传统。<br>虽然参会人员被限定在了30人，这是为了最大程度地保证参会人员相互之间进行良好的互动，但他们分别代表了来自不同方向、资历和地区的研究兴趣。本文总结了本次会议的一些结论，更加详细的报告和与会人员的展示可以在<a href="http://beckman.cs.wisc.edu" target="_blank" rel="external">这里</a>找到。</p>
+<h1 id="本文关键点">本文关键点</h1><ul>
+<li>在2013年十月，来自数据库研究领域的三十位代表讨论了领域内的研究状态，并展望了未来的研究方向。</li>
+<li>大数据被认为是领域内的一个决定性挑战。他们提出了五个相关的挑战：开发可伸缩的数据基础建构；应对在数据和数据管理中日益增加的多样性；提出端到端、数据到知识的处理管线；拥抱云计算的广泛普及和协调众多不断变化的人的角色。</li>
+</ul>
+<p>与会人员很快就大数据带来的决定性的挑战达成了一致。大数据问题的崛起是由于以下三个主要趋势。</p>
+<ol>
+<li>廉价的存储、传感器、智能设备、社交软件、多玩家游戏和让家、汽车、电器和其他设备互联的物联网让数据的产生的渠道越来越广；</li>
+<li>多核处理器、固态硬盘、廉价的云计算资源和开源软件都让产生巨量的数据越来越容易；</li>
+<li>数据管理正变得自治化。数据的产生、处理和消耗并不仅仅是数据库专家的专利了，数据管理已经成为了决策者、领域专家、用户、记者和工人的日常。</li>
+</ol>
+<p>随着这些数据浪潮的到来，从未出现过的巨大容量的数据需要被捕捉、存储、查询、处理并转变为知识。这些目标同十几年来被数据驱动的研究团体的目标非常吻合。很多早期的大数据系统抛弃了数据库管理系统的一些核心思想，例如声明式编程和事务数据一致性，从而换取伸缩性和在商用硬件上实现容错性。不过，在最新的大数据系统中，人们重新发现了这些核心的约束思想，并接受了一些在数据库领域长久以来的思想精髓。在这些核心约束和精髓上构建起来的数据库社区，有能力为大数据技术带来改革性质的改善。</p>
+<p>不过大数据也带来了极大的挑战，提出的解决方案需要对数据管理解决方案的设计、实现和部署进行破坏性的革新。大数据的主要特点是容量、速度和多样性。数据库研究团体致力于推动容量和速度的研究多年，设计出的研究方案基础触及到所有的企业。而大数据浪潮带来的海量数据，让研究人员需要对已有的解决方案进行更加深入的探讨。</p>
+<p>多样性来源于不同的数据源。</p>
+<ul>
+<li>首先，不同格式和质量的数据集成和分析成为了一个难题。这是数据库领域内一个长久存在的话题，不过从原始数据到可以使用的知识从目前来说还是需要耗费大量的人力。大数据加重了这个问题，这导致了数据处理管线中出现了一个主要的瓶颈；</li>
+<li>第二，需要处理大数据的平台也有很多的变数：硬件基础设施、处理软件框架、编程语言、系统和编程抽象；</li>
+<li>最后，用户也带来了复杂的需求和不同的偏好。想设计一个数据管理解决方案应对这么多的多样性是一个极大的挑战。</li>
+</ul>
+<p>除了三个V（容量、速度和多样性），<strong>众多的大数据应用选择在云计算平台上部署,这不论是公有还是私有云</strong>。这需要提供性能可预测、互操作灵活的新技术。很多的应用需要人来解决很多难以自动解决的语义理解问题。这包含了某个领域的专家或是很多工人，或是整个互联网（比如维基百科）。这就需要帮助人们便得更加高效的新技术，与此同时尽量降低解决这些问题需要的人力能力等级。</p>
+<p>总而言之，大数据为研究人员带来了极大的挑战。我们必须重新思考教授数据管理的方法，重新审视我们的研究历程，适应这数据科学这个新研究分支的出现。</p>
+<h1 id="研究的挑战">研究的挑战</h1><p>本次会议指出了五个大数据带来的挑战：</p>
+<ul>
+<li>可伸缩的数据基础设施，提供大容量高速的服务</li>
+<li>应对大数据管理中的多样性</li>
+<li>端到端数据处理</li>
+<li>云服务</li>
+<li>在数据生命周期中人的职责</li>
+</ul>
+<p>其中前三个挑战分别对应着大数据的容量、速度和多样性。后两个对应着云计算环境下大数据应用的部署和管理人在其中职责的变更。</p>
+<p>在已有工作下，这些挑战并不是额外孤立的方向。近年来，数据库研究团体已经加强了关系数据管理系统的核心功能，并衍生出很多新的方向。会议中，诸多问题被提出：安全、隐私、数据属性、社交、移动、时空变化、私人、带有情景的、能耗敏感和科学数据管理的问题，其中很多与现有的大数据挑战有交叉，可以在相关领域深入讨论。</p>
+<p>很多工作是与其他计算机科学领域合作完成的，比如分布式系统、人工智能、知识发现、数据挖掘、人机互动和电子科研。在许多案例中，这些专有的领域带来了新技术的灵感，并结合数据库研究人员的专业知识一起提出健壮的解决方案。这些高效地跨方向合作应该被大力提倡。</p>
+<h1 id="可伸缩的大规模/快速数据基础设施">可伸缩的大规模/快速数据基础设施</h1><h2 id="并行和分布式数据处理">并行和分布式数据处理</h2><p>在数据库领域，大规模结构化数据的并行处理已经成功实现，这让众多基于SQL的产品在企业中大规模使用成为了可能。另一个成功应用在于数据仓库，数据库研究人员定义了数据立方（为了联机分析处理，OLAP）的关键概念和并行查询的策略，也更好地支持了实物化视图和数据复制。在大规模普通商用机器上，分布式领域已经用一些编程模型，例如MapReduce，在处理更大的非结构化数据方面取得了成功。在此基础上，更加高层的语言让更广阔的开发者群体可以使用大数据平台的扩展性。如今，像是Hadoop之类的开源平台已经在处理非结构化数据方向上获得了广泛的采纳，原因在于它MapReduce的编程模型、大规模的分布式存储系统和更高层的应用语言（Pig和Hive），这让传统的公司也开始使用这一技术。</p>
+<h2 id="查询处理和优化">查询处理和优化</h2><p>声明式语言在大数据处理方向上广泛的普及，越来越多的人关注到代价敏感的查询优化器和面向集合的查询引擎的重要性。这将充分利用大规模多核机器集群的潜能，做到“纵向”与“横向”扩展。这就为处理过程监控带来了挑战，比如一个用户可以分析管理哪一个查询耗时过长或是占用了太多的计算资源。为了适应未曾分析过的数据格式，并减少数据分析阶段数据传输的代价，查询处理器需要将数据样本抽取、数据挖掘和机器学习整合在处理流程中。</p>
+<h2 id="新兴的硬件">新兴的硬件</h2><p>对于一个数据中心的规模，随着更快的网络、服务器间完全二等分带宽的网络和远程内存直接访问技术的发展，顺序处理和网路传输的速度比率不断变化。除了通用多核处理器组成的集群，更多专用处理器也可纳入考虑范围。成功的商用数据库机器已经展示了软硬件协同设计的数据库管理系统的潜能。研究人员得考虑利用专用处理器，比如GPU、FPGA和应用专用集成电路来处理超大规模的数据集合。这些通信和处理技术革新将带来并行和分布式查询处理算法的重新考量，因为之前的算法是基于相同的硬件环境设计的。</p>
+<h2 id="经济的存储">经济的存储</h2><p>数据库研究团体必须学会怎样利用最新的内存和存储技术。和传统的磁盘相比，固态硬盘虽然每GB价格较贵，但I/O操作延时小。多种非易失随机访问内存技术正在实验阶段，它们拥有不同的速度、能耗和耐久特性。</p>
+<p>要考虑服务器扩展存储和网络扩展存储。例如HDFS的分布式的文件系统，虽然是服务器存储但却是网络共享的，这是两种方式的结合。怎样最好地利用一系列的存储？这像是重新回到了以前的共享内存或是共享磁盘或是不共享的旧的争论中，之前已经画上句号的争论随着硬件的升级可能需要重新被提起。</p>
+<h2 id="高速数据流">高速数据流</h2><p>对于高速生成的数据流，我们需要新的可伸缩技术来应对数据流的处理和消化。比如说，应对不统一的内存访问和多层内存层级下的访问速度限制，这些数据流的信息密度低，所以需要在线实时处理后就丢弃掉不用的数据。更进一步，这些数据的样本和聚合统计信息需要被挑选出，并存储下来以应对稍后的查询和分析。对于这样的数据，渐进的查询处理提供了增量和部分查询结果，而在数据不断涌动处理的同时，逐渐地精确度提高，这种渐进式的处理十分重要。</p>
+<h2 id="后绑定模式">后绑定模式</h2><p>对于被保持下来的数据，在其生命周期中可能只会发生一次被处理的机会（有可能从未被处理到），预先在数据库中对其进行处理和索引就非常不经济了。这样的数据应该被以二进制的方式保存下来，在被处理的时候再把它结构化解析。结果有可能是以自描述的方式存储的，键值对形式例如JSON，以预定义的模式进行解析或是使用数据挖掘进行演绎。为了提供在此情况下数据处理的最优方式，我们需要数据库可以以后绑定模式在原始文件上进行处理的查询引擎。</p>
+<h2 id="一致性">一致性</h2><p>在今天，数据捕获、更新和简单快速地数据访问成为了新需求。对于非结构化数据来说，处理高速的数据捕获和更新需求导致了NoSQL系统的发展。目前有很多这类系统，提出了一系列的事务处理模型。大多是仅仅提供了基本的数据访问和弱原子操作保证。这让基于这些系统构建可信系统成为了难题。不过，大数据中一个新兴的团体通过键值存储提供了类数据库的成熟特性。对于一些用用来说，存储的数据对于一个公司来说就是“事实和真理”。对于其他应用来说，例如物联网，存储的数据反映着外界世界的情况，通过这些信息，应用可以做出相应的反映出。这就为重新考虑保证数据流通和一致性的编程模型和机制带来了机会，基于这些模型和技术，可以保证更加健壮的应用。</p>
+<h2 id="指标和基准">指标和基准</h2><p>可扩展性不应该仅仅用数据的容量和每秒查询次数来度量。还应该以数据处理方的总体消耗（包括管理和能耗），端到端的处理速度（从原始数据获取到最终知识的输出），系统的稳定性（可以容忍部分数据的解析错误）和可用度（尤其对于入门用户来说）。为了度量这么多的指标，需要提出新的基准测试。</p>
+<h1 id="数据管理中的多样性">数据管理中的多样性</h1><h2 id="不存在通解">不存在通解</h2><p>在今天，和传统的企业数据相比数据的种类、形式和规模都多种多样，形成了这个数据驱动的世界，传统的数据储存在为分析专门优化过的数据仓库中。现在数据通常以不同的表示形势，以不同的应用程序接口、查询工具提供出来。这样看来，不太可能一个大型的数据系统可以符合所有这些灵活性的要求。我们期望看到不同类别的系统涌现，每一个类别都解决一个专门的需求（比如数据去重、大型图数据分析、多种科学实验，实时流处理），或是发觉一个特定的硬件平台（比如廉价机器的集群或是超多核心的服务器）。为了解决这些问题，需要并行计算和高效地处理数据量大于内容容量数据集的专业知识。</p>
+<h2 id="跨平台集成">跨平台集成</h2><p>给定系统的多样性，平台需要被集成或是联合起来，为跨系统分析数据提供可能。这和让数据的格式透明化相关，更和跨数据系统间的数据访问和数据流动的性能优化相关。这也要求管理系统需要跨设备和数据中心运行。在网络连接不稳定的情况下，设备离线的情况逐渐地变得常见，这就带来了可信数据的输入，查询处理和数据不一致的挑战。</p>
+<h2 id="编程模型">编程模型</h2><p><strong>一个多样、数据驱动的世界需要多样的编程抽象，方便开发者在大型数据集上进行操作。</strong>一个面向大数据的数据分析语言，比如一个SQL的超集并不能满足所有人的需求。更进一步，用户必须用他们最熟悉的语言来进行数据的分析：SQL，Pig，R，Python，领域特定的语言或是一个低级别的限制性编程模型，例如MapReduce，或是Valiant的批量同步处理模型。同样建议开发可重用的可以多种语言绑定的中间件，比如可伸缩的矩阵计算库、数组操作、程式化地迭代执行模型等。另一个可能成果丰硕的方向在于，为新领域的数据分析开发领域特定的分析语言，并直接将这种可扩展、并行处理的思想结合在其中。</p>
+<h2 id="数据处理流程">数据处理流程</h2><p>为了应对数据的多样性，我们需要平台可以处理“生”和“熟”的数据。被处理过的“熟”数据可以是很多种形态：表格、矩阵或是图。系统会运行端到端的工作流，其中多种类型的数据被混合处理，比如说，通过SQL查询出的数据接着使用R进行分析。为了统一不同的系统，懒计算有时有一定的优势————懒数据解析、懒转换、懒加载、懒索引和创建视图，及时（JIT）查询计划。大数据系统应该变得更加可互操作，就像是Lego积木一般。<br>集群资源管理器，比如Hadoop2.0的YARN，在系统层面提供了一些灵感，Hadoop生态圈的工作流系统和科学工作流的工具也给了我们一些启示。</p>
+<h1 id="端到端的数据处理">端到端的数据处理</h1><p>数据库研究团体需要给予端到端的数据处理更多的关注。在多年研究的成果中，我们很少看到能不在人进行关键性干涉的情况下，从原始数据逐步提取到知识的工具。对于大多数步骤来说，干涉的人需要对计算机有深入的了解。</p>
+<h2 id="数据到知识处理管线">数据到知识处理管线</h2><p>原始数据到知识管线基本就是如下步骤：数据获取、选取、评估、清洗和变换（也被称为“数据扯皮”）、抽取和整合、挖掘、联机分析、结果总结、证明和解释。除了更大的规模外，其他显著变化的包括了数据和用户的多样性。现在，数据以各种形式出现，通常非结构化和结构化会以结构化的形式结合起来用。在分析管线的每一步中，数据工具必须利用人类的反馈，并且必须是相关领域的专家，而不是IT专业人员。例如，一个记者想要从一个记录有罪犯数据的表格中清晰、统计和发布数据。工具也必须为新出现的数据科学家团体量身定做。</p>
+<h2 id="工具的多样性">工具的多样性</h2><p>既然没有一个全能的工具可以应对所有的数据分析场景，我们需要多种工具，每个都需要一个原始数据到知识的处理管线。它们必须可以被无缝地衔接起来，可以被入门菜鸟和专家使用。每个工具提供最佳实践来给予使用者充分的指导。</p>
+<h2 id="工具的可定制性">工具的可定制性</h2><p>工具必须可以利用相关的领域知识，比如字典、知识库和规则。它们应该可以很轻易地进行领域的定制，有可能通过机器学习来自动化这一定制化过程。人工编辑的规则的地位依然很高，但是由于很多分析应用需要极高的精确度，例如电子商务。对于这些应用，分析师经常要写规则来覆盖一些边缘个例，着对于学习和泛化就不可行。所以，工具必须为编辑、评估、应用和管理人工规则提供支持。</p>
+<h2 id="开源">开源</h2><p>在此领域内很少有工具是开源的。大多数都需要较高的授权费用，并只针对数据处理步骤中的特定步骤。这样造成的后果是，现有的工具不能直接从数据研究团体方面获得贡献。</p>
+<h2 id="理解数据">理解数据</h2><p>解释、证明、过滤、总结和可视化是让分析工具更好用的几个关键点。捕获并且管理恰当的元信息是让解释、出处、重用和可视化成为可能的一个关键点。可视化分析逐渐获得了数据库、可视化和人机交互领域研究人员的关注。在本领域持续的研究成果对于应对大容量数据的用户十分重要。</p>
+<h2 id="知识库">知识库</h2><p>我们对于一个目标领域获知的知识越多，工具越能好地分析这个领域。结果是，为了获得更好的理解数据，创建、分享和使用领域知识蒸逐渐地流行起来。这样的知识通常被储存在知识库之中，其中描述了一个领域中非常多重要的概念和关系，比如一个知识库存储了数十万的生物学研究人员和他们发表的研究成果、隶属关系和专利。这样的知识库被用来提高数据到知识管线的准确性，回答领域内的一些问题，并找寻相关的领域专家。很多公司已经构建了这样的知识库来回答用户的查询、对文本进行标注和支持电子商务，分析社交网络数据。知识库是比较准确的，这导致了一些社区维护的“知识中心”的发展，它们提供了查询、分享的工具，并使用知识库进行数据分析。</p>
+<p>在此话题已经不断有工作进展的基础上，我们需要更多的精力被投入一下工作上，提供工具帮助不同能力层次的用户协同地构建、维护、查询和分享领域内专业知识的知识库。</p>
+<h1 id="云服务">云服务</h1><p>云计算目前大致可以分为三类：</p>
+<ul>
+<li>IaaS，服务就是虚拟化后的硬件</li>
+<li>PaaS，服务是虚拟化后的基础设施软件，例如DBMS</li>
+<li>SaaS，服务就是一个应用软件服务，比如一个CRM解决方案</li>
+</ul>
+<p>从一个数据平台的角度来看，PaaS是最理想的。用户可以上传数据到云上，和传统数据库一样通过SQL进行查询，并选择性地分享数据和查询结果。这一切都不需要考虑需要租多少个机器实例，使用什么操作系统，如何在多机器间分表和怎样进行数据库调优。虽然一些类似的服务已经出现了，比如Salesforce的Database.com，Google的Big Query，Amazon的Redshift和Microsoft的Azure SQL Database。我们还没有达到最理想的服务。如下，我们列出了一些关键的挑战来实现数据Paas的愿景。</p>
+<h2 id="可伸缩性">可伸缩性</h2><p>数据的迁移代价非常高。NAS让数据库引擎可以轻易地进行扩展，但是网络延时和带宽限制着数据库的性能。SAS降低了这些限制，但是服务器宕机将会造成服务可用性降级，最终影响SLAs。</p>
+<p>一个公开的问题是是否云存储服务可以支持事务和分析，缓存怎样才能被最好地嵌入整个系统中还是不太明确。为了提供伸缩性，数据PaaS的数据库引擎和分析平台需要可以正常地运行，即使是在底层资源可能随时由于业务需要进行扩容的情况下。对于付费的优质用户，提供优先级更高的服务。</p>
+<h2 id="数据冗余复制">数据冗余复制</h2><p>对于地理位置分散的数据中心，其相互之间的延时让数据的备份并保持一致性、高吞吐和低响应时间有了很大难度。多主数据备份是一个不错的选择，这是由于在不同复制副本上发生冲突的更新可以被自动同步。不过这个编程模型对于主流的编程人员来说不太直观。所以，主要挑战在于如何最优地权衡可用性、一致性、编程复杂度和代价。</p>
+<h2 id="系统管理和调优">系统管理和调优</h2><p>对于Data PaaS来说，不存在数据库和系统管理员这两个角色。所以，管理工作必须被自动化，比如容量估计，资源供给和物理数据管理。资源管理参数也需要以极高的响应度被自动计算出，例如缓冲池大小和权限管理。</p>
+<h2 id="多“租户”">多“租户”</h2><p>一个数据PaaS的竞争力来自其价格要比内部部署的解决方案低。这就需要提供商将多个用户的需求打包运行在相同的硬件资源上，通过分享来减少开销。首先，数据得在用户之间被隔离防止数据泄露。这可以通过将用户的数据库分散在不同的文件中，或是通过虚拟机进行隔离。不过，这对规模小的数据库非常不经济，并且想在多个VM之间均衡分配资源也是困难的。其他解决方案可以是用户分享一个数据库和数据库引擎，但需要特殊地身份限制保证安全。第二，用户想要定义了性能和可用性的SLA，提供商也希望SLA来提供分级分价格的服务，不过，怎样定义SLA让客户易于理解，让服务商易于实现是一个挑战。实现的困难在于保证客户之间的性能分离，即一个客户突发的高访问量不会导致另一个客户的服务被降级影响到。</p>
+<h2 id="数据分享">数据分享</h2><p>云计算让分享达到了从未有过的高度。一个问题是如何支持入数据管理等核心功能的云上合作。还有其他问题包括：怎样找到有用的公开数据，怎样将私有管理的数据和公开数据相关联，怎样在网上找到优质的数据，怎样以细粒度做数据分享，怎样在分享数据和计算的同时分担开支，怎样给数据定价。云计算页造成了新的数据什么周期问题，比如在云服务提供商发生故障的时候应该怎么做，怎样在使用者和提供者完全没有关联的情况下，持久保存数据。云计算也会驱动数据管理方面的工具创新，比如审计、法律条文的健全。</p>
+<h2 id="混合云">混合云</h2><p>将在线数据服务、自部署的服务和移动设备结合的需求是存在的。其中的一个使用场景就是工作负载分流。比如在一般情况下，用户可能在他们的私有云中运行应用，不过可能在流量峰值到来的时候使用公有云进行负载分流。还有一个例子是物联网，例如车辆会将本地的传感器数据聚集后上传其中一些到云平台中，并且基于从多方聚集的数据获得控制信息。物联网系统与从多个传感器和移动设备获取的信息流有关，并且必须应对间断性的网路传输和有限的电池资源，这对于实时造成了挑战，并且页可能让云端的数据管理成为了一个关键任务。</p>
+<h1 id="人在数据生命周期中的职责">人在数据生命周期中的职责</h1><p>回到企业驱动的数据管理时代，人员的职责非常的明确：</p>
+<ul>
+<li>开发者开发数据库和以数据库为和谐的应用</li>
+<li>商业分析师使用（基于SQL的）报表工具，查询数据库</li>
+<li>终端用户产生数据，查询或是更新数据库</li>
+<li>数据库管理员对数据库和工作流进行监测与调优</li>
+</ul>
+<p>现在，一个人可能将扮演数据生命周期中的多个角色，而有些角色可能需要众包来解决。所以，对于查询的理解和优化、判别相关和可信的数据源、定义和持续优化数据处理管线、可视化相关的特征模式、获得查询结果、将任务分解为大量小任务供专家或是用户来解决，人的因素需要被详细地考量。我们将人的角色分为四个大类：生产者、管理者、消费者和社区成员。</p>
+<h2 id="数据生产者">数据生产者</h2><p>今天，基本上所有人都可以通过手机、社交平台、应用和可穿戴设备生成源源不断的信息流。对于数据库社区一个关键的挑战是设计算法和激励方式指导人们生产并分享最有用的数据，同时保证自己需要的隐私不泄露。当人们生产数据的时候，我们怎么帮助他们快而准确地添加元信息。比如说用户上传照片后，Facebook就会自动地将人脸区域都标注出来，这样用户就可以选择是否对人脸进行标注。另一个例子是一个自动帮推文加话题标签的工具。我们还能做什么类似的工作吗，或者我们还可以提供什么通用的原则和工具？</p>
+<h2 id="数据管理者">数据管理者</h2><p>数据不再仅仅存在于数据库中，只被DBA或是被IT部门所掌控了。现在，很多人都有权利对数据进行管理。众包是其中的实现方法之一。这其中的一个关机挑战是基于一个不完美的人类数据管理者，获取到一个高质量的数据集合。<strong>我们需要构建允许用户轻松管理数据的平台，并扩展相关的应用来与管理者合作。</strong>对于这种以人为中心的挑战，数据源头和解释将成为一个重点，隐私与安全也同样重要。</p>
+<h2 id="数据消费者">数据消费者</h2><p>人们总是提出诸多的数据使用方法和更加混乱的数据，这提出了很多挑战。在企业中，数据消费者通常了解如何针对一个结构化的表格写SQL查询。而现在数据消费者有可能不知道如果生成一个查询语句了，比如说一个希望在一个结构化数据集上找出“在佛罗里达有100,000人口以上所有城市的平均温度”的新闻工作者。如果想让人们自己找出这些问题的答案，就需要提供新的查询界面了，比如基于多点触摸的界面而不是传统的SQL。我们需要多种整合了可视化、查询和导航的界面。当用户的查询不明确的时候，需要提供给用户其他浏览、探索、可视化和挖掘数据的方法，让数据消费更加简单。</p>
+<h2 id="在线社区">在线社区</h2><p>人们想要创建、分享和管理其他社群的数据。他们想合作构建社群对应的知识库、Wiki和处理数据的工具。比如说，很多研究人员在Google Scholar上面创建了自己的主页。<br>对于我们来说，挑战就是帮助社群构建数据挖掘、分享和探索的工具。</p>
+<h1 id="社区带来的挑战">社区带来的挑战</h1><p>除了研究领域的挑战，数据库领域还面对着不少社区难题。这包含数据库教学、数据科学和研究文化。有一些是大数据带来的新难题，有一些则是被大数据加剧了的旧问题。</p>
+<h2 id="数据库教学">数据库教学</h2><p>目前标准的数据库课程已经难以与现在的实际需要相衔接了。目前的教学内容集中植根在上世纪八十年代，那时内存相比于数据库的存储容量来说非常小，I/O就成了很多数据库操作的瓶颈，并且当时的服务器都配备相对较为昂贵的单核处理器。而现在，很多数据直接可以在内存中装下，多核处理器让并行和缓存行为成为了衡量数据库的一个标准。虽然基于SQL的数据管理系统被广泛使用，键值存储、数据流式处理和MapReduce框架也已经广泛普及。目前需要重新审视整个数据库教学计划。</p>
+<h2 id="数据科学">数据科学</h2><p>如我们之前所谈到的，大数据需要数据科学家来辅助将大量的数据转换为可以使用的知识。数据科学家不仅仅需要数据管理的知识，也需要商业智能、计算机系统、数学、统计学、机器学习和优化相关的知识。新的跨专业学科项目需要集中这些专业知识。成功的研究和教学需要其他学科和领域专家的辅助。大数据给了计算机科学一个影响化学、地球科学、社会学和其他领域的机会。这些课程中计算机科学的一小部分可以让数据管理和科学扮演一个更加突出的位置。</p>
+<h2 id="科研文化">科研文化</h2><p>目前一个现象是比起研究成果的影响，人们更加关注论文的引用数量。这就影响了大型项目、端到端工具和数据集分享的实施，因为这通常需要花费更多的时间。太注重偏门学科方向深挖而不注重实际影响的学科团体需要注意一下，发表论文的频率应该回归到更加合理范围，我们应该鼓励大型的系统项目、工具集和数据分享。</p>
+<h1 id="向前推进">向前推进</h1><p>现在对于数据库研究人员来说真是个令人激动的时代。在以前，数据库研究都限制在企业需求和关系型数据库下。大数据的兴起和大数据驱动时间愿景带来了诸多的挑战：利用新硬件、软件和云平台的潜力；指出数据的生命周期，从数据的产生、分析到分享；面对数据的多样性、在大数据处理各个方面的人物的角色。现在也需要重新审视数据库的教育、数据消费者的演化和我们的价值体系。这对我们评估、传播和资助研究也有很重要的意义。</p>
+<h1 id="致谢">致谢</h1><p>感谢审阅者给出的无价建议。Beckman会议是由Ram Kumar Memorial教授的基金会，微软公司和Walmart实验室赞助的</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/beckman/" rel="tag">#beckman</a>
+          
+            <a href="/tags/database/" rel="tag">#database</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/10/find-more-transmission-peers-to-boost-seeding-speed-automaticly/" rel="next" title="为了加快PT分享速度，自动督促Transmission获取更多Peers">
+                <i class="fa fa-chevron-left"></i> 为了加快PT分享速度，自动督促Transmission获取更多Peers
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+        </div>
+
+        
+
+
+        
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/09/19/trans-the-beckman-report-on-database-research/"
+           data-title="The Beckman Report on Database Research (翻译)" data-url="http://yqf3139.github.io/2016/09/19/trans-the-beckman-report-on-database-research/">
+      </div>
+    
+  </div>
+
+
+      </div>
+
+      
+        
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table Of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.png" alt="yqf" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">yqf</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description"></p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">42</span>
+              <span class="site-state-item-name">posts</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            
+              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-name">categories</span>
+              
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-name">tags</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> twitter
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/ke-yu-beta" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> zhihu
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#本文关键点"><span class="nav-number">1.</span> <span class="nav-text">本文关键点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#研究的挑战"><span class="nav-number">2.</span> <span class="nav-text">研究的挑战</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#可伸缩的大规模/快速数据基础设施"><span class="nav-number">3.</span> <span class="nav-text">可伸缩的大规模/快速数据基础设施</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#并行和分布式数据处理"><span class="nav-number">3.1.</span> <span class="nav-text">并行和分布式数据处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查询处理和优化"><span class="nav-number">3.2.</span> <span class="nav-text">查询处理和优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#新兴的硬件"><span class="nav-number">3.3.</span> <span class="nav-text">新兴的硬件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#经济的存储"><span class="nav-number">3.4.</span> <span class="nav-text">经济的存储</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高速数据流"><span class="nav-number">3.5.</span> <span class="nav-text">高速数据流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后绑定模式"><span class="nav-number">3.6.</span> <span class="nav-text">后绑定模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一致性"><span class="nav-number">3.7.</span> <span class="nav-text">一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#指标和基准"><span class="nav-number">3.8.</span> <span class="nav-text">指标和基准</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据管理中的多样性"><span class="nav-number">4.</span> <span class="nav-text">数据管理中的多样性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#不存在通解"><span class="nav-number">4.1.</span> <span class="nav-text">不存在通解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#跨平台集成"><span class="nav-number">4.2.</span> <span class="nav-text">跨平台集成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编程模型"><span class="nav-number">4.3.</span> <span class="nav-text">编程模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据处理流程"><span class="nav-number">4.4.</span> <span class="nav-text">数据处理流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#端到端的数据处理"><span class="nav-number">5.</span> <span class="nav-text">端到端的数据处理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据到知识处理管线"><span class="nav-number">5.1.</span> <span class="nav-text">数据到知识处理管线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#工具的多样性"><span class="nav-number">5.2.</span> <span class="nav-text">工具的多样性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#工具的可定制性"><span class="nav-number">5.3.</span> <span class="nav-text">工具的可定制性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开源"><span class="nav-number">5.4.</span> <span class="nav-text">开源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#理解数据"><span class="nav-number">5.5.</span> <span class="nav-text">理解数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#知识库"><span class="nav-number">5.6.</span> <span class="nav-text">知识库</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#云服务"><span class="nav-number">6.</span> <span class="nav-text">云服务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#可伸缩性"><span class="nav-number">6.1.</span> <span class="nav-text">可伸缩性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据冗余复制"><span class="nav-number">6.2.</span> <span class="nav-text">数据冗余复制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统管理和调优"><span class="nav-number">6.3.</span> <span class="nav-text">系统管理和调优</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多“租户”"><span class="nav-number">6.4.</span> <span class="nav-text">多“租户”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据分享"><span class="nav-number">6.5.</span> <span class="nav-text">数据分享</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#混合云"><span class="nav-number">6.6.</span> <span class="nav-text">混合云</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#人在数据生命周期中的职责"><span class="nav-number">7.</span> <span class="nav-text">人在数据生命周期中的职责</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据生产者"><span class="nav-number">7.1.</span> <span class="nav-text">数据生产者</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据管理者"><span class="nav-number">7.2.</span> <span class="nav-text">数据管理者</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据消费者"><span class="nav-number">7.3.</span> <span class="nav-text">数据消费者</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#在线社区"><span class="nav-number">7.4.</span> <span class="nav-text">在线社区</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#社区带来的挑战"><span class="nav-number">8.</span> <span class="nav-text">社区带来的挑战</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库教学"><span class="nav-number">8.1.</span> <span class="nav-text">数据库教学</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据科学"><span class="nav-number">8.2.</span> <span class="nav-text">数据科学</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#科研文化"><span class="nav-number">8.3.</span> <span class="nav-text">科研文化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#向前推进"><span class="nav-number">9.</span> <span class="nav-text">向前推进</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#致谢"><span class="nav-number">10.</span> <span class="nav-text">致谢</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+      
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2009 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="icon-next-heart fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yqf</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"yqf3139"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+
+
+    
+  
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+<script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+<script type="text/javascript" src="/js/motion.js?v=0.4.5.2" id="motion.global"></script>
+
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.2" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    motionMiddleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+      if (CONFIG.sidebar === 'post') {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  <script type="text/javascript" src="/js/bootstrap.js"></script>
+
+  
+  
+
+  
+  
+
+</body>
+</html>
