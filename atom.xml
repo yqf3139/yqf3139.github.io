@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Day day up.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yqf3139.github.io/"/>
-  <updated>2016-09-20T15:01:57.991Z</updated>
+  <updated>2017-01-23T14:48:20.901Z</updated>
   <id>http://yqf3139.github.io/</id>
   
   <author>
@@ -15,11 +15,96 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[朴素的图灵机编辑器和模拟器]]></title>
+    <link href="http://yqf3139.github.io/2017/01/23/GUI-Turing-editor-and-runner-demo-how-native-Turing-Machine-calculate-the-N-th-fibonacci-number/"/>
+    <id>http://yqf3139.github.io/2017/01/23/GUI-Turing-editor-and-runner-demo-how-native-Turing-Machine-calculate-the-N-th-fibonacci-number/</id>
+    <published>2017-01-23T11:14:00.000Z</published>
+    <updated>2017-01-23T14:48:20.901Z</updated>
+    <content type="html"><![CDATA[<h1 id="简介">简介</h1><h2 id="问题">问题</h2><p>题目：输出斐波拉契数列的图灵机。</p>
+<p>要求：设计图灵机，输入n，然后输出斐波拉契数列的第n项。<br>(需要有图形界面和测试例子)</p>
+<h2 id="功能">功能</h2><ul>
+<li>图形化的通用图灵机编辑器。</li>
+<li>半无限带图灵机模拟器，以及可视化调试环境。</li>
+<li>使用上述环境实现题目要求的图灵机，并进行了局部性能优化。</li>
+</ul>
+<h2 id="开发说明">开发说明</h2><p>本次作业使用Web技术开发，其中vis图形库用于图灵机的设计与调试可视化，npm包管理，grunt用于工作流控制。<br>项目目录如下：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ tree . -L <span class="number">1</span></span><br><span class="line">.</span><br><span class="line">├── build                   <span class="comment">// Javascript文件中间结果存放</span></span><br><span class="line">│   └── bundle<span class="class">.js</span></span><br><span class="line">├── Gruntfile<span class="class">.js</span>            <span class="comment">// 定义Grunt自动化任务，如Browserify，Uglyfy</span></span><br><span class="line">├── node_modules            <span class="comment">// 使用npm install安装得到的依赖包</span></span><br><span class="line">├── package<span class="class">.json</span>            <span class="comment">// 描述项目依赖等信息</span></span><br><span class="line">├── public                  <span class="comment">// Web根目录</span></span><br><span class="line">│   ├── bundle<span class="class">.min</span><span class="class">.js</span>       <span class="comment">// 打包、代码混淆后的源文件</span></span><br><span class="line">│   ├── bundle<span class="class">.min</span><span class="class">.js</span><span class="class">.map</span>   <span class="comment">// 调试信息</span></span><br><span class="line">│   ├── <span class="tag">img</span></span><br><span class="line">│   ├── index<span class="class">.html</span>          <span class="comment">// Html布局文件</span></span><br><span class="line">│   └── vis<span class="class">.min</span><span class="class">.css</span>         <span class="comment">// vis图形库所需的层叠式样式表文件</span></span><br><span class="line">├── readme<span class="class">.md</span></span><br><span class="line">├── src                     <span class="comment">// 程序逻辑源文件夹</span></span><br><span class="line">│   ├── app<span class="class">.js</span>              <span class="comment">// 主程序</span></span><br><span class="line">│   ├── turing<span class="class">.js</span>           <span class="comment">// 图灵机编译与模拟器</span></span><br><span class="line">│   └── util<span class="class">.js</span>             <span class="comment">// 工具函数</span></span><br><span class="line">└── tmws                    <span class="comment">// 序列化的图灵机文件</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>依赖包安装：<code>npm install</code></li>
+<li>编译、打包源文件：<code>grunt</code></li>
+<li>启动服务器：<code>cd public &amp;&amp; python3 -m http.server</code></li>
+</ul>
+<h1 id="使用说明">使用说明</h1><ul>
+<li>最简单的图灵机（读0写1,读1个1便接受）的设计、运行与调试，见视频Demo-1。</li>
+<li>斐波拉契数列图灵机的读取、运行，见视频Demo-2，输入输出格式见图灵机设计描述。</li>
+<li>在线Demo，<a href="http://security-administrator-alfred-48418.bitballoon.com/" target="_blank" rel="external">地址</a>。</li>
+<li>代码，<a href="https://github.com/yqf3139/turing-gui" target="_blank" rel="external">Github Repo</a></li>
+</ul>
+<p><img src="http://ok8l5e08o.bkt.clouddn.com/demo1.gif" alt="Demo1"></p>
+<p>Demo1</p>
+<p><img src="http://ok8l5e08o.bkt.clouddn.com/demo2.gif" alt="Demo2"></p>
+<p>Demo2</p>
+<p>斐波拉契数列图灵机的文件见twms文件夹。</p>
+<p>从视频Demo中可以轻松地看出图灵机的图形化设计、保存装载、编译重置、运行调试过程，<br>如下两张图展示了图灵机编译与运行过程中出现的错误提示。<br><img src="/images/turing-gui/1.jpg" alt="运行时错误提示"><br><img src="/images/turing-gui/2.jpg" alt="编译时错误提示"></p>
+<h1 id="图灵机设计">图灵机设计</h1><h2 id="输入输出格式">输入输出格式</h2><p>工作区示意：<code>&lt;迭代次数计数器 C &gt;1&lt;当前计算的Fib数 M &gt;1&lt;上一次迭代计算的Fib数 N &gt;</code></p>
+<p>输入格式： <code>0{n}101</code></p>
+<p>输入样例：</p>
+<ul>
+<li>n=1: <code>0101</code></li>
+<li>n=3: <code>000101</code></li>
+<li>n=5: <code>00000101</code></li>
+</ul>
+<p>在上述样例中，从首位开始的连续的<code>0</code>的个数描述了n，后面紧跟的<code>1</code>是分割符号，<br>再后面一个<code>0</code>表示1，这是由于斐波那契数列的第一位数为1，再后面跟着一个<code>1</code>作为分割符。</p>
+<p>输出格式： 读头指向连续0的个数为所求的第n位斐波那契数列的值，<code>0{fib(n)}10{fib(n-1)}</code>。</p>
+<p>输出样例：</p>
+<ul>
+<li>n=1: <code>$1[读头&gt;]01</code></li>
+<li>n=3: <code>$$$1[读头&gt;]0010</code></li>
+<li>n=5: <code>$$$$$1[读头&gt;]000001000</code></li>
+</ul>
+<h2 id="计算思路">计算思路</h2><ul>
+<li>单次迭代过程：将M复制一份到N后的空白区域，然后将M和N的分隔符移动到新复制的M的前一格。目的是计算将M+N赋予M，M赋予N。</li>
+<li>迭代控制：若C不为0,则将C的计数器减1，然后执行上述迭代操作，并回到起始位置；否则移动读头到M的位置。</li>
+<li>复制控制：逐个Bit将M复制到N后的空白区域。</li>
+</ul>
+<h2 id="转换图表示">转换图表示</h2><p><img src="/images/turing-gui/fib1.jpg" alt="第一个图灵机示意图"></p>
+<h2 id="局部优化与效果">局部优化与效果</h2><p>观察上述图灵机，一个性能优化点在于在复制M的时候，新复制的M可以不全部写为$，再后期写为0，而可以改为将第一位标记为$，而后面的位都直接复制为0。这样后期就可以省去再将新N全部改写为0的操作了，而第一位标记为$是为了方便在新M和N之间放置分界符1。改动如下图所示：</p>
+<p><img src="/images/turing-gui/fib2.jpg" alt="第二个图灵机示意图"></p>
+<p>针对如上的性能优化点，收集两个图灵机的步数随N的变化数据，结果如下：<br><img src="/images/turing-gui/data.png" alt="优化效果"></p>
+<p>可以看出，虽然第二个图灵机总是比第一个图灵机步数少，但性能的提升占总步数的比例却非常低，步数随着N呈指数级别上升，而优化的步数只呈现线性增长。</p>
+<h1 id="工程实现">工程实现</h1><h2 id="使用Vis实现图绘制与操作">使用Vis实现图绘制与操作</h2><p><a href="http://visjs.org/index.html" target="_blank" rel="external">Vis.js</a>是一个基于浏览器的动态Javascript可视化库，其中封装好了高度可定制化、可视化的网络模块。为了实现图灵机的动态编辑，我基于Visjs开源的<a href="http://visjs.org/examples/network/other/manipulation.html" target="_blank" rel="external">示例程序</a>，加入了图灵机设计中需要的元素，以方便用户通过可视化的界面创建图灵机。</p>
+<p>图灵机的绘制与操作逻辑主要位于<code>src/app.js</code>中，主要描述以下功能：</p>
+<h3 id="创建图灵机设计绘图区">创建图灵机设计绘图区</h3><p>程序界面由<code>index.html</code>描述，主要分为两部分。网络编辑与可视化区域由id为<code>mynetwork</code>的网络绘图区，和id为<code>network-popUp</code>的网络信息编辑窗口构成。</p>
+<p>控制面板由编译与调试信息，网络保存与载入控件，条带编辑区域和图灵机运行控制控件组成。在<code>document.body.onload</code>方法中可以看到对应控件的事件回调函数。</p>
+<h3 id="定义图中点和边的对应操作">定义图中点和边的对应操作</h3><p><code>createNetwork</code>函数生成网络中初始的两个实例节点，并在<code>mynetwork</code>创建网络实例。其中的<code>options</code>参数描述了适用于图灵机的网络配置信息。<br><code>options.layout</code>定义了网络的点和边的布局，物理效果（点排斥，边吸引）可以更好地设计图灵机中的状态和转换。<br><code>options.manipulation</code>定义了网络中的六个基本事件的响应，点、边的增删改。对于点和边的增改，我们都给用户弹出信息编辑界面，并将数据保存在响应的点或是边中。对于新创建的点和边，赋予初始值。对于特殊的点和边，比如开始状态和结束状态，相应地修改点的特性以方便用户查看。</p>
+<h3 id="保存与载入">保存与载入</h3><p>使用<code>saveWorkspace</code>函数将网络信息以JSON格式保存在文件中。<br>使用<code>restoreWorkspace</code>函数将用户选择的文件中的JSON信息重新解析为网络信息，并使用该网络信息创建网络，刷新界面。</p>
+<h2 id="图灵机的编译">图灵机的编译</h2><p>图灵机的相关逻辑编写在<code>src/turing.js</code>模块中，对外暴露图灵机的主要数据结构以及图灵机的控制函数，同时需要提供信息输出接口，对网络中元素的高亮操作接口以及网络绘制回调。</p>
+<p>图灵机数据结构中保存有如下信息：图灵机转换表，起始状态，读头位置，当前步数，当前状态，输入条带以及其他控制信息。</p>
+<p>图灵机的编译函数为<code>turing.makeTable</code>。通过图的遍历，将图形化的图灵机翻译为图灵机状态转换表。状态转换表是一个二维映射表。第一层映射为状态到该状态的所有转换的映射；第二层映射为输入字符到某状态的其中一个转换的映射。</p>
+<p>通过<code>reset</code>，完成图灵机运行前信息的初始化。</p>
+<h2 id="图灵机的运行与调试">图灵机的运行与调试</h2><p>图灵机的运行函数为<code>start</code>，单步调试函数为<code>step</code>，其中运行函数不断调用单步函数，每一步的时间间隔可调。</p>
+<p>单步函数每次以当前状态，当前读头下的字符作为输入，在图灵机转换边中，通过两层映射找到对应的转换，并按照转换中的下一个状态、下一个字符和读头移动方向更新图灵机状态信息，在信息更新后，调用高亮函数在图灵机的可视化界面上提示当前图灵机的运行状态，并调用绘图回调刷新用户界面；如果未找到，则停机并输出调试信息；如果图灵机下一步没有转换并且当前状态可以接受，那么图灵机成功停机并输出信息。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h1 id="简介">简介</h1><h2 id="问题">问题</h2><p>题目：输出斐波拉契数列的图灵机。</p>
+<p>要求：设计图灵机，输入n，然后输出斐波拉契数列的第n项。<br>(需要有图形界面和测试例子)</p>
+<h2 id="功能">功能</h2><ul>
+]]>
+    </summary>
+    
+      <category term="javascript" scheme="http://yqf3139.github.io/tags/javascript/"/>
+    
+      <category term="turing machine" scheme="http://yqf3139.github.io/tags/turing-machine/"/>
+    
+      <category term="programming" scheme="http://yqf3139.github.io/categories/programming/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[The Beckman Report on Database Research (翻译)]]></title>
     <link href="http://yqf3139.github.io/2016/09/19/trans-the-beckman-report-on-database-research/"/>
     <id>http://yqf3139.github.io/2016/09/19/trans-the-beckman-report-on-database-research/</id>
     <published>2016-09-19T03:15:04.000Z</published>
-    <updated>2016-09-20T15:01:57.991Z</updated>
+    <updated>2016-09-20T15:02:32.383Z</updated>
     <content type="html"><![CDATA[<p>数据库研究者将大数据描绘为一个决定性的挑战。我们需要集中精力在五个研究热点上才能最大程度地利用现在众多的机会。</p>
 <p>数据库的一小队核心研究人员通过周期性的例会，交流探讨领域内的发展状态，并指出未来的核心发展方向。例会已经成功举办了多届，比如1989,1990,1995,1996,1998,2003,2008。28名数据库研究员和2位受邀的嘉宾于2013年10月在加州大小Irvine分校的Beckman中心举行了为期两天的讨论，延续了这一传统。<br>虽然参会人员被限定在了30人，这是为了最大程度地保证参会人员相互之间进行良好的互动，但他们分别代表了来自不同方向、资历和地区的研究兴趣。本文总结了本次会议的一些结论，更加详细的报告和与会人员的展示可以在<a href="http://beckman.cs.wisc.edu" target="_blank" rel="external">这里</a>找到。</p>
 <h1 id="本文关键点">本文关键点</h1><ul>
@@ -1369,48 +1454,6 @@
     <![CDATA[<p>现在寂寞时才发现难逢一人讲讲话。</p>
 <p>最近真懒，这才第二篇，也是没头没尾不成系统。</p>
 <p>刚才看完几个ted演讲，突然又想起今天看到的讲什么文科女工科男的文章。<br>以前也看到有这样的段子，文科难工科男对掐，互相说对方不懂什么，然后展现自己的特长。故意要]]>
-    </summary>
-    
-      <category term="delusion" scheme="http://yqf3139.github.io/categories/delusion/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[妄想整理  克隆]]></title>
-    <link href="http://yqf3139.github.io/2012/06/28/delusion-of-clone/"/>
-    <id>http://yqf3139.github.io/2012/06/28/delusion-of-clone/</id>
-    <published>2012-06-28T05:07:40.000Z</published>
-    <updated>2015-11-02T14:47:59.257Z</updated>
-    <content type="html"><![CDATA[<p>开始由一些奇怪的话题写一下自己的妄想。</p>
-<p>【克隆】<br>报纸上的姐妹花考到相同的分，人们习惯以双胞胎的心灵感应来解释。不过似乎没有一种可靠的解释来说明或应用，不过如果能有那是很好。</p>
-<p>以前讲到克隆技术，我一般都很兴奋。克隆是一个旧的概念，原意是复制。</p>
-<p>的确，世界有很多克隆的现象。它维护了一定时空下的稳定，和变异一起和谐地推动发展。</p>
-<p>为了让这个话题有意思一点，我们来说克隆人。</p>
-<p>克隆的实物物体很常见，一般人都希望你买的电子产品最好和广告上说的一样好，产品品质要保证同样高就需要做完美的拷贝。所以流水线作业生产的产品品质相近，表现能力也一样，对外界的反映也几乎相同。</p>
-<p>当然每个人的手机又不同，因为你对它倾注了时间与精力，它就是你的手机。当然在数字化的时代，电子产品的不同是可以很好的量化的，所以备份和云存储可以让你瞬间把其他的同型号手机变成你自己的。不过一般的产品不那么容易同步，所以人们很留念以前自己使用过的东西。</p>
-<p>不过我们也追求个性化与小众，产品的特殊也很受关注，比如各种限量的什么什么。而这些，显然显然也是我们熵增的一种渠道。很必须，因为我们人是唯一的。我们不想也不能被同质化，不过现实条件也总是矛盾的。</p>
-<p>所以人的克隆很复杂，其他的生物与非生物也不简单，稍微容易一点。</p>
-<p>人是什么？是一堆物质的集合吗，肯定不是。人不是一堆物质的混合，而是有特定结构顺序的。比如我们的基因基本决定了我们长什么样，可能还有很多很多。</p>
-<p>人还具有碎片性，你并不完全在“你”里面，你还在其他人心中有碎片化的镜像。相同地，你也包含了很多很多人的碎片，宽泛地说，要想有一个你，这世界所有的都不可缺少，当然这一般没有实用意义。</p>
-<p>有了基因你就能完全克隆出一个人吗？可能，不过那是生物学意义上的，而社会学上这又要麻烦很多。</p>
-<p>所以其实克隆技术还只是浅层次的拷贝，不过由于一般很难处理伦理关系，也有很多人权的问题，我们并不支持。</p>
-<p>有些纳粹分子想复活希特勒，但那是不可能的。他们选取希特勒的基因培育儿童，进行教导，还原希特勒的生活背景，但社会大背景变了。并且从蝴蝶效应我们知道，一点点初始变量的改变，在复杂的系统中长时间会造成很大的差异。何况是人这么复杂的生物，怎么能做到完全的相似。</p>
-<p>所以小说中社会背景很重要。背景影响人，人反映背景。</p>
-<p>好吧，我现在想要克隆一个人，那怎么办。那就在某一个时刻，对某一个人全部地进行分子量级的扫描，而后就在那个时刻，进行分子化的重建，并且和那个本体同时被唤醒，并且没有人知道谁是谁，那才是接近完美的，也是不可做到的。不过其他的小非生物东西应该还有可能。数据量，科技什么的都是限制。</p>
-<p>但让我们来看看这个大自然给我们的礼物–同卵双生的双胞胎。</p>
-<p>太不可思议了，一枚受精卵受了刺激一分为二并且独立生长。就像双星一样。除了先后关系，他们几乎接受了同样的基因，同样的背景，教育，各种外界的反映。</p>
-<p>于是我们得到了世界上已经很完美的复制人。不过随着年龄增大与蝴蝶效应，相似程度会降低，不过人做不到大自然如此的完美，而又合乎伦理。至少是现在的伦理。</p>
-<p>所以他们对同一件事情作出相同的反应并不足为奇。跟电子产品有点类似。</p>
-<p>不过人们觉得很美好，虽然是同质化，但很不常见。</p>
-<p>小猫小狗的克隆也是如此，世界上你是我的唯一。除非分子克隆，不然它不是它。</p>
-<p>就算分子克隆出了一个一个原子都不多不少的你的宠物，它也不是它。</p>
-<p>因为你是唯一的，心中在激动后不能接受。</p>
-<p>很多东西不唯一也就失去意义了。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>开始由一些奇怪的话题写一下自己的妄想。</p>
-<p>【克隆】<br>报纸上的姐妹花考到相同的分，人们习惯以双胞胎的心灵感应来解释。不过似乎没有一种可靠的解释来说明或应用，不过如果能有那是很好。</p>
-<p>以前讲到克隆技术，我一般都很兴奋。克隆是一个旧的概念，原意是复制]]>
     </summary>
     
       <category term="delusion" scheme="http://yqf3139.github.io/categories/delusion/"/>

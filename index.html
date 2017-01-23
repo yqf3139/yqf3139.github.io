@@ -211,6 +211,171 @@
             
               
                 
+                <a class="post-title-link" href="/2017/01/23/GUI-Turing-editor-and-runner-demo-how-native-Turing-Machine-calculate-the-N-th-fibonacci-number/" itemprop="url">
+                  朴素的图灵机编辑器和模拟器
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2017-01-23T19:14:00+08:00" content="2017-01-23">
+              2017-01-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">programming</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/01/23/GUI-Turing-editor-and-runner-demo-how-native-Turing-Machine-calculate-the-N-th-fibonacci-number/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/01/23/GUI-Turing-editor-and-runner-demo-how-native-Turing-Machine-calculate-the-N-th-fibonacci-number/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody">
+            
+              <h1 id="简介">简介</h1><h2 id="问题">问题</h2><p>题目：输出斐波拉契数列的图灵机。</p>
+<p>要求：设计图灵机，输入n，然后输出斐波拉契数列的第n项。<br>(需要有图形界面和测试例子)</p>
+<h2 id="功能">功能</h2><ul>
+<li>图形化的通用图灵机编辑器。</li>
+<li>半无限带图灵机模拟器，以及可视化调试环境。</li>
+<li>使用上述环境实现题目要求的图灵机，并进行了局部性能优化。</li>
+</ul>
+<h2 id="开发说明">开发说明</h2><p>本次作业使用Web技术开发，其中vis图形库用于图灵机的设计与调试可视化，npm包管理，grunt用于工作流控制。<br>项目目录如下：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ tree . -L <span class="number">1</span></span><br><span class="line">.</span><br><span class="line">├── build                   <span class="comment">// Javascript文件中间结果存放</span></span><br><span class="line">│   └── bundle<span class="class">.js</span></span><br><span class="line">├── Gruntfile<span class="class">.js</span>            <span class="comment">// 定义Grunt自动化任务，如Browserify，Uglyfy</span></span><br><span class="line">├── node_modules            <span class="comment">// 使用npm install安装得到的依赖包</span></span><br><span class="line">├── package<span class="class">.json</span>            <span class="comment">// 描述项目依赖等信息</span></span><br><span class="line">├── public                  <span class="comment">// Web根目录</span></span><br><span class="line">│   ├── bundle<span class="class">.min</span><span class="class">.js</span>       <span class="comment">// 打包、代码混淆后的源文件</span></span><br><span class="line">│   ├── bundle<span class="class">.min</span><span class="class">.js</span><span class="class">.map</span>   <span class="comment">// 调试信息</span></span><br><span class="line">│   ├── <span class="tag">img</span></span><br><span class="line">│   ├── index<span class="class">.html</span>          <span class="comment">// Html布局文件</span></span><br><span class="line">│   └── vis<span class="class">.min</span><span class="class">.css</span>         <span class="comment">// vis图形库所需的层叠式样式表文件</span></span><br><span class="line">├── readme<span class="class">.md</span></span><br><span class="line">├── src                     <span class="comment">// 程序逻辑源文件夹</span></span><br><span class="line">│   ├── app<span class="class">.js</span>              <span class="comment">// 主程序</span></span><br><span class="line">│   ├── turing<span class="class">.js</span>           <span class="comment">// 图灵机编译与模拟器</span></span><br><span class="line">│   └── util<span class="class">.js</span>             <span class="comment">// 工具函数</span></span><br><span class="line">└── tmws                    <span class="comment">// 序列化的图灵机文件</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>依赖包安装：<code>npm install</code></li>
+<li>编译、打包源文件：<code>grunt</code></li>
+<li>启动服务器：<code>cd public &amp;&amp; python3 -m http.server</code></li>
+</ul>
+<h1 id="使用说明">使用说明</h1><ul>
+<li>最简单的图灵机（读0写1,读1个1便接受）的设计、运行与调试，见视频Demo-1。</li>
+<li>斐波拉契数列图灵机的读取、运行，见视频Demo-2，输入输出格式见图灵机设计描述。</li>
+<li>在线Demo，<a href="http://security-administrator-alfred-48418.bitballoon.com/" target="_blank" rel="external">地址</a>。</li>
+<li>代码，<a href="https://github.com/yqf3139/turing-gui" target="_blank" rel="external">Github Repo</a></li>
+</ul>
+<p><img src="http://ok8l5e08o.bkt.clouddn.com/demo1.gif" alt="Demo1"></p>
+<p>Demo1</p>
+<p><img src="http://ok8l5e08o.bkt.clouddn.com/demo2.gif" alt="Demo2"></p>
+<p>Demo2</p>
+<p>斐波拉契数列图灵机的文件见twms文件夹。</p>
+<p>从视频Demo中可以轻松地看出图灵机的图形化设计、保存装载、编译重置、运行调试过程，<br>如下两张图展示了图灵机编译与运行过程中出现的错误提示。<br><img src="/images/turing-gui/1.jpg" alt="运行时错误提示"><br><img src="/images/turing-gui/2.jpg" alt="编译时错误提示"></p>
+<h1 id="图灵机设计">图灵机设计</h1><h2 id="输入输出格式">输入输出格式</h2><p>工作区示意：<code>&lt;迭代次数计数器 C &gt;1&lt;当前计算的Fib数 M &gt;1&lt;上一次迭代计算的Fib数 N &gt;</code></p>
+<p>输入格式： <code>0{n}101</code></p>
+<p>输入样例：</p>
+<ul>
+<li>n=1: <code>0101</code></li>
+<li>n=3: <code>000101</code></li>
+<li>n=5: <code>00000101</code></li>
+</ul>
+<p>在上述样例中，从首位开始的连续的<code>0</code>的个数描述了n，后面紧跟的<code>1</code>是分割符号，<br>再后面一个<code>0</code>表示1，这是由于斐波那契数列的第一位数为1，再后面跟着一个<code>1</code>作为分割符。</p>
+<p>输出格式： 读头指向连续0的个数为所求的第n位斐波那契数列的值，<code>0{fib(n)}10{fib(n-1)}</code>。</p>
+<p>输出样例：</p>
+<ul>
+<li>n=1: <code>$1[读头&gt;]01</code></li>
+<li>n=3: <code>$$$1[读头&gt;]0010</code></li>
+<li>n=5: <code>$$$$$1[读头&gt;]000001000</code></li>
+</ul>
+<h2 id="计算思路">计算思路</h2><ul>
+<li>单次迭代过程：将M复制一份到N后的空白区域，然后将M和N的分隔符移动到新复制的M的前一格。目的是计算将M+N赋予M，M赋予N。</li>
+<li>迭代控制：若C不为0,则将C的计数器减1，然后执行上述迭代操作，并回到起始位置；否则移动读头到M的位置。</li>
+<li>复制控制：逐个Bit将M复制到N后的空白区域。</li>
+</ul>
+<h2 id="转换图表示">转换图表示</h2><p><img src="/images/turing-gui/fib1.jpg" alt="第一个图灵机示意图"></p>
+<h2 id="局部优化与效果">局部优化与效果</h2><p>观察上述图灵机，一个性能优化点在于在复制M的时候，新复制的M可以不全部写为$，再后期写为0，而可以改为将第一位标记为$，而后面的位都直接复制为0。这样后期就可以省去再将新N全部改写为0的操作了，而第一位标记为$是为了方便在新M和N之间放置分界符1。改动如下图所示：</p>
+<p><img src="/images/turing-gui/fib2.jpg" alt="第二个图灵机示意图"></p>
+<p>针对如上的性能优化点，收集两个图灵机的步数随N的变化数据，结果如下：<br><img src="/images/turing-gui/data.png" alt="优化效果"></p>
+<p>可以看出，虽然第二个图灵机总是比第一个图灵机步数少，但性能的提升占总步数的比例却非常低，步数随着N呈指数级别上升，而优化的步数只呈现线性增长。</p>
+<h1 id="工程实现">工程实现</h1><h2 id="使用Vis实现图绘制与操作">使用Vis实现图绘制与操作</h2><p><a href="http://visjs.org/index.html" target="_blank" rel="external">Vis.js</a>是一个基于浏览器的动态Javascript可视化库，其中封装好了高度可定制化、可视化的网络模块。为了实现图灵机的动态编辑，我基于Visjs开源的<a href="http://visjs.org/examples/network/other/manipulation.html" target="_blank" rel="external">示例程序</a>，加入了图灵机设计中需要的元素，以方便用户通过可视化的界面创建图灵机。</p>
+<p>图灵机的绘制与操作逻辑主要位于<code>src/app.js</code>中，主要描述以下功能：</p>
+<h3 id="创建图灵机设计绘图区">创建图灵机设计绘图区</h3><p>程序界面由<code>index.html</code>描述，主要分为两部分。网络编辑与可视化区域由id为<code>mynetwork</code>的网络绘图区，和id为<code>network-popUp</code>的网络信息编辑窗口构成。</p>
+<p>控制面板由编译与调试信息，网络保存与载入控件，条带编辑区域和图灵机运行控制控件组成。在<code>document.body.onload</code>方法中可以看到对应控件的事件回调函数。</p>
+<h3 id="定义图中点和边的对应操作">定义图中点和边的对应操作</h3><p><code>createNetwork</code>函数生成网络中初始的两个实例节点，并在<code>mynetwork</code>创建网络实例。其中的<code>options</code>参数描述了适用于图灵机的网络配置信息。<br><code>options.layout</code>定义了网络的点和边的布局，物理效果（点排斥，边吸引）可以更好地设计图灵机中的状态和转换。<br><code>options.manipulation</code>定义了网络中的六个基本事件的响应，点、边的增删改。对于点和边的增改，我们都给用户弹出信息编辑界面，并将数据保存在响应的点或是边中。对于新创建的点和边，赋予初始值。对于特殊的点和边，比如开始状态和结束状态，相应地修改点的特性以方便用户查看。</p>
+<h3 id="保存与载入">保存与载入</h3><p>使用<code>saveWorkspace</code>函数将网络信息以JSON格式保存在文件中。<br>使用<code>restoreWorkspace</code>函数将用户选择的文件中的JSON信息重新解析为网络信息，并使用该网络信息创建网络，刷新界面。</p>
+<h2 id="图灵机的编译">图灵机的编译</h2><p>图灵机的相关逻辑编写在<code>src/turing.js</code>模块中，对外暴露图灵机的主要数据结构以及图灵机的控制函数，同时需要提供信息输出接口，对网络中元素的高亮操作接口以及网络绘制回调。</p>
+<p>图灵机数据结构中保存有如下信息：图灵机转换表，起始状态，读头位置，当前步数，当前状态，输入条带以及其他控制信息。</p>
+<p>图灵机的编译函数为<code>turing.makeTable</code>。通过图的遍历，将图形化的图灵机翻译为图灵机状态转换表。状态转换表是一个二维映射表。第一层映射为状态到该状态的所有转换的映射；第二层映射为输入字符到某状态的其中一个转换的映射。</p>
+<p>通过<code>reset</code>，完成图灵机运行前信息的初始化。</p>
+<h2 id="图灵机的运行与调试">图灵机的运行与调试</h2><p>图灵机的运行函数为<code>start</code>，单步调试函数为<code>step</code>，其中运行函数不断调用单步函数，每一步的时间间隔可调。</p>
+<p>单步函数每次以当前状态，当前读头下的字符作为输入，在图灵机转换边中，通过两层映射找到对应的转换，并按照转换中的下一个状态、下一个字符和读头移动方向更新图灵机状态信息，在信息更新后，调用高亮函数在图灵机的可视化界面上提示当前图灵机的运行状态，并调用绘图回调刷新用户界面；如果未找到，则停机并输出调试信息；如果图灵机下一步没有转换并且当前状态可以接受，那么图灵机成功停机并输出信息。</p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/09/19/trans-the-beckman-report-on-database-research/" itemprop="url">
                   The Beckman Report on Database Research (翻译)
                 </a>
@@ -812,145 +977,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/02/05/mini-pc-for-grandpa-and-other-stuffs/" itemprop="url">
-                  给外公使用的迷你主机
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2016-02-05T17:08:29+08:00" content="2016-02-05">
-              2016-02-05
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/tech/" itemprop="url" rel="index">
-                    <span itemprop="name">tech</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/02/05/mini-pc-for-grandpa-and-other-stuffs/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/02/05/mini-pc-for-grandpa-and-other-stuffs/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <h2 id="迷你主机">迷你主机</h2><h3 id="缘由">缘由</h3><p>外公家的电脑已经十分老旧，还是奔腾双核，1G内存，100G机械硬盘的配置。每次我去外公家帮忙处理电脑使用上的疑问时，都被这台老古董卡到不行，慢慢地我发现外公使用电脑的频率也下降了，便承诺实习工资给外公更新一个更好的主机。</p>
-<p>前两天突然想起这个承诺，也就没有顾上和我爸进行更加深入的讨论，准备直接一手包办了这件事情。</p>
-<h3 id="选择">选择</h3><p>外公的需求很简单，上网：看股票、新闻、邮票信息，偶尔电影；游戏：在线的象棋、围棋等；照片浏览：儿女拷来的照片可以自行浏览；节假日的娱乐：可能会被家里亲戚用来上网娱乐。</p>
-<p>本来我预想我接下来一定要自行完整地配置一台主机，不过由于此处不是自用，并且之前看到网上有不少对mini主机的讨论，也看到了一些<a href="https://luolei.org/zhanmei-minipc-review/" target="_blank" rel="external">测评博文</a>，便想这次还是偷懒一下了。</p>
-<p>询问店家节前还发不发货，结果赶上最后一天发货，便没有多想，<strong>￥1610</strong>下单了标准的一个版本。</p>
-<ul>
-<li>CPU：Intel i5 4258U，2C4T，默频2.4Ghz，睿频2.9Ghz，锐炬5100核显。比我笔记本的3317U要好，估计是直接性能过剩了</li>
-<li>内存：镁光 4G DDR3 1866Mhz</li>
-<li>硬盘：东芝 128G SSD M.2接口</li>
-</ul>
-<h3 id="开箱与简单评测">开箱与简单评测</h3><p>下单后就没有去管这件事情，顺丰包邮，两天就到了，由于直接是套餐，系统也已经装好，基本上是开箱即用。</p>
-<p><img src="/images/mini-pc-for-grandpa-and-other-stuffs/size.jpg" alt="尺寸"></p>
-<p>尺寸很小，和JD卡的对比。分量倒不算很轻，是全铝机箱，由于是无风扇被动散热，十分静音，跑分时能听到电流声音。</p>
-<p><img src="/images/mini-pc-for-grandpa-and-other-stuffs/inside.jpg" alt="内部"></p>
-<p>虽然不需要升级配置了，还是拆开了底部，发现升级余地还是很大的，可以继续加内存，M.2硬盘和sata硬盘。</p>
-<p>外部接口十分丰富：</p>
-<ul>
-<li>两个HDMI接口，店家还附赠了HDMI-VGA转接线和HDMI延长线</li>
-<li>内置的300M无线网卡</li>
-<li>两个以太网口</li>
-<li>背部四个USB2.0口，前部四个USB3.0口</li>
-<li>音频输入输出口和红外接收器（也偷懒没尝试）</li>
-</ul>
-<p>早上到货开箱后，发现是Win7 旗舰版，开箱即用，便进行了系统备份和简单的跑分：</p>
-<p><img src="/images/mini-pc-for-grandpa-and-other-stuffs/benchmark.jpg" alt="跑分"></p>
-<p>只知道应该要比我笔记本性能好，而我现在的小本使用状态良好，完全没有升级的欲望。</p>
-<h3 id="上门服务">上门服务</h3><p>所以下午就开心地直接提去外公家上门服务了，带了我妈买的羽绒服给外婆，mini主机给外公，两位老人都十分开心。</p>
-<p>首先是进行老主机的数据备份，需要拷贝10G的老照片出来，由于硬盘是3.5英寸的而我没有USB盒来直接读，只好以后再进行照片的拷贝。</p>
-<p>然后安装了手写板的驱动、棋牌游戏等，并和外公一起试用成功。</p>
-<p>最后简单地了解了外公的其他需求，如看股票和看邮票，添加了游览器的相关网站的收藏。</p>
-<p>外公虽然<strong>八十多高龄</strong>，但还是非常认真地学习电脑的使用，经常在线棋牌游戏和浏览新闻，这里真是需要赞一个，更换了更快的电脑后，对于新技术新知识的获取应该体验更佳了。</p>
-<h2 id="其他">其他</h2><ul>
-<li>机械键盘：雷柏V500，绝对的入门款，准备写够100篇博客再奖励自己一个中端键盘。</li>
-<li>一代小米手环：每天争取一万步，日积月累养成锻炼的习惯。</li>
-<li>小米路由器mini：放家中，插上USB移动硬盘后可以远程下载，结合小米盒子便打造出一个粗糙的家庭NAS，分享和串流影片十分方便。</li>
-<li>各种USB 3.0硬盘盒：把各种硬盘换盒后，终于获得了新生。</li>
-</ul>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -997,7 +1023,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">42</span>
+              <span class="site-state-item-count">43</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -1011,7 +1037,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-count">38</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>
@@ -1080,7 +1106,7 @@
         <div class="copyright" >
   
   &copy;  2009 - 
-  <span itemprop="copyrightYear">2016</span>
+  <span itemprop="copyrightYear">2017</span>
   <span class="with-love">
     <i class="icon-next-heart fa fa-heart"></i>
   </span>
