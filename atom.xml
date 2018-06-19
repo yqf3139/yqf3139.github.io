@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Day day up.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yqf3139.github.io/"/>
-  <updated>2017-01-24T15:12:40.214Z</updated>
+  <updated>2018-06-19T15:38:37.373Z</updated>
   <id>http://yqf3139.github.io/</id>
   
   <author>
@@ -13,6 +13,62 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[如何获取到Antutu跑分的详细子项分数？]]></title>
+    <link href="http://yqf3139.github.io/2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/"/>
+    <id>http://yqf3139.github.io/2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/</id>
+    <published>2018-06-19T12:46:48.000Z</published>
+    <updated>2018-06-19T15:38:37.373Z</updated>
+    <content type="html"><![CDATA[<p><a href="http://www.antutu.com/" target="_blank" rel="external">Antutu</a>是用户常用的一款智能设备跑分软件。如下图所示，它从四个大类来评估一台移动设备的性能，分别是CPU、GPU、UX和MEM。Antutu最终给出总分、一级汇总得分和二级得分，人们一般习惯使用总分来量化设备间的性能。</p>
+<p><img alt="Antutu在手机上的跑分结果截图" src="/images/antutu/antutu-phone.jpg" width="30%" height="30%"></p>
+<p>但近期我用Antutu的Android版本做性能测试时，发现UX大类中的<code>UX图形处理-鱼眼、Blur和JPG解码</code>一项分数明显比竞品低，便想查清楚原因。但此项中又包含三个子项，<strong>究竟每个子项的分数是多少呢？每个子项究竟是怎样进行评测的呢？</strong>一番网上搜寻后，我并没有找到Antutu官方出的分数计算报告白皮书，也没有在设备Log中或是其他地方找到详细分数的输出。那么似乎只能进入Antutu评测软件内部窥探一番了。</p>
+<p>注意：破解Antutu并篡改分数等行为是被官方禁止的，本文只做Antutu分数的获取过程分享，测试用Antutu版本为V7.1.0。</p>
+<h1 id="0x1_梳理Antutu跑分逻辑">0x1 梳理Antutu跑分逻辑</h1><p>首先解压Aututu主apk包，并同时使用<code>apktool</code>再将主apk解压反编译备用。<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; apktool<span class="class">.bat</span> d <span class="string">"antutuv7.apk"</span></span><br></pre></td></tr></table></figure></p>
+<p><img alt="Antutu Apk" src="/images/antutu/antutu-apk-structure.png" width="20%" height="20%"></p>
+<p>接下来使用<code>dex2jar</code>工具将Aututu主apk包中的两个dex文件转换为jar包，并使用<code>JD-GUI</code>打开分析。</p>
+<p>搜寻后发现非常显眼的是<code>jni</code>这个类。从中可以看到定义了Antutu每一个子测试的编号，能查询到我们想看到详细分数的三个子项分别是20、21和22号。并且还能看到<code>jni</code>类中关联着的Native函数，其实现都位于<code>lib\x86|armeabiv7\libabenchmark.so</code>中。</p>
+<p>接下来不难发现，Antutu的跑分主流程在com.antutu.benchmark.service.BenchmarkService的f函数中，因为其中有大量的Native函数调用。</p>
+<p><img alt="BenchmarkService" src="/images/antutu/benchmark-service.png" width="50%" height="50%"></p>
+<p>Antutu 3D跑分为第一项进行，逻辑复杂，暂时跳过分析。后面的每一项测试的大体流程为，如果该跑分项目由Native层进行测试，比如多线程测试，则先由a(int)函数通知UI线程某项跑分开始了，然后通过dc.a(int)判断该跑分是否可以在Native层执行，并等待2秒后才开始真正测试。由于此处的Java类和方法有部分做了混淆，所以需要根据每个函数的具体实现猜测其功能。</p>
+<p><img alt="Java invoke Native" src="/images/antutu/java-to-native.png" width="50%" height="50%"></p>
+<p>通过IDA打开<code>libabenchmark.so</code>后，我们发现Native层并没有做更加完备的防护，搜索<code>benchmarkV6</code>函数，便可以找到更多测试函数的入口了。</p>
+<p><img alt="benchmarkV6" src="/images/antutu/benchmarkV6.png" width="50%" height="50%"></p>
+<p>如果该跑分项目在Java层进行，则先跑分，再通过<code>jni.benchmarkProcessUX</code>接口将分数导入Native层。比如测试XML(14)。</p>
+<p><img alt="xml" src="/images/antutu/xml.png" width="50%" height="50%"></p>
+<p>接下来我们继续研究UX图片处理的相应逻辑，我们寻找20~22编号的测试并详细查看其逻辑。</p>
+<p><img alt="ux" src="/images/antutu/ux.png" width="50%" height="50%"></p>
+<p>其中，JPG decode比较简单，使用Java的BitmapFactory.decodeByteArray测试。分数为5秒内decode的次数。由于是纯Java实现，我们可以将相应的代码自己实现后测试，但结果显示JPG decode并不是导致UX图像处理跑分低的根源。</p>
+<p>而FishEye和Blur都使用了Native实现。搜索<code>fisheye</code>关键字，我们很快能看到其Native测试实现。</p>
+<p><img alt="fisheye" src="/images/antutu/fisheye.png" width="50%" height="50%"></p>
+<h1 id="0x2_获取Antutu_主应用的实际跑分值">0x2 获取Antutu 主应用的实际跑分值</h1><p>虽然我们已经看到了Antutu测试的部分实现的反编译结果，但除了直接分析，还有什么样的方法能更快地获取到Antutu的详细分数呢？</p>
+<p>一种可能的办法是自己写一个Android App，并参照Antutu的JNI接口定义来定义类，比如说定义一个<code>com.antutu.aaa.bbb.jni</code>的类，并将<code>libabenchmark.so</code>去出打包到我们自己的App的Apk中并申明加载。加载后既可直接调用Native方法进行测试，或者是通过恢复Antutu存放分数的文件来直接读取已经存储的分数。这种方法应该是可行的，但比较麻烦。</p>
+<p>经过不断的搜索，我们发现Antutu的详细跑分在一个内部flag开启的时候，会自动写到<code>/sdcard/.antutu/last_result.json</code>中。在跑分流程的末尾，可以发现这样一个<code>dc.a(context)</code>这样一个函数，它在<code>dc.b()</code>返回<code>true</code>时被触发，而<code>dc.b()</code>只是单纯地返回了<code>dc.f</code>这样一个静态变量，并且并没有找到在其他地方有被修改。</p>
+<p><img alt="dc static" src="/images/antutu/dc-static.png" width="50%" height="50%"></p>
+<p><img alt="dc a" src="/images/antutu/dc-a.png" width="50%" height="50%"></p>
+<p>此时，一个简单的想法便是如果能将<code>dc.f</code>的默认值改为true，则可以获得这个分数了。</p>
+<p><img alt="modify smali" src="/images/antutu/modify-smali.png" width="50%" height="50%"></p>
+<p>重新使用<code>apktool b</code>指令重建Antutu的主Apk，并使用jarsign重新签名。但安装后发现Antutu卡死。</p>
+<p>这是为何呢？寻找原因后发现Antutu在Native层做了自身的签名验证，验证不通过的话会不断sleep卡死App。</p>
+<p><img alt="test sign" src="/images/antutu/test-sign.png" width="50%" height="50%"></p>
+<p>详细观察代码后发现，result需要返回0才能通过判断，而绕过验证签名的方法为将<code>if(v21)</code>判断绕过即可。一个简单的办法就是将这里对应汇编的cmp操作全填<code>nop</code>即可。<br>最终可以获取到Antutu自动打印的详细分数了。</p>
+<h1 id="0x3_获取Antutu_3D应用的实际跑分值">0x3 获取Antutu 3D应用的实际跑分值</h1><p>然而分析发现，主要是Fisheye得分较低。但分析Native代码无果，没有发现明显的优化点。将3D App屏蔽后，发现三者在Fisheye上分数都低了很多，并且十分接近，因此判断Fisheye分数是3D App中GPU加速的Fisheye测试与CPU Fisheye测试结合在一起得出的，而在GPU FishEye上得分低拖累了我们的分数。因此接下来我们需要继续探究Antutu 3D App。</p>
+<p>Antutu 3D是使用Unity开发的，使用dnSpy看到可以看到其内部逻辑。<br>在OnTestPhysX找到了测试主逻辑。</p>
+<p>测试方式为3秒中统计图像处理次数。</p>
+<p><img alt="onTestPhysX" src="/images/antutu/onTestPhysX.png" width="50%" height="50%"></p>
+<p>检查逻辑后还发现，Antutu对一些特性不支持时，暴力地降低分数，比如不支持computeShaders时，分数只有1/3，不支持ARGBFloat时，分数再减半。</p>
+<p>为了获取到真实的分数，将debug的开关翻转，重新打包Antutu 3D APK，运行后可以在Logcat中看到分数的输出了。</p>
+<p><img alt="3D" src="/images/antutu/3D.png" width="50%" height="50%"></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p><a href="http://www.antutu.com/" target="_blank" rel="external">Antutu</a>是用户常用的一款智能设备跑分软件。如下图所示，它从四个大类来评估一台移动设备的性能，分别是CPU、GPU、UX和MEM。Ant]]>
+    </summary>
+    
+      <category term="Android" scheme="http://yqf3139.github.io/tags/Android/"/>
+    
+      <category term="programming" scheme="http://yqf3139.github.io/categories/programming/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[通过多个传感器分类人体活动(课程作业)]]></title>
@@ -1445,41 +1501,6 @@
     </summary>
     
       <category term="hackathon" scheme="http://yqf3139.github.io/tags/hackathon/"/>
-    
-      <category term="flood" scheme="http://yqf3139.github.io/categories/flood/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[美味小笼包]]></title>
-    <link href="http://yqf3139.github.io/2015/11/04/yummy-xiaolongbao/"/>
-    <id>http://yqf3139.github.io/2015/11/04/yummy-xiaolongbao/</id>
-    <published>2015-11-04T13:30:05.000Z</published>
-    <updated>2015-11-05T15:54:58.947Z</updated>
-    <content type="html"><![CDATA[<p><img src="/images/yummy-xiaolongbao.jpg" alt="小笼包"></p>
-<p>我作为一个在南京长大的人，小笼包是没少吃的。我妈单位离刘长兴店近，经常会下班的时候给我带上一笼解馋。<br>我会立即冲去倒醋，立即吃掉其中的两个，剩下的留到第二天作为早餐。一直算不上好好品味过小笼包的滋味，<br>并且近年经常惊讶地发现小笼包在变小，真的是越来越小了，也许是我长大了吧。</p>
-<p>所以当Yongnian邀请我们几个实习生吃个午饭，并且是去吃号称上海最好吃的蟹黄小笼包时，我还是小小激动了一把。<br>Yongnian是我们的Manager，他微微发福，能说会道，对待工作拥有极大的热情，这次的借口是为Jie回南京考试践行，并且请我们几个一次。</p>
-<p>于是我们一行五人，中午十一点不到就搭上William的车出发了。Yongnian催促我们早点走，说去晚了就吃不到了。</p>
-<p>吃不到了，难道有钱不赚？</p>
-<p>这家店的确就是这么有性格。一路上Yongnian形容了他上次没吃到招牌小笼包的遗憾。<br>“上次我是周末来的，开车一个多小时，人特别多。他们早上7店开卖，到中午就收摊了，只做一顿。”<br>“他们的主厨原来是城隍庙的店的厨师，后来自己出来单干了，就只在郊外摆个小摊，不为赚钱只为一乐。”</p>
-<p>开车20分钟，我们便到了这个小小的旅游景点，小小的店中只有几张桌子，却已经坐满了人。我们站在门口就能闻道蟹黄小笼包的香味，热情的阿姨在人群中忙碌着。<br>我不由得咽下了口水。站在门口看阿姨飞速地包着各色小笼包。</p>
-<p>“你们先去景点内转转吧，等会有位置的话叫你们”，Yongnian对我们说。</p>
-<p>一个很江南水乡的小景区，但有点开发过度的感觉。我们看着各色小吃，还是想着没入嘴的小笼包。</p>
-<p>很快我们就回去点餐了。Yongnian熟练地用上海话点餐，我们在旁边艰难地解码上海方言。我们一共要了六笼各色小笼包。<br>各种小笼包还挺讲究的，编号从1到20多，有用虾仁扇贝等海鲜做的，更多的是蟹粉汤包，更有公蟹膏和母蟹黄配出的龙凤小笼包。<br>我们每人还点了酒酿豆沙汤，和云吞。</p>
-<p>慕名而来的食客的确挤爆了这个小小的店铺，我们占据了一张大桌。旁边的食客已经在品尝小笼包了。似乎老年人偏多，看来都是老上海才找得到这种偏门小店。</p>
-<p>很快上了三种醋，果醋、姜醋等，阿姨嘱咐我们到时候要听她话，用对应的醋才能品尝到最佳的美味。每人还给倒了一碟新鲜的柠檬酱，据说吃完后一口闷便可以去除蟹的肥腻。<br>我们边喝着提前上的酒酿豆沙汤，边听阿姨介绍各种流程。我旁边已经站好了排队的食客，他们也不急，而是耐心地咨询各色小笼包的特点，Yongnian和他们讨论得不亦乐乎。</p>
-<p>正说着小笼包便上了，我们每人手持一个小碟子，舀上对应的醋，小心翼翼的夹起盛满汤汁的小笼包。不知道是手艺好还是蒸的技术高超，<br>每个小笼包被筷子的摩擦力稳稳的提起，不漏出一滴精华。我大概吃的第一个就是招牌的蟹粉小笼包，这是用蟹肉和猪肉混合做的，性价比很高。我往上面又滴了一点醋。<br>然后小心翼翼的用牙去咬这个小小的美味，诶，汤汁流出来了，我赶忙一整个吞下，好烫。我咝着嘴，立马感受到了非常猪肉和蟹肉混合的鲜美。小碟子中的汤汁也被我一饮而尽。</p>
-<p>扇贝小笼包和鲜虾小笼包也十分美味，各自像是寿司一样，在包子的褶子处装饰着对应的食材，好看又美味。<br>阿姨说她们当时在日本开店的，她非常标准的说着“chotto matte”，意思是稍等一下。</p>
-<p>最后招牌龙凤小笼包上了，一个小笼包中包裹着两只蟹的美味，比单纯吃蟹过瘾。所有的食材都是手工挑出，包括蟹肉，这可能也是她们无法扩张的一个原因吧。</p>
-<p>旁边的食客看着我们吃，一个劲得安慰我们慢慢吃，这样才能品出味道。</p>
-<p>最后吃的云吞，似乎是从天堂掉入人间。饱腹之后的我们，带着美好的记忆和嘴中柠檬的清香，返回公司继续上班。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p><img src="/images/yummy-xiaolongbao.jpg" alt="小笼包"></p>
-<p>我作为一个在南京长大的人，小笼包是没少吃的。我妈单位离刘长兴店近，经常会下班的时候给我带上一笼解馋。<br>我会立即冲去倒醋，立即吃掉其中的两个，剩下的留到]]>
-    </summary>
-    
-      <category term="food" scheme="http://yqf3139.github.io/tags/food/"/>
     
       <category term="flood" scheme="http://yqf3139.github.io/categories/flood/"/>
     

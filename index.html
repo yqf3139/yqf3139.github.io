@@ -179,15 +179,147 @@
 
     
     
+
+    
       
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/" itemprop="url">
+                  如何获取到Antutu跑分的详细子项分数？
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2018-06-19T20:46:48+08:00" content="2018-06-19">
+              2018-06-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">programming</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
       
-        
-        
-        
       
 
       
-    
+        
+          <span itemprop="articleBody">
+            
+              <p><a href="http://www.antutu.com/" target="_blank" rel="external">Antutu</a>是用户常用的一款智能设备跑分软件。如下图所示，它从四个大类来评估一台移动设备的性能，分别是CPU、GPU、UX和MEM。Antutu最终给出总分、一级汇总得分和二级得分，人们一般习惯使用总分来量化设备间的性能。</p>
+<p><img alt="Antutu在手机上的跑分结果截图" src="/images/antutu/antutu-phone.jpg" width="30%" height="30%"></p>
+<p>但近期我用Antutu的Android版本做性能测试时，发现UX大类中的<code>UX图形处理-鱼眼、Blur和JPG解码</code>一项分数明显比竞品低，便想查清楚原因。但此项中又包含三个子项，<strong>究竟每个子项的分数是多少呢？每个子项究竟是怎样进行评测的呢？</strong>一番网上搜寻后，我并没有找到Antutu官方出的分数计算报告白皮书，也没有在设备Log中或是其他地方找到详细分数的输出。那么似乎只能进入Antutu评测软件内部窥探一番了。</p>
+<p>注意：破解Antutu并篡改分数等行为是被官方禁止的，本文只做Antutu分数的获取过程分享，测试用Antutu版本为V7.1.0。</p>
+<h1 id="0x1_梳理Antutu跑分逻辑">0x1 梳理Antutu跑分逻辑</h1><p>首先解压Aututu主apk包，并同时使用<code>apktool</code>再将主apk解压反编译备用。<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; apktool<span class="class">.bat</span> d <span class="string">"antutuv7.apk"</span></span><br></pre></td></tr></table></figure></p>
+<p><img alt="Antutu Apk" src="/images/antutu/antutu-apk-structure.png" width="20%" height="20%"></p>
+<p>接下来使用<code>dex2jar</code>工具将Aututu主apk包中的两个dex文件转换为jar包，并使用<code>JD-GUI</code>打开分析。</p>
+<p>搜寻后发现非常显眼的是<code>jni</code>这个类。从中可以看到定义了Antutu每一个子测试的编号，能查询到我们想看到详细分数的三个子项分别是20、21和22号。并且还能看到<code>jni</code>类中关联着的Native函数，其实现都位于<code>lib\x86|armeabiv7\libabenchmark.so</code>中。</p>
+<p>接下来不难发现，Antutu的跑分主流程在com.antutu.benchmark.service.BenchmarkService的f函数中，因为其中有大量的Native函数调用。</p>
+<p><img alt="BenchmarkService" src="/images/antutu/benchmark-service.png" width="50%" height="50%"></p>
+<p>Antutu 3D跑分为第一项进行，逻辑复杂，暂时跳过分析。后面的每一项测试的大体流程为，如果该跑分项目由Native层进行测试，比如多线程测试，则先由a(int)函数通知UI线程某项跑分开始了，然后通过dc.a(int)判断该跑分是否可以在Native层执行，并等待2秒后才开始真正测试。由于此处的Java类和方法有部分做了混淆，所以需要根据每个函数的具体实现猜测其功能。</p>
+<p><img alt="Java invoke Native" src="/images/antutu/java-to-native.png" width="50%" height="50%"></p>
+<p>通过IDA打开<code>libabenchmark.so</code>后，我们发现Native层并没有做更加完备的防护，搜索<code>benchmarkV6</code>函数，便可以找到更多测试函数的入口了。</p>
+<p><img alt="benchmarkV6" src="/images/antutu/benchmarkV6.png" width="50%" height="50%"></p>
+<p>如果该跑分项目在Java层进行，则先跑分，再通过<code>jni.benchmarkProcessUX</code>接口将分数导入Native层。比如测试XML(14)。</p>
+<p><img alt="xml" src="/images/antutu/xml.png" width="50%" height="50%"></p>
+<p>接下来我们继续研究UX图片处理的相应逻辑，我们寻找20~22编号的测试并详细查看其逻辑。</p>
+<p><img alt="ux" src="/images/antutu/ux.png" width="50%" height="50%"></p>
+<p>其中，JPG decode比较简单，使用Java的BitmapFactory.decodeByteArray测试。分数为5秒内decode的次数。由于是纯Java实现，我们可以将相应的代码自己实现后测试，但结果显示JPG decode并不是导致UX图像处理跑分低的根源。</p>
+<p>而FishEye和Blur都使用了Native实现。搜索<code>fisheye</code>关键字，我们很快能看到其Native测试实现。</p>
+<p><img alt="fisheye" src="/images/antutu/fisheye.png" width="50%" height="50%"></p>
+<h1 id="0x2_获取Antutu_主应用的实际跑分值">0x2 获取Antutu 主应用的实际跑分值</h1><p>虽然我们已经看到了Antutu测试的部分实现的反编译结果，但除了直接分析，还有什么样的方法能更快地获取到Antutu的详细分数呢？</p>
+<p>一种可能的办法是自己写一个Android App，并参照Antutu的JNI接口定义来定义类，比如说定义一个<code>com.antutu.aaa.bbb.jni</code>的类，并将<code>libabenchmark.so</code>去出打包到我们自己的App的Apk中并申明加载。加载后既可直接调用Native方法进行测试，或者是通过恢复Antutu存放分数的文件来直接读取已经存储的分数。这种方法应该是可行的，但比较麻烦。</p>
+<p>经过不断的搜索，我们发现Antutu的详细跑分在一个内部flag开启的时候，会自动写到<code>/sdcard/.antutu/last_result.json</code>中。在跑分流程的末尾，可以发现这样一个<code>dc.a(context)</code>这样一个函数，它在<code>dc.b()</code>返回<code>true</code>时被触发，而<code>dc.b()</code>只是单纯地返回了<code>dc.f</code>这样一个静态变量，并且并没有找到在其他地方有被修改。</p>
+<p><img alt="dc static" src="/images/antutu/dc-static.png" width="50%" height="50%"></p>
+<p><img alt="dc a" src="/images/antutu/dc-a.png" width="50%" height="50%"></p>
+<p>此时，一个简单的想法便是如果能将<code>dc.f</code>的默认值改为true，则可以获得这个分数了。</p>
+<p><img alt="modify smali" src="/images/antutu/modify-smali.png" width="50%" height="50%"></p>
+<p>重新使用<code>apktool b</code>指令重建Antutu的主Apk，并使用jarsign重新签名。但安装后发现Antutu卡死。</p>
+<p>这是为何呢？寻找原因后发现Antutu在Native层做了自身的签名验证，验证不通过的话会不断sleep卡死App。</p>
+<p><img alt="test sign" src="/images/antutu/test-sign.png" width="50%" height="50%"></p>
+<p>详细观察代码后发现，result需要返回0才能通过判断，而绕过验证签名的方法为将<code>if(v21)</code>判断绕过即可。一个简单的办法就是将这里对应汇编的cmp操作全填<code>nop</code>即可。<br>最终可以获取到Antutu自动打印的详细分数了。</p>
+<h1 id="0x3_获取Antutu_3D应用的实际跑分值">0x3 获取Antutu 3D应用的实际跑分值</h1><p>然而分析发现，主要是Fisheye得分较低。但分析Native代码无果，没有发现明显的优化点。将3D App屏蔽后，发现三者在Fisheye上分数都低了很多，并且十分接近，因此判断Fisheye分数是3D App中GPU加速的Fisheye测试与CPU Fisheye测试结合在一起得出的，而在GPU FishEye上得分低拖累了我们的分数。因此接下来我们需要继续探究Antutu 3D App。</p>
+<p>Antutu 3D是使用Unity开发的，使用dnSpy看到可以看到其内部逻辑。<br>在OnTestPhysX找到了测试主逻辑。</p>
+<p>测试方式为3秒中统计图像处理次数。</p>
+<p><img alt="onTestPhysX" src="/images/antutu/onTestPhysX.png" width="50%" height="50%"></p>
+<p>检查逻辑后还发现，Antutu对一些特性不支持时，暴力地降低分数，比如不支持computeShaders时，分数只有1/3，不支持ARGBFloat时，分数再减半。</p>
+<p>为了获取到真实的分数，将debug的开关翻转，重新打包Antutu 3D APK，运行后可以在Logcat中看到分数的输出了。</p>
+<p><img alt="3D" src="/images/antutu/3D.png" width="50%" height="50%"></p>
+
+            
+          </span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
 
     
       
@@ -796,178 +928,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/07/some-shell-and-sql-problems-from-leetcode/" itemprop="url">
-                  一些来自LeetCode的Shell和Sql问题
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            Posted on
-            <time itemprop="dateCreated" datetime="2016-09-07T21:41:18+08:00" content="2016-09-07">
-              2016-09-07
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp; In
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">programming</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/07/some-shell-and-sql-problems-from-leetcode/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/07/some-shell-and-sql-problems-from-leetcode/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody">
-            
-              <p>Shell和Sql都是日常工作中经常使用的工具，发现LeetCode还有一些<a href="https://leetcode.com/problemset/shell/" target="_blank" rel="external">Shell</a>和<a href="https://leetcode.com/problemset/database/" target="_blank" rel="external">Sql</a>问题，由于项目中写Shell和Sql不是很多，练习的时候有些题目还稍微遇到了一点困难，记录如下。</p>
-<h1 id="Shell">Shell</h1><h2 id="192-_Word_Frequency"><a href="https://leetcode.com/problems/word-frequency/" target="_blank" rel="external">192. Word Frequency</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
-<ul>
-<li>写一个bash脚本计算<code>word.txt</code>文件中每个单词出现的频率</li>
-<li>只存在小写字母单词表，单词只使用一个或是多个空格分割</li>
-<li>输出频率时候按照降序排列，由于保证单词的频率相互不重复，不用考虑再使用字典序做二次排序</li>
-</ul>
-<p>示例输入：<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">the</span> <span class="property">day</span> <span class="keyword">is</span> sunny <span class="keyword">the</span> <span class="keyword">the</span></span><br><span class="line"><span class="keyword">the</span> sunny <span class="keyword">is</span> <span class="keyword">is</span></span><br></pre></td></tr></table></figure></p>
-<p>示例输出：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">the <span class="number">4</span></span><br><span class="line">is <span class="number">3</span></span><br><span class="line">sunny <span class="number">2</span></span><br><span class="line">day <span class="number">1</span></span><br></pre></td></tr></table></figure></p>
-<h3 id="使用sort/uniq计算频率">使用sort/uniq计算频率</h3><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cat</span> words.txt | tr -s ' ' '\<span class="keyword">n</span>' | <span class="keyword">sort</span> | uniq -c | <span class="keyword">sort</span> -r | awk '&#123; <span class="keyword">print</span> <span class="label">$2</span>, <span class="label">$1</span>  &#125;'</span><br></pre></td></tr></table></figure>
-<ul>
-<li><strong>tr -s</strong> : 将空格替换为换行，其中<code>-s  --squeeze-repeats</code>指明将连续的空格视为一个空格</li>
-<li><strong>sort</strong>  : 按照字典序排序，为统计频率做准备，因为uniq只能统计连续出现的单词</li>
-<li><strong>uniq -c</strong> : 将排序后单词序列中连续出现的重复单词去重，<code>-c</code>将重复次数输出</li>
-<li><strong>sort -r</strong> : 按照频率降序排列结果</li>
-<li><strong>awk</strong> : 将输出结果的第一栏和第二栏调换输出</li>
-</ul>
-<h3 id="仅仅使用awk和sort">仅仅使用awk和sort</h3><p>awk功能非常强大。<br><figure class="highlight monkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="comment">'&#123;for(i=1;i&lt;=NF;i++) a[$i]++&#125; END &#123;for(k in a) print k,a[k]&#125;' words.txt | sort -k2 -nr</span></span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>awk的对于每一行生效的指令中，对于每一行的每一栏的单词，将他们统计到map中</li>
-<li>awk最后指令，将单词与频率输出</li>
-<li><strong>sort -k2 -nr</strong> : 使用第二栏的数据，进行降序排序</li>
-</ul>
-<h2 id="194-_Transpose_File"><a href="https://leetcode.com/problems/transpose-file/" target="_blank" rel="external">194. Transpose File</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
-<ul>
-<li>写一个bash脚本转置<code>file.txt</code>给出单词的矩阵</li>
-<li>单词只使用一个空格分割</li>
-</ul>
-<p>示例输入：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name age</span><br><span class="line">alice <span class="number">21</span></span><br><span class="line">ryan <span class="number">30</span></span><br></pre></td></tr></table></figure></p>
-<p>示例输出：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">name alice ryan</span><br><span class="line">age <span class="number">21</span> <span class="number">30</span></span><br></pre></td></tr></table></figure></p>
-<h3 id="awk">awk</h3><p>还是继续awk大法好，awk其实类似于一个文件处理的编程框架。<br>awk和sed使用好，比直接写shell和使用各种命令进行管道叠加要效率高并且可读性高。<br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">awk '&#123;</span><br><span class="line">    row=NR<span class="comment">;</span></span><br><span class="line">    col=NF<span class="comment">;</span></span><br><span class="line">    for(i=<span class="number">1</span><span class="comment">;i&lt;=NF;i++) a[NR, i]=$i;</span></span><br><span class="line">&#125;</span><br><span class="line">END &#123;</span><br><span class="line">    for(i=<span class="number">1</span><span class="comment">;i&lt;=col;i++) &#123;</span></span><br><span class="line">        printf(<span class="string">"%s"</span>, <span class="literal">a</span>[<span class="number">1</span>, i])<span class="comment">;</span></span><br><span class="line">        for(j=<span class="number">2</span><span class="comment">;j&lt;=row;j++)</span></span><br><span class="line">            printf(<span class="string">" %s"</span>, <span class="literal">a</span>[j, i])<span class="comment">;</span></span><br><span class="line">        print <span class="string">""</span><span class="comment">;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;' file.txt</span><br></pre></td></tr></table></figure></p>
-<p>直接将单词矩阵存下来，然后转置输出。</p>
-<h1 id="Sql">Sql</h1><h2 id="176-_Second_Highest_Salary"><a href="https://leetcode.com/problems/second-highest-salary/" target="_blank" rel="external">176. Second Highest Salary</a></h2><p>难度：<code>Easy</code><br>题目大意：</p>
-<ul>
-<li>从<code>Employee</code>表中选出第二高的薪水记录</li>
-<li>如果不存在第二高的记录，返回<code>null</code></li>
-</ul>
-<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">+----+</span>--------+</span><br><span class="line"><span class="header">| Id | Salary |</span><br><span class="line">+----+--------+</span></span><br><span class="line">| 1  | 100    |</span><br><span class="line">| 2  | 200    |</span><br><span class="line"><span class="header">| 3  | 300    |</span><br><span class="line">+----+--------+</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select ifnull(</span><br><span class="line">    (select <span class="keyword">distinct</span> <span class="type">Salary</span> <span class="keyword">from</span> <span class="type">Employee</span> order by <span class="type">Salary</span> desc limit <span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">, null) <span class="keyword">as</span> <span class="type">SecondHighestSalary</span></span><br></pre></td></tr></table></figure>
-<p>使用<code>ifnull</code>函数进行记录是否为空的判断。</p>
-<h2 id="178-_Rank_Scores"><a href="https://leetcode.com/problems/rank-scores/" target="_blank" rel="external">178. Rank Scores</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
-<ul>
-<li>用Sql来为分数分级，对于相同的分数，分为同一级，下一级和前一级别连续编号。</li>
-</ul>
-<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="code">+----+</span>-------+</span><br><span class="line"><span class="header">| Id | Score |</span><br><span class="line">+----+-------+</span></span><br><span class="line">| 1  | 3.50  |</span><br><span class="line">| 2  | 3.65  |</span><br><span class="line">| 3  | 4.00  |</span><br><span class="line">| 4  | 3.85  |</span><br><span class="line">| 5  | 4.00  |</span><br><span class="line"><span class="header">| 6  | 3.65  |</span><br><span class="line">+----+-------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">输出：</span><br><span class="line">+-------+------+</span></span><br><span class="line"><span class="header">| Score | Rank |</span><br><span class="line">+-------+------+</span></span><br><span class="line">| 4.00  | 1    |</span><br><span class="line">| 4.00  | 1    |</span><br><span class="line">| 3.85  | 2    |</span><br><span class="line">| 3.65  | 3    |</span><br><span class="line">| 3.65  | 3    |</span><br><span class="line"><span class="header">| 3.50  | 4    |</span><br><span class="line">+-------+------+</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight q"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> Score,</span><br><span class="line">       ( @<span class="built_in">rank</span> := @<span class="built_in">rank</span> + ( @<span class="built_in">prev</span> &lt;&gt; (@<span class="built_in">prev</span> := Score)  )  ) as Rank</span><br><span class="line"><span class="keyword">from</span></span><br><span class="line">(</span><br><span class="line">    <span class="keyword">select</span> Score <span class="keyword">from</span> Scores order <span class="keyword">by</span> Score <span class="built_in">desc</span></span><br><span class="line">) A, (<span class="keyword">select</span> @<span class="built_in">rank</span> := <span class="number">0</span>, @<span class="built_in">prev</span> := -<span class="number">1</span>) Init</span><br></pre></td></tr></table></figure>
-<p>参考他人解法，使用零时表中的两个变量，分别记录分级编号和上一个分数，方便判断是否分数相同。</p>
-<h2 id="180-_Consecutive_Numbers"><a href="https://leetcode.com/problems/consecutive-numbers/" target="_blank" rel="external">180. Consecutive Numbers</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
-<ul>
-<li>用Sql选出连续出现三次即以上的数字</li>
-</ul>
-<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+----+-----+</span><br><span class="line">|<span class="string"> Id </span>|<span class="string"> Num </span>|</span><br><span class="line">+----+-----+</span><br><span class="line">|<span class="string"> 1  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 2  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 3  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 4  </span>|<span class="string">  2  </span>|</span><br><span class="line">|<span class="string"> 5  </span>|<span class="string">  1  </span>|</span><br><span class="line">|<span class="string"> 6  </span>|<span class="string">  2  </span>|</span><br><span class="line">|<span class="string"> 7  </span>|<span class="string">  2  </span>|</span><br><span class="line">+----+-----+</span><br></pre></td></tr></table></figure>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> <span class="keyword">distinct</span> <span class="keyword">Num</span> <span class="keyword">as</span> ConsecutiveNums <span class="keyword">from</span> (</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">Id</span>, <span class="keyword">Num</span>, ( @<span class="keyword">rank</span> := <span class="keyword">if</span>(@prev = (@prev := <span class="keyword">NUM</span>), @<span class="keyword">rank</span>+<span class="number">1</span>, <span class="number">1</span>)  ) <span class="keyword">as</span> <span class="keyword">Rank</span></span><br><span class="line">    <span class="keyword">from</span> <span class="keyword">Logs</span>, (<span class="keyword">select</span> @<span class="keyword">rank</span> := <span class="number">1</span>, @prev := -<span class="number">1</span>) Init</span><br><span class="line">) <span class="keyword">as</span> temp <span class="keyword">where</span> <span class="keyword">Rank</span> = <span class="number">3</span>;</span></span><br></pre></td></tr></table></figure>
-<p>参考178的思路，将每条记录按照是否连续进行编号，再把所有有三次连续出现的不重复数字选出。</p>
-<h2 id="184-_Department_Highest_Salary"><a href="https://leetcode.com/problems/department-highest-salary/" target="_blank" rel="external">184. Department Highest Salary</a></h2><p>难度：<code>Medium</code><br>题目大意：</p>
-<ul>
-<li>挑选出每个部门最高薪水的记录</li>
-</ul>
-<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="header">Employee:</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line"><span class="header">| Id | Name  | Salary | DepartmentId |</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line">| 1  | Joe   | 70000  | 1            |</span><br><span class="line">| 2  | Henry | 80000  | 2            |</span><br><span class="line">| 3  | Sam   | 60000  | 2            |</span><br><span class="line">| 4  | Max   | 90000  | 1            |</span><br><span class="line">| 5  | Janet | 69000  | 1            |</span><br><span class="line"><span class="header">| 6  | Randy | 85000  | 1            |</span><br><span class="line">+----+-------+--------+--------------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">Department:</span><br><span class="line">+----+----------+</span></span><br><span class="line"><span class="header">| Id | Name     |</span><br><span class="line">+----+----------+</span></span><br><span class="line">| 1  | IT       |</span><br><span class="line"><span class="header">| 2  | Sales    |</span><br><span class="line">+----+----------+</span></span><br><span class="line"></span><br><span class="line"><span class="header">输出：</span><br><span class="line">+------------+----------+--------+</span></span><br><span class="line"><span class="header">| Department | Employee | Salary |</span><br><span class="line">+------------+----------+--------+</span></span><br><span class="line">| IT         | Max      | 90000  |</span><br><span class="line"><span class="header">| Sales      | Henry    | 80000  |</span><br><span class="line">+------------+----------+--------+</span></span><br></pre></td></tr></table></figure>
-<h3 id="解法1：900ms">解法1：900ms</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> <span class="keyword">d</span>.<span class="keyword">name</span> <span class="keyword">as</span> Department, <span class="keyword">e</span>.<span class="keyword">Name</span> <span class="keyword">as</span> Employee, Salary</span><br><span class="line"><span class="keyword">from</span> Employee <span class="keyword">e</span> <span class="keyword">inner</span> <span class="keyword">join</span> Department <span class="keyword">d</span> <span class="keyword">on</span> <span class="keyword">e</span>.DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span></span><br><span class="line"><span class="keyword">where</span> Salary = (<span class="keyword">select</span> <span class="keyword">max</span>(Salary) <span class="keyword">from</span> Employee <span class="keyword">where</span> DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span>)</span></span><br></pre></td></tr></table></figure>
-<p>比较暴力，有个Employee记录都有一个冗余的子查询。</p>
-<h3 id="解法2：600ms">解法2：600ms</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">select t3<span class="class">.Name</span> as Department, t2<span class="class">.Name</span> as Employee, t1<span class="class">.Salary</span> as Salary</span><br><span class="line">from</span><br><span class="line">(</span><br><span class="line">    select <span class="function"><span class="title">max</span><span class="params">(Salary)</span></span> as Salary, DepartmentId</span><br><span class="line">    from Employee</span><br><span class="line">    group by DepartmentId</span><br><span class="line">) t1, Employee t2, Department t3</span><br><span class="line">where t1<span class="class">.Salary</span> = t2<span class="class">.Salary</span> and t1<span class="class">.DepartmentId</span> = t2<span class="class">.DepartmentId</span> and t1<span class="class">.DepartmentId</span> = t3.Id</span><br></pre></td></tr></table></figure>
-<p>先把每个部门的最高薪水一起聚合算出，再全连接表并筛选出部门和薪水都匹配的员工记录。</p>
-<h2 id="185-_Department_Top_Three_Salaries"><a href="https://leetcode.com/problems/department-top-three-salaries/" target="_blank" rel="external">185. Department Top Three Salaries</a></h2><p>难度：<code>Hard</code><br>题目大意：</p>
-<ul>
-<li>在上一题基础上，挑选出每个部门前三高薪水的记录</li>
-<li>如果少于三条记录，则只显示存在的记录</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> t1.<span class="keyword">Name</span> <span class="keyword">as</span> Department, t2.<span class="keyword">Name</span> <span class="keyword">as</span> Employee, t2.Salary <span class="keyword">as</span> Salary</span><br><span class="line"><span class="keyword">from</span>(</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">Name</span>, <span class="keyword">ifnull</span>((</span><br><span class="line">        <span class="keyword">select</span> <span class="keyword">distinct</span> Salary <span class="keyword">from</span> Employee <span class="keyword">e</span> </span><br><span class="line">        <span class="keyword">where</span> <span class="keyword">e</span>.DepartmentId = <span class="keyword">d</span>.<span class="keyword">Id</span></span><br><span class="line">        <span class="keyword">order</span> <span class="keyword">by</span> Salary <span class="keyword">desc</span> <span class="keyword">limit</span> <span class="number">2</span>,<span class="number">1</span>)</span><br><span class="line">    , <span class="number">0</span>) <span class="keyword">as</span> Salary, <span class="keyword">Id</span> <span class="keyword">as</span> DepartmentId <span class="keyword">from</span> Department <span class="keyword">d</span></span><br><span class="line">) t1, Employee t2</span><br><span class="line"><span class="keyword">where</span> t1.Salary &lt;= t2.Salary <span class="keyword">and</span> t1.DepartmentId = t2.DepartmentId</span></span><br></pre></td></tr></table></figure>
-<p>和上一题思路类似，先选出第三高的薪水，再全连接筛选。</p>
-
-            
-          </span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
 
   </section>
 
@@ -1014,7 +974,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-count">45</span>
               <span class="site-state-item-name">posts</span>
             </a>
           </div>
@@ -1028,7 +988,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">41</span>
+              <span class="site-state-item-count">42</span>
               <span class="site-state-item-name">tags</span>
               </a>
           </div>

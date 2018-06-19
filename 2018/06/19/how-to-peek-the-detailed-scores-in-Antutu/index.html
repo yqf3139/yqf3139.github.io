@@ -1,0 +1,750 @@
+<!doctype html>
+<html class="theme-next   use-motion ">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.4.5.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Yqf's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+
+
+
+
+
+<meta name="description" content="Antutu是用户常用的一款智能设备跑分软件。如下图所示，它从四个大类来评估一台移动设备的性能，分别是CPU、GPU、UX和MEM。Antutu最终给出总分、一级汇总得分和二级得分，人们一般习惯使用总分来量化设备间的性能。
+
+但近期我用Antutu的Android版本做性能测试时，发现UX大类中的UX图形处理-鱼眼、Blur和JPG解码一项分数明显比竞品低，便想查清楚原因。但此项中又包含三个子项，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何获取到Antutu跑分的详细子项分数？">
+<meta property="og:url" content="http://yqf3139.github.io/2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/index.html">
+<meta property="og:site_name" content="Yqf's Blog">
+<meta property="og:description" content="Antutu是用户常用的一款智能设备跑分软件。如下图所示，它从四个大类来评估一台移动设备的性能，分别是CPU、GPU、UX和MEM。Antutu最终给出总分、一级汇总得分和二级得分，人们一般习惯使用总分来量化设备间的性能。
+
+但近期我用Antutu的Android版本做性能测试时，发现UX大类中的UX图形处理-鱼眼、Blur和JPG解码一项分数明显比竞品低，便想查清楚原因。但此项中又包含三个子项，">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/antutu-phone.jpg">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/antutu-apk-structure.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/benchmark-service.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/java-to-native.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/benchmarkV6.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/xml.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/ux.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/fisheye.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/dc-static.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/dc-a.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/modify-smali.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/test-sign.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/onTestPhysX.png">
+<meta property="og:image" content="http://yqf3139.github.io/images/antutu/3D.png">
+<meta property="og:updated_time" content="2018-06-19T15:38:37.373Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何获取到Antutu跑分的详细子项分数？">
+<meta name="twitter:description" content="Antutu是用户常用的一款智能设备跑分软件。如下图所示，它从四个大类来评估一台移动设备的性能，分别是CPU、GPU、UX和MEM。Antutu最终给出总分、一级汇总得分和二级得分，人们一般习惯使用总分来量化设备间的性能。
+
+但近期我用Antutu的Android版本做性能测试时，发现UX大类中的UX图形处理-鱼眼、Blur和JPG解码一项分数明显比竞品低，便想查清楚原因。但此项中又包含三个子项，">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: '',
+    sidebar: 'post',
+    motion: true
+  };
+</script>
+
+  <title> 如何获取到Antutu跑分的详细子项分数？ | Yqf's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+
+
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Yqf's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Day day up.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content">
+          
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                如何获取到Antutu跑分的详细子项分数？
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            Posted on
+            <time itemprop="dateCreated" datetime="2018-06-19T20:46:48+08:00" content="2018-06-19">
+              2018-06-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; In
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">programming</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><p><a href="http://www.antutu.com/" target="_blank" rel="external">Antutu</a>是用户常用的一款智能设备跑分软件。如下图所示，它从四个大类来评估一台移动设备的性能，分别是CPU、GPU、UX和MEM。Antutu最终给出总分、一级汇总得分和二级得分，人们一般习惯使用总分来量化设备间的性能。</p>
+<p><img alt="Antutu在手机上的跑分结果截图" src="/images/antutu/antutu-phone.jpg" width="30%" height="30%"></p>
+<p>但近期我用Antutu的Android版本做性能测试时，发现UX大类中的<code>UX图形处理-鱼眼、Blur和JPG解码</code>一项分数明显比竞品低，便想查清楚原因。但此项中又包含三个子项，<strong>究竟每个子项的分数是多少呢？每个子项究竟是怎样进行评测的呢？</strong>一番网上搜寻后，我并没有找到Antutu官方出的分数计算报告白皮书，也没有在设备Log中或是其他地方找到详细分数的输出。那么似乎只能进入Antutu评测软件内部窥探一番了。</p>
+<p>注意：破解Antutu并篡改分数等行为是被官方禁止的，本文只做Antutu分数的获取过程分享，测试用Antutu版本为V7.1.0。</p>
+<h1 id="0x1_梳理Antutu跑分逻辑">0x1 梳理Antutu跑分逻辑</h1><p>首先解压Aututu主apk包，并同时使用<code>apktool</code>再将主apk解压反编译备用。<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; apktool<span class="class">.bat</span> d <span class="string">"antutuv7.apk"</span></span><br></pre></td></tr></table></figure></p>
+<p><img alt="Antutu Apk" src="/images/antutu/antutu-apk-structure.png" width="20%" height="20%"></p>
+<p>接下来使用<code>dex2jar</code>工具将Aututu主apk包中的两个dex文件转换为jar包，并使用<code>JD-GUI</code>打开分析。</p>
+<p>搜寻后发现非常显眼的是<code>jni</code>这个类。从中可以看到定义了Antutu每一个子测试的编号，能查询到我们想看到详细分数的三个子项分别是20、21和22号。并且还能看到<code>jni</code>类中关联着的Native函数，其实现都位于<code>lib\x86|armeabiv7\libabenchmark.so</code>中。</p>
+<p>接下来不难发现，Antutu的跑分主流程在com.antutu.benchmark.service.BenchmarkService的f函数中，因为其中有大量的Native函数调用。</p>
+<p><img alt="BenchmarkService" src="/images/antutu/benchmark-service.png" width="50%" height="50%"></p>
+<p>Antutu 3D跑分为第一项进行，逻辑复杂，暂时跳过分析。后面的每一项测试的大体流程为，如果该跑分项目由Native层进行测试，比如多线程测试，则先由a(int)函数通知UI线程某项跑分开始了，然后通过dc.a(int)判断该跑分是否可以在Native层执行，并等待2秒后才开始真正测试。由于此处的Java类和方法有部分做了混淆，所以需要根据每个函数的具体实现猜测其功能。</p>
+<p><img alt="Java invoke Native" src="/images/antutu/java-to-native.png" width="50%" height="50%"></p>
+<p>通过IDA打开<code>libabenchmark.so</code>后，我们发现Native层并没有做更加完备的防护，搜索<code>benchmarkV6</code>函数，便可以找到更多测试函数的入口了。</p>
+<p><img alt="benchmarkV6" src="/images/antutu/benchmarkV6.png" width="50%" height="50%"></p>
+<p>如果该跑分项目在Java层进行，则先跑分，再通过<code>jni.benchmarkProcessUX</code>接口将分数导入Native层。比如测试XML(14)。</p>
+<p><img alt="xml" src="/images/antutu/xml.png" width="50%" height="50%"></p>
+<p>接下来我们继续研究UX图片处理的相应逻辑，我们寻找20~22编号的测试并详细查看其逻辑。</p>
+<p><img alt="ux" src="/images/antutu/ux.png" width="50%" height="50%"></p>
+<p>其中，JPG decode比较简单，使用Java的BitmapFactory.decodeByteArray测试。分数为5秒内decode的次数。由于是纯Java实现，我们可以将相应的代码自己实现后测试，但结果显示JPG decode并不是导致UX图像处理跑分低的根源。</p>
+<p>而FishEye和Blur都使用了Native实现。搜索<code>fisheye</code>关键字，我们很快能看到其Native测试实现。</p>
+<p><img alt="fisheye" src="/images/antutu/fisheye.png" width="50%" height="50%"></p>
+<h1 id="0x2_获取Antutu_主应用的实际跑分值">0x2 获取Antutu 主应用的实际跑分值</h1><p>虽然我们已经看到了Antutu测试的部分实现的反编译结果，但除了直接分析，还有什么样的方法能更快地获取到Antutu的详细分数呢？</p>
+<p>一种可能的办法是自己写一个Android App，并参照Antutu的JNI接口定义来定义类，比如说定义一个<code>com.antutu.aaa.bbb.jni</code>的类，并将<code>libabenchmark.so</code>去出打包到我们自己的App的Apk中并申明加载。加载后既可直接调用Native方法进行测试，或者是通过恢复Antutu存放分数的文件来直接读取已经存储的分数。这种方法应该是可行的，但比较麻烦。</p>
+<p>经过不断的搜索，我们发现Antutu的详细跑分在一个内部flag开启的时候，会自动写到<code>/sdcard/.antutu/last_result.json</code>中。在跑分流程的末尾，可以发现这样一个<code>dc.a(context)</code>这样一个函数，它在<code>dc.b()</code>返回<code>true</code>时被触发，而<code>dc.b()</code>只是单纯地返回了<code>dc.f</code>这样一个静态变量，并且并没有找到在其他地方有被修改。</p>
+<p><img alt="dc static" src="/images/antutu/dc-static.png" width="50%" height="50%"></p>
+<p><img alt="dc a" src="/images/antutu/dc-a.png" width="50%" height="50%"></p>
+<p>此时，一个简单的想法便是如果能将<code>dc.f</code>的默认值改为true，则可以获得这个分数了。</p>
+<p><img alt="modify smali" src="/images/antutu/modify-smali.png" width="50%" height="50%"></p>
+<p>重新使用<code>apktool b</code>指令重建Antutu的主Apk，并使用jarsign重新签名。但安装后发现Antutu卡死。</p>
+<p>这是为何呢？寻找原因后发现Antutu在Native层做了自身的签名验证，验证不通过的话会不断sleep卡死App。</p>
+<p><img alt="test sign" src="/images/antutu/test-sign.png" width="50%" height="50%"></p>
+<p>详细观察代码后发现，result需要返回0才能通过判断，而绕过验证签名的方法为将<code>if(v21)</code>判断绕过即可。一个简单的办法就是将这里对应汇编的cmp操作全填<code>nop</code>即可。<br>最终可以获取到Antutu自动打印的详细分数了。</p>
+<h1 id="0x3_获取Antutu_3D应用的实际跑分值">0x3 获取Antutu 3D应用的实际跑分值</h1><p>然而分析发现，主要是Fisheye得分较低。但分析Native代码无果，没有发现明显的优化点。将3D App屏蔽后，发现三者在Fisheye上分数都低了很多，并且十分接近，因此判断Fisheye分数是3D App中GPU加速的Fisheye测试与CPU Fisheye测试结合在一起得出的，而在GPU FishEye上得分低拖累了我们的分数。因此接下来我们需要继续探究Antutu 3D App。</p>
+<p>Antutu 3D是使用Unity开发的，使用dnSpy看到可以看到其内部逻辑。<br>在OnTestPhysX找到了测试主逻辑。</p>
+<p>测试方式为3秒中统计图像处理次数。</p>
+<p><img alt="onTestPhysX" src="/images/antutu/onTestPhysX.png" width="50%" height="50%"></p>
+<p>检查逻辑后还发现，Antutu对一些特性不支持时，暴力地降低分数，比如不支持computeShaders时，分数只有1/3，不支持ARGBFloat时，分数再减半。</p>
+<p>为了获取到真实的分数，将debug的开关翻转，重新打包Antutu 3D APK，运行后可以在Logcat中看到分数的输出了。</p>
+<p><img alt="3D" src="/images/antutu/3D.png" width="50%" height="50%"></p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/24/use-multiple-sensor-data-to-classify-human-activities/" rel="next" title="通过多个传感器分类人体活动(课程作业)">
+                <i class="fa fa-chevron-left"></i> 通过多个传感器分类人体活动(课程作业)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+        </div>
+
+        
+
+
+        
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/"
+           data-title="如何获取到Antutu跑分的详细子项分数？" data-url="http://yqf3139.github.io/2018/06/19/how-to-peek-the-detailed-scores-in-Antutu/">
+      </div>
+    
+  </div>
+
+
+      </div>
+
+      
+        
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table Of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.png" alt="yqf" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">yqf</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description"></p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">45</span>
+              <span class="site-state-item-name">posts</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            
+              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-name">categories</span>
+              
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">42</span>
+              <span class="site-state-item-name">tags</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/yqf3139" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> twitter
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/ke-yu-beta" target="_blank">
+                  
+                    <i class="fa fa-globe"></i> zhihu
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x1_梳理Antutu跑分逻辑"><span class="nav-number">1.</span> <span class="nav-text">0x1 梳理Antutu跑分逻辑</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x2_获取Antutu_主应用的实际跑分值"><span class="nav-number">2.</span> <span class="nav-text">0x2 获取Antutu 主应用的实际跑分值</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x3_获取Antutu_3D应用的实际跑分值"><span class="nav-number">3.</span> <span class="nav-text">0x3 获取Antutu 3D应用的实际跑分值</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+      
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2009 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="icon-next-heart fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yqf</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"yqf3139"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+
+
+    
+  
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+<script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+<script type="text/javascript" src="/js/motion.js?v=0.4.5.2" id="motion.global"></script>
+
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.2" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    motionMiddleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+      if (CONFIG.sidebar === 'post') {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  <script type="text/javascript" src="/js/bootstrap.js"></script>
+
+  
+  
+
+  
+  
+
+</body>
+</html>
